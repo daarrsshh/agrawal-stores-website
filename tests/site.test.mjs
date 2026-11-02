@@ -67,6 +67,20 @@ test('WhatsApp category buttons carry a ready-made message', async () => {
   for (const m of msgs) assert.match(m, /^Hello Agrawal Stores, I want to ask about \S/);
 });
 
+test('every category card offers Call first and WhatsApp second', async () => {
+  const page = await open();
+  const cards = await page.evaluate(() =>
+    [...document.querySelectorAll('#products h3')].map((h) => {
+      const links = [...h.closest('div.flex-col').querySelectorAll('a')].map((a) => a.getAttribute('href'));
+      return { name: h.innerText, first: links[0] || '', second: links[1] || '' };
+    }));
+  assert.equal(cards.length, 6);
+  for (const c of cards) {
+    assert.match(c.first, /^tel:\+919926504567$/, `${c.name}: first button should call`);
+    assert.match(c.second, /^https:\/\/wa\.me\//, `${c.name}: second button should be WhatsApp`);
+  }
+});
+
 test('Google Maps links go to the one correct listing', async () => {
   const page = await open();
   const links = await page.evaluate(() => [...document.querySelectorAll('a[href*="google.com/maps"], a[href*="goo.gl"]')].map((a) => a.href));
