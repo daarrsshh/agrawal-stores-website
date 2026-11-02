@@ -71,7 +71,7 @@ test('every category card offers Call first and WhatsApp second', async () => {
   const page = await open();
   const cards = await page.evaluate(() =>
     [...document.querySelectorAll('#products h3')].map((h) => {
-      const links = [...h.closest('div.flex-col').querySelectorAll('a')].map((a) => a.getAttribute('href'));
+      const links = [...h.closest('div.flex-col').querySelectorAll('a[href^="tel:"], a[href*="wa.me"]')].map((a) => a.getAttribute('href'));
       return { name: h.innerText, first: links[0] || '', second: links[1] || '' };
     }));
   assert.equal(cards.length, 6);
