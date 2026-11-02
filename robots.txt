@@ -4,4 +4,4 @@ Disallow: /tests/
 Disallow: /scripts/
 Disallow: /data/
 
-Sitemap: https://daarrsshh.github.io/agrawal-stores-website/sitemap.xml
+Sitemap: https://agrawalstores.in/sitemap.xml
