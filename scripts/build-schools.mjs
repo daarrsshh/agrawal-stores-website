@@ -22,7 +22,7 @@ const storeLd = home.match(/<script type="application\/ld\+json">.*?<\/script>/s
 const icon = home.match(/<link rel="icon"[^>]*>/)[0];
 
 const callBtn = (label, track, extra = '') =>
-  `<a href="tel:${data.phone}" data-call="${esc(track)}" class="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-full bg-amber-600 hover:bg-amber-700 text-white font-bold px-6 transition-colors ${extra}"><i class="fa-solid fa-phone" aria-hidden="true"></i> ${esc(label)}</a>`;
+  `<a href="tel:${data.phone}" data-call="${esc(track)}" class="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-full bg-brand-600 hover:bg-brand-700 text-white font-bold px-6 transition-colors ${extra}"><i class="fa-solid fa-phone" aria-hidden="true"></i> ${esc(label)}</a>`;
 const waBtn = (label, text, extra = '') =>
   `<a href="${esc(wa(text))}" target="_blank" rel="noopener" class="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-full border-2 border-green-500 bg-white hover:bg-green-50 text-green-700 font-bold px-6 transition-colors ${extra}"><i class="fa-brands fa-whatsapp" aria-hidden="true"></i> ${esc(label)}</a>`;
 
@@ -37,10 +37,10 @@ function page(s) {
       ? `<ol class="list-decimal pl-5 space-y-1 text-slate-700">${books.map((b) => `<li>${esc(b.title)}${b.publisher ? ` <span class="text-slate-500">(${esc(b.publisher)})</span>` : ''}</li>`).join('')}</ol>`
       : `<p class="text-slate-600">We have the ${esc(data.session)} book set for ${esc(classLabel(c))}. Call us and we will tell you the full list.</p>`;
     return `
-        <details id="${classId(c)}" class="scroll-mt-28 sm:scroll-mt-20 group rounded-2xl border-2 border-amber-100 bg-white open:border-amber-300">
+        <details id="${classId(c)}" class="scroll-mt-28 sm:scroll-mt-20 group rounded-2xl border-2 border-brand-100 bg-white open:border-brand-300">
           <summary class="flex min-h-[56px] cursor-pointer list-none items-center justify-between gap-3 px-5 font-extrabold text-lg text-slate-800">
             <span>${esc(classLabel(c))} books${books.length ? ` <span class="ml-1 text-sm font-semibold text-slate-500">${books.length} items</span>` : ''}</span>
-            <i class="fa-solid fa-chevron-down text-amber-600 transition-transform group-open:rotate-180" aria-hidden="true"></i>
+            <i class="fa-solid fa-chevron-down text-brand-600 transition-transform group-open:rotate-180" aria-hidden="true"></i>
           </summary>
           <div class="px-5 pb-5 space-y-4">
             ${list}
@@ -53,10 +53,10 @@ function page(s) {
   }).join('');
 
   const photos = s.uniformPhotos.length
-    ? `<div class="grid grid-cols-2 md:grid-cols-3 gap-4">${s.uniformPhotos.map((p) => `<figure class="overflow-hidden rounded-2xl border-2 border-amber-100 bg-white"><img src="../assets/uniforms/${esc(s.slug)}/${esc(p.file)}" alt="${esc(s.fullName + ' ' + p.caption)}" loading="lazy" class="w-full aspect-[4/5] object-cover"><figcaption class="p-3 text-sm font-bold text-slate-700">${esc(p.caption)}</figcaption></figure>`).join('')}</div>`
+    ? `<div class="grid grid-cols-2 md:grid-cols-3 gap-4">${s.uniformPhotos.map((p) => `<figure class="overflow-hidden rounded-2xl border-2 border-brand-100 bg-white"><img src="../assets/uniforms/${esc(s.slug)}/${esc(p.file)}" alt="${esc(s.fullName + ' ' + p.caption)}" loading="lazy" class="w-full aspect-[4/5] object-cover"><figcaption class="p-3 text-sm font-bold text-slate-700">${esc(p.caption)}</figcaption></figure>`).join('')}</div>`
     : `<ul class="grid gap-3 sm:grid-cols-2">
-            <li class="rounded-2xl border-2 border-amber-100 bg-white p-5"><p class="font-extrabold text-slate-800">Daily uniform</p><p class="text-slate-600">For all classes, boys and girls.</p></li>
-            <li class="rounded-2xl border-2 border-amber-100 bg-white p-5"><p class="font-extrabold text-slate-800">Winter wear</p><p class="text-slate-600">Blazers and sweaters.</p></li>
+            <li class="rounded-2xl border-2 border-brand-100 bg-white p-5"><p class="font-extrabold text-slate-800">Daily uniform</p><p class="text-slate-600">For all classes, boys and girls.</p></li>
+            <li class="rounded-2xl border-2 border-brand-100 bg-white p-5"><p class="font-extrabold text-slate-800">Winter wear</p><p class="text-slate-600">Blazers and sweaters.</p></li>
           </ul>`;
 
 
@@ -74,24 +74,24 @@ function page(s) {
     ${storeLd}
     ${head.trim()}
 </head>
-<body class="bg-amber-50 text-slate-800 antialiased">
+<body class="bg-brand-50 text-slate-800 antialiased">
 
-    <nav class="bg-amber-600 text-white shadow-md sticky top-0 z-40">
+    <nav class="bg-brand-600 text-white shadow-md sticky top-0 z-40">
         <div class="max-w-5xl mx-auto px-4 py-3 flex justify-between items-center gap-3">
             <a href="../index.html" class="flex items-center gap-2 min-h-[44px]">
                 <i class="fa-solid fa-store text-2xl" aria-hidden="true"></i>
                 <span class="text-xl font-extrabold tracking-wide">Agrawal Stores</span>
             </a>
-            <a href="../index.html#schools" class="inline-flex min-h-[44px] items-center rounded-full bg-amber-700 px-4 text-sm font-semibold">All schools</a>
+            <a href="../index.html#schools" class="inline-flex min-h-[44px] items-center rounded-full bg-brand-700 px-4 text-sm font-semibold">All schools</a>
         </div>
     </nav>
 
-    <header class="bg-white border-b-4 border-amber-500 py-10 px-4 text-center">
+    <header class="bg-white border-b-4 border-brand-500 py-10 px-4 text-center">
         <div class="max-w-3xl mx-auto">
-            <div class="mx-auto mb-5 w-28 h-28 rounded-full border-[3px] border-amber-300 p-1 bg-white shadow-md flex items-center justify-center">
+            <div class="mx-auto mb-5 w-28 h-28 rounded-full border-[3px] border-brand-300 p-1 bg-white shadow-md flex items-center justify-center">
                 <img src="../assets/${esc(s.logo)}" alt="${esc(s.fullName)} logo" class="max-w-[70%] max-h-[70%] object-contain">
             </div>
-            <h1 class="text-3xl md:text-5xl font-extrabold text-slate-900 leading-tight break-words">${esc(s.fullName)} <span class="text-amber-600">Uniform &amp; Books</span></h1>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-slate-900 leading-tight break-words">${esc(s.fullName)} <span class="text-brand-600">Uniform &amp; Books</span></h1>
             <p class="mt-4 text-lg text-slate-600">Daily and winter uniforms, and ${esc(data.session)} book sets for every class, at Agrawal Stores, Rajendra Nagar, Indore.</p>
             <div class="mt-6 flex flex-col sm:flex-row justify-center gap-3">
                 ${callBtn(`Call ${data.phoneDisplay}`, `${s.slug}:top`, 'text-lg')}
@@ -106,15 +106,15 @@ function page(s) {
         <section aria-labelledby="pick-class">
             <h2 id="pick-class" class="text-2xl font-extrabold text-slate-800 mb-4">Choose your child's class</h2>
             <div class="flex flex-wrap gap-2">
-                ${data.classes.map((c) => `<a href="#${classId(c)}" data-open="${classId(c)}" class="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full border-2 border-amber-200 bg-white px-4 font-bold text-amber-800 hover:border-amber-400">${esc(c)}</a>`).join('\n                ')}
+                ${data.classes.map((c) => `<a href="#${classId(c)}" data-open="${classId(c)}" class="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full border-2 border-brand-200 bg-white px-4 font-bold text-brand-800 hover:border-brand-400">${esc(c)}</a>`).join('\n                ')}
             </div>
         </section>
 
         <section id="uniforms" aria-labelledby="uniforms-h" class="scroll-mt-28 sm:scroll-mt-20">
             <h2 id="uniforms-h" class="text-2xl font-extrabold text-slate-800 mb-4">${esc(s.fullName)} uniforms</h2>
             ${photos}
-            <div class="mt-5 rounded-2xl bg-amber-100 p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                <p class="font-bold text-amber-900">Not sure of the size? Call and we will check it for you.</p>
+            <div class="mt-5 rounded-2xl bg-brand-100 p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <p class="font-bold text-brand-900">Not sure of the size? Call and we will check it for you.</p>
                 ${callBtn('Call to check size', `${s.slug}:uniform`)}
             </div>
         </section>
@@ -129,31 +129,31 @@ function page(s) {
         <section aria-labelledby="how-h">
             <h2 id="how-h" class="text-2xl font-extrabold text-slate-800 mb-4">How it works</h2>
             <ol class="grid gap-3 sm:grid-cols-3">
-                <li class="rounded-2xl bg-white border-2 border-amber-100 p-5"><span class="block text-3xl font-extrabold text-amber-600">1</span><span class="font-bold">Call us</span> with the school and class.</li>
-                <li class="rounded-2xl bg-white border-2 border-amber-100 p-5"><span class="block text-3xl font-extrabold text-amber-600">2</span><span class="font-bold">We pack</span> the full set for you.</li>
-                <li class="rounded-2xl bg-white border-2 border-amber-100 p-5"><span class="block text-3xl font-extrabold text-amber-600">3</span><span class="font-bold">Collect it</span> from our Rajendra Nagar store.</li>
+                <li class="rounded-2xl bg-white border-2 border-brand-100 p-5"><span class="block text-3xl font-extrabold text-brand-600">1</span><span class="font-bold">Call us</span> with the school and class.</li>
+                <li class="rounded-2xl bg-white border-2 border-brand-100 p-5"><span class="block text-3xl font-extrabold text-brand-600">2</span><span class="font-bold">We pack</span> the full set for you.</li>
+                <li class="rounded-2xl bg-white border-2 border-brand-100 p-5"><span class="block text-3xl font-extrabold text-brand-600">3</span><span class="font-bold">Collect it</span> from our Rajendra Nagar store.</li>
             </ol>
         </section>
 
         <section aria-labelledby="faq-h">
             <h2 id="faq-h" class="text-2xl font-extrabold text-slate-800 mb-4">Common questions</h2>
             <div class="space-y-3">
-                <details class="rounded-2xl bg-white border-2 border-amber-100 p-5"><summary class="flex min-h-[44px] cursor-pointer items-center font-bold">Do you have ${esc(s.fullName)} winter uniforms?</summary><p class="mt-2 text-slate-600">Yes. We keep blazers and sweaters along with the daily uniform.</p></details>
-                <details class="rounded-2xl bg-white border-2 border-amber-100 p-5"><summary class="flex min-h-[44px] cursor-pointer items-center font-bold">Do you deliver?</summary><p class="mt-2 text-slate-600">No. Call us and we will keep your set packed and ready to collect from the store.</p></details>
-                <details class="rounded-2xl bg-white border-2 border-amber-100 p-5"><summary class="flex min-h-[44px] cursor-pointer items-center font-bold">Where is the store and when is it open?</summary><p class="mt-2 text-slate-600">57-B, Rajendra Nagar, Indore 452012. ${esc(data.hours)}.</p></details>
+                <details class="rounded-2xl bg-white border-2 border-brand-100 p-5"><summary class="flex min-h-[44px] cursor-pointer items-center font-bold">Do you have ${esc(s.fullName)} winter uniforms?</summary><p class="mt-2 text-slate-600">Yes. We keep blazers and sweaters along with the daily uniform.</p></details>
+                <details class="rounded-2xl bg-white border-2 border-brand-100 p-5"><summary class="flex min-h-[44px] cursor-pointer items-center font-bold">Do you deliver?</summary><p class="mt-2 text-slate-600">No. Call us and we will keep your set packed and ready to collect from the store.</p></details>
+                <details class="rounded-2xl bg-white border-2 border-brand-100 p-5"><summary class="flex min-h-[44px] cursor-pointer items-center font-bold">Where is the store and when is it open?</summary><p class="mt-2 text-slate-600">57-B, Rajendra Nagar, Indore 452012. ${esc(data.hours)}.</p></details>
             </div>
         </section>
 
-        <section class="rounded-3xl bg-amber-600 text-white p-8 text-center">
+        <section class="rounded-3xl bg-brand-600 text-white p-8 text-center">
             <h2 class="text-2xl md:text-3xl font-extrabold">Need anything for ${esc(s.fullName)}?</h2>
-            <p class="mt-2 text-amber-100">Call ${esc(data.phoneDisplay)}, ${esc(data.hours)}.</p>
-            <a href="tel:${data.phone}" data-call="${esc(s.slug)}:bottom" class="mt-5 inline-flex min-h-[52px] items-center justify-center gap-2 rounded-full bg-white px-8 text-lg font-extrabold text-amber-700 hover:bg-amber-50"><i class="fa-solid fa-phone" aria-hidden="true"></i> Call now</a>
+            <p class="mt-2 text-brand-100">Call ${esc(data.phoneDisplay)}, ${esc(data.hours)}.</p>
+            <a href="tel:${data.phone}" data-call="${esc(s.slug)}:bottom" class="mt-5 inline-flex min-h-[52px] items-center justify-center gap-2 rounded-full bg-white px-8 text-lg font-extrabold text-brand-700 hover:bg-brand-50"><i class="fa-solid fa-phone" aria-hidden="true"></i> Call now</a>
         </section>
 
         <section aria-labelledby="other-h">
             <h2 id="other-h" class="text-xl font-extrabold text-slate-800 mb-4">Other schools we stock</h2>
             <div class="flex flex-wrap gap-2">
-                ${others.map((o) => `<a href="${o.slug}.html" class="inline-flex min-h-[44px] items-center rounded-full bg-white border-2 border-amber-100 px-4 font-semibold text-slate-700 hover:border-amber-400">${esc(o.fullName)}</a>`).join('\n                ')}
+                ${others.map((o) => `<a href="${o.slug}.html" class="inline-flex min-h-[44px] items-center rounded-full bg-white border-2 border-brand-100 px-4 font-semibold text-slate-700 hover:border-brand-400">${esc(o.fullName)}</a>`).join('\n                ')}
             </div>
         </section>
     </main>
@@ -161,13 +161,13 @@ function page(s) {
     ${footer}
 
     <!-- Call bar: fixed to the bottom on phones -->
-    <div class="sm:hidden fixed inset-x-0 bottom-0 z-50 grid grid-cols-[1fr_auto] gap-2 border-t border-amber-200 bg-white/95 p-3 backdrop-blur" style="padding-bottom:calc(0.75rem + env(safe-area-inset-bottom,0px))">
-        <a href="tel:${data.phone}" data-call="${esc(s.slug)}:bar" class="flex min-h-[48px] items-center justify-center gap-2 rounded-full bg-amber-600 font-extrabold text-white"><i class="fa-solid fa-phone" aria-hidden="true"></i> Call the store</a>
+    <div class="sm:hidden fixed inset-x-0 bottom-0 z-50 grid grid-cols-[1fr_auto] gap-2 border-t border-brand-200 bg-white/95 p-3 backdrop-blur" style="padding-bottom:calc(0.75rem + env(safe-area-inset-bottom,0px))">
+        <a href="tel:${data.phone}" data-call="${esc(s.slug)}:bar" class="flex min-h-[48px] items-center justify-center gap-2 rounded-full bg-brand-600 font-extrabold text-white"><i class="fa-solid fa-phone" aria-hidden="true"></i> Call the store</a>
         <a href="${esc(wa(`Hello Agrawal Stores, I need ${s.fullName} items for Class `))}" target="_blank" rel="noopener" aria-label="WhatsApp Agrawal Stores" class="flex min-h-[48px] min-w-[48px] items-center justify-center rounded-full bg-[#25D366] text-2xl text-white"><i class="fa-brands fa-whatsapp" aria-hidden="true"></i></a>
     </div>
     <!-- Floating buttons on larger screens -->
     <div class="hidden sm:flex fixed bottom-6 right-6 flex-col gap-4 z-50">
-        <a href="tel:${data.phone}" data-call="${esc(s.slug)}:float" aria-label="Call Agrawal Stores" class="bg-amber-500 hover:bg-amber-600 text-white w-14 h-14 rounded-full flex items-center justify-center shadow-lg"><i class="fa-solid fa-phone text-2xl" aria-hidden="true"></i></a>
+        <a href="tel:${data.phone}" data-call="${esc(s.slug)}:float" aria-label="Call Agrawal Stores" class="bg-brand-500 hover:bg-brand-600 text-white w-14 h-14 rounded-full flex items-center justify-center shadow-lg"><i class="fa-solid fa-phone text-2xl" aria-hidden="true"></i></a>
         <a href="${esc(wa(`Hello Agrawal Stores, I need ${s.fullName} items for Class `))}" target="_blank" rel="noopener" aria-label="WhatsApp Agrawal Stores" class="bg-[#25D366] hover:bg-[#1ebd5a] text-white w-14 h-14 rounded-full flex items-center justify-center shadow-lg"><i class="fa-brands fa-whatsapp text-3xl" aria-hidden="true"></i></a>
     </div>
 
