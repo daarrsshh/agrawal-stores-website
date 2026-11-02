@@ -5,7 +5,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const SITE_URL = 'https://daarrsshh.github.io/agrawal-stores-website';
+const SITE_URL = 'https://agrawalstores.in';
 const data = JSON.parse(readFileSync(path.join(root, 'data/schools.json'), 'utf8'));
 const home = readFileSync(path.join(root, 'index.html'), 'utf8');
 
