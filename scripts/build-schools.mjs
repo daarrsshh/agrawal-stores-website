@@ -5,6 +5,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const SITE_URL = 'https://daarrsshh.github.io/agrawal-stores-website';
 const data = JSON.parse(readFileSync(path.join(root, 'data/schools.json'), 'utf8'));
 const home = readFileSync(path.join(root, 'index.html'), 'utf8');
 
@@ -68,6 +69,7 @@ function page(s) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     ${icon}
     <title>${esc(title)}</title>
+    <link rel="canonical" href="${SITE_URL}/schools/${s.slug}.html">
     <meta name="description" content="${esc(desc)}">
     <meta property="og:title" content="${esc(title)}">
     <meta property="og:description" content="${esc(desc)}">
@@ -183,4 +185,8 @@ function page(s) {
 
 mkdirSync(path.join(root, 'schools'), { recursive: true });
 for (const s of data.schools) writeFileSync(path.join(root, 'schools', `${s.slug}.html`), page(s));
+// Sitemap and robots.txt for Google Search Console.
+const urls = [`${SITE_URL}/`, ...data.schools.map((s) => `${SITE_URL}/schools/${s.slug}.html`)];
+writeFileSync(path.join(root, 'sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.map((u) => `  <url><loc>${u}</loc></url>`).join('\n')}\n</urlset>\n`);
+writeFileSync(path.join(root, 'robots.txt'), `User-agent: *\nAllow: /\nDisallow: /tests/\nDisallow: /scripts/\nDisallow: /data/\n\nSitemap: ${SITE_URL}/sitemap.xml\n`);
 console.log(`Built ${data.schools.length} school pages.`);
