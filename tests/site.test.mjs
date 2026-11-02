@@ -197,7 +197,7 @@ test('tapping a menu item shows the section heading below the sticky bar', async
 
 test('floating call/WhatsApp buttons never cover the last line of the footer', async () => {
   const page = await open(390, 700);
-  await page.evaluate(() => scrollTo(0, document.body.scrollHeight));
+  await page.evaluate(() => { document.documentElement.style.scrollBehavior = 'auto'; scrollTo(0, document.body.scrollHeight); });
   await page.waitForTimeout(200);
   const overlap = await page.evaluate(() => {
     const c = document.querySelector('footer p:last-child').getBoundingClientRect();
