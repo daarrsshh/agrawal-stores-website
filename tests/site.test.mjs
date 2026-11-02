@@ -128,6 +128,7 @@ test('accessibility: alt text, link names, iframe title, heading order', async (
 
 test('no leftover placeholder text', () => {
   const html = readFileSync(path.join(root, 'index.html'), 'utf8').toLowerCase();
+  assert.ok(!html.includes("\\'"), 'stray backslash before an apostrophe');
   for (const bad of ['lorem', 'todo', 'xxx', 'example.com', 'your-phone']) assert.ok(!html.includes(bad), bad);
 });
 

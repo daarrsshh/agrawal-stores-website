@@ -359,11 +359,12 @@
 
             <!-- Map Iframe -->
             <div class="bg-slate-800 p-2 rounded-2xl border border-slate-700 shadow-inner h-64 md:h-80">
-                <a href="https://www.google.com/maps?cid=7134028350108918958" target="_blank" rel="noopener" class="flex h-full w-full flex-col items-center justify-center gap-3 rounded-xl bg-slate-700 px-4 text-center text-white hover:bg-slate-600 transition-colors">
-                    <i class="fa-solid fa-location-dot text-5xl text-amber-500" aria-hidden="true"></i>
-                    <span class="text-xl font-bold">Agrawal Stores on Google Maps</span>
-                    <span class="text-slate-300">Shop No. 2, 57-B, Rajendra Nagar, Indore</span>
-                    <span class="font-semibold text-amber-400">Tap to open the map</span>
+                <a href="https://www.google.com/maps?cid=7134028350108918958" target="_blank" rel="noopener" class="group relative block h-full w-full overflow-hidden rounded-xl">
+                    <img src="../assets/shop-front.jpg" alt="Agrawal Stores shop front: grey front with red अग्रवाल स्टोर्स letters" loading="lazy" class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105">
+                    <span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-950 via-slate-900/80 to-transparent p-4 pt-16 text-left">
+                        <span class="block font-bold text-white">Look for the red अग्रवाल स्टोर्स sign</span>
+                        <span class="block text-sm text-slate-200">Shop No. 2, 57-B, Rajendra Nagar · Tap to open in Google Maps</span>
+                    </span>
                 </a>
             </div>
             <a href="https://www.google.com/maps?cid=7134028350108918958" target="_blank" rel="noopener" class="md:col-start-2 -mt-8 inline-flex items-center justify-center gap-2 rounded-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-3 px-6 transition-colors">Get Directions on Google Maps</a>

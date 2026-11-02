@@ -15,7 +15,8 @@ const wa = (text) => `https://wa.me/${data.phone.replace('+', '')}?text=${encode
 
 // Footer is copied from the home page so address, numbers and map stay in one place.
 const footer = home.slice(home.indexOf('<!-- Location & Footer -->'), home.indexOf('</footer>') + '</footer>'.length)
-  .replace(/pb-44 md:pb-8/, 'pb-36 md:pb-8');
+  .replace(/pb-44 md:pb-8/, 'pb-36 md:pb-8')
+  .replace(/src="assets\//g, 'src="../assets/');
 const head = home.slice(home.indexOf('<script src="https://cdn.tailwindcss.com'), home.indexOf('</head>'));
 const storeLd = home.match(/<script type="application\/ld\+json">.*?<\/script>/s)[0];
 const icon = home.match(/<link rel="icon"[^>]*>/)[0];

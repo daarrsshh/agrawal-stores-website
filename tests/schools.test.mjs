@@ -113,6 +113,13 @@ test('phone tap targets are at least 44px', async () => {
   assert.deepEqual(small, []);
 });
 
+test('every image on the school pages exists', () => {
+  for (const s of data.schools) {
+    const html = readFileSync(path.join(root, 'schools', s.slug + '.html'), 'utf8');
+    for (const m of html.matchAll(/src="\.\.\/(assets\/[^"]+)"/g)) assert.ok(existsSync(path.join(root, m[1])), `${s.slug}: missing ${m[1]}`);
+  }
+});
+
 test('no school page claims official supplier, delivery or prices', () => {
   for (const s of data.schools) {
     const t = readFileSync(path.join(root, 'schools', s.slug + '.html'), 'utf8').toLowerCase();
