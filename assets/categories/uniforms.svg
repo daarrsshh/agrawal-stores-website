@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400" width="600" height="400"><defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFFAF2"/><stop offset="1" stop-color="#F3DCC2"/></linearGradient></defs><rect width="600" height="400" fill="url(#bg)"/><circle cx="540" cy="50" r="95" fill="#E2AE8F" opacity=".35"/><circle cx="60" cy="360" r="115" fill="#B9623F" opacity=".14"/><ellipse cx="300" cy="376" rx="250" ry="13" fill="#6A3223" opacity=".12"/>
+<g stroke="#1D4ED8" stroke-width="3" stroke-linejoin="round">
+<path d="M120 92 L152 70 Q170 98 188 70 L220 92 L248 142 L222 158 L212 138 L212 272 L128 272 L128 138 L118 158 L92 142 Z" fill="#60A5FA"/>
+</g>
+<path d="M152 70 L170 102 L188 70 L176 64 L170 74 L164 64 Z" fill="#fff" stroke="#1D4ED8" stroke-width="2"/>
+<circle cx="170" cy="122" r="3.5" fill="#fff"/><circle cx="170" cy="150" r="3.5" fill="#fff"/><circle cx="170" cy="178" r="3.5" fill="#fff"/>
+<rect x="186" y="128" width="20" height="22" rx="2" fill="#93C5FD" stroke="#1D4ED8" stroke-width="2"/>
+<path d="M128 288 H212 L218 372 H180 L170 316 L160 372 H122 Z" fill="#1E3A8A" stroke="#172554" stroke-width="3" stroke-linejoin="round"/>
+<rect x="128" y="286" width="84" height="11" fill="#0F172A"/><rect x="164" y="286" width="12" height="11" fill="#FBBF24"/>
+<g stroke="#7F1D1D" stroke-width="2">
+<rect x="326" y="326" width="200" height="34" rx="5" fill="#DC2626"/>
+<rect x="340" y="290" width="184" height="34" rx="5" fill="#16A34A" stroke="#14532D"/>
+<rect x="318" y="254" width="196" height="34" rx="5" fill="#2563EB" stroke="#1E3A8A"/></g>
+<g fill="#fff" opacity=".65"><rect x="344" y="338" width="160" height="5" rx="2"/><rect x="358" y="302" width="146" height="5" rx="2"/><rect x="336" y="266" width="150" height="5" rx="2"/></g>
+<rect x="508" y="257" width="4" height="28" fill="#fff" opacity=".7"/>
+<g transform="translate(470 108) rotate(24)"><rect y="-14" width="16" height="14" rx="3" fill="#F472B6"/><rect width="16" height="8" fill="#94A3B8"/><rect y="8" width="16" height="112" fill="#FBBF24"/><polygon points="0,120 16,120 8,144" fill="#FDE68A"/><polygon points="4,136 12,136 8,144" fill="#1E293B"/></g>
+</svg>
