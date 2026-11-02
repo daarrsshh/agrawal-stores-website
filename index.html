@@ -1,65 +1,309 @@
-<!-- Schools We Cover (Horizontal Scroll) -->
-    <section class="py-8 bg-white shadow-sm border-b border-orange-100">
-        <div class="max-w-6xl mx-auto px-4">
-            <h2 class="text-2xl font-bold text-center text-amber-800 mb-6">Schools We Cover</h2>
-            <div class="flex overflow-x-auto gap-6 snap-x snap-mandatory no-scrollbar pb-4 px-2">
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agrawal Stores | Rajendra Nagar, Indore</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        /* Hide scrollbar for Chrome, Safari and Opera */
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        /* Hide scrollbar for IE, Edge and Firefox */
+        .hide-scrollbar {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+    </style>
+</head>
+<body class="bg-amber-50 text-slate-800 antialiased">
+
+    <!-- Top Navigation -->
+    <nav class="bg-amber-600 text-white shadow-md sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <i class="fa-solid fa-store text-2xl"></i>
+                <span class="text-xl font-extrabold tracking-wide">Agrawal Stores</span>
+            </div>
+            <div class="hidden sm:flex items-center gap-6 text-sm font-semibold">
+                <a href="#schools" class="hover:text-amber-200 transition-colors">Schools</a>
+                <a href="#products" class="hover:text-amber-200 transition-colors">Catalog</a>
+                <a href="#story" class="hover:text-amber-200 transition-colors">About Us</a>
+                <a href="#location" class="hover:text-amber-200 transition-colors">Location</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="bg-white border-b-4 border-amber-500 py-16 px-4 text-center shadow-sm relative overflow-hidden">
+        <div class="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-amber-100/50 to-transparent pointer-events-none"></div>
+        
+        <div class="max-w-4xl mx-auto relative z-10">
+            <span class="inline-block py-1 px-3 rounded-full bg-amber-100 text-amber-800 text-sm font-bold tracking-wider mb-4 border border-amber-200 uppercase">
+                Rajendra Nagar's Trusted Family Store
+            </span>
+            <h1 class="text-4xl md:text-6xl font-extrabold text-slate-900 mb-6 leading-tight">
+                Everything from <span class="text-amber-600">School Uniforms</span> to <span class="text-orange-500">Festival Needs</span>
+            </h1>
+            <p class="text-lg md:text-xl text-slate-600 mb-8 font-medium max-w-2xl mx-auto">
+                Your one-stop destination for daily essentials, complete school gear, exquisite gifts, and seasonal decorations. Explore our catalog below and contact us to place your order!
+            </p>
+            
+            <div class="flex flex-col sm:flex-row justify-center gap-4">
+                <a href="tel:+919926504567" class="bg-amber-600 hover:bg-amber-700 text-white text-lg font-bold py-4 px-8 rounded-full shadow-lg transition-transform transform hover:-translate-y-1 flex items-center justify-center gap-2 border-2 border-amber-600">
+                    <i class="fa-solid fa-phone-volume"></i> Call Us Now
+                </a>
+                <a href="https://wa.me/919926504567" target="_blank" class="bg-white hover:bg-green-50 text-green-600 text-lg font-bold py-4 px-8 rounded-full shadow-lg transition-transform transform hover:-translate-y-1 flex items-center justify-center gap-2 border-2 border-green-500">
+                    <i class="fa-brands fa-whatsapp text-xl"></i> WhatsApp Us
+                </a>
+            </div>
+            <p class="text-sm text-slate-500 mt-5 font-medium"><i class="fa-solid fa-truck-fast mr-1 text-amber-500"></i> Easy pick-up at our Rajendra Nagar store</p>
+        </div>
+    </header>
+
+    <!-- Schools We Cover Section -->
+    <section id="schools" class="py-10 bg-amber-50/50 border-b border-amber-100">
+        <div class="max-w-7xl mx-auto px-4">
+            <h2 class="text-2xl md:text-3xl font-extrabold text-center text-slate-800 mb-8">Schools We Cover</h2>
+            
+            <!-- Scrollable Container -->
+            <div class="flex overflow-x-auto gap-6 md:gap-10 pb-4 hide-scrollbar snap-x snap-mandatory items-center justify-start md:justify-center">
                 
-                <!-- School 1 -->
-                <div class="snap-center shrink-0 flex flex-col items-center group w-24">
-                    <div class="w-20 h-20 rounded-full border-2 border-amber-300 p-1 overflow-hidden shadow-sm group-hover:shadow-md transition-shadow group-hover:scale-105 duration-200 bg-white flex items-center justify-center">
-                        <img src="assets/sns.png" alt="St. Norbert" class="w-full h-full object-contain rounded-full">
+                <!-- School 1: St. Norbert -->
+                <div class="snap-center shrink-0 flex flex-col items-center gap-3 w-28 group cursor-pointer">
+                    <div class="w-24 h-24 rounded-full border-[3px] border-amber-300 p-1 bg-white shadow-md group-hover:scale-110 group-hover:border-amber-500 transition-all duration-300">
+                        <img src="image_8e6101.png" alt="St. Norbert" class="w-full h-full object-contain rounded-full" onerror="this.src='https://placehold.co/100x100/fffbeb/d97706?text=School'">
                     </div>
-                    <span class="mt-2 text-xs font-semibold text-center text-gray-700">St. Norbert</span>
+                    <span class="text-sm font-bold text-slate-700 text-center leading-tight">St. Norbert</span>
                 </div>
 
-                <!-- School 2 -->
-                <div class="snap-center shrink-0 flex flex-col items-center group w-24">
-                    <div class="w-20 h-20 rounded-full border-2 border-amber-300 p-1 overflow-hidden shadow-sm group-hover:shadow-md transition-shadow group-hover:scale-105 duration-200 bg-white flex items-center justify-center">
-                        <img src="assets/joseph.png" alt="St. Joseph" class="w-full h-full object-contain rounded-full">
+                <!-- School 2: St. Joseph -->
+                <div class="snap-center shrink-0 flex flex-col items-center gap-3 w-28 group cursor-pointer">
+                    <div class="w-24 h-24 rounded-full border-[3px] border-amber-300 p-1 bg-white shadow-md group-hover:scale-110 group-hover:border-amber-500 transition-all duration-300">
+                        <img src="image_8e60a3.png" alt="St. Joseph" class="w-full h-full object-contain rounded-full" onerror="this.src='https://placehold.co/100x100/fffbeb/d97706?text=School'">
                     </div>
-                    <span class="mt-2 text-xs font-semibold text-center text-gray-700">St. Joseph</span>
+                    <span class="text-sm font-bold text-slate-700 text-center leading-tight">St. Joseph</span>
                 </div>
 
-                <!-- School 3 -->
-                <div class="snap-center shrink-0 flex flex-col items-center group w-24">
-                    <div class="w-20 h-20 rounded-full border-2 border-amber-300 p-1 overflow-hidden shadow-sm group-hover:shadow-md transition-shadow group-hover:scale-105 duration-200 bg-white flex items-center justify-center">
-                        <img src="assets/cdps.png" alt="Chameli Devi" class="w-full h-full object-contain rounded-full">
+                <!-- School 3: Chameli Devi -->
+                <div class="snap-center shrink-0 flex flex-col items-center gap-3 w-28 group cursor-pointer">
+                    <div class="w-24 h-24 rounded-full border-[3px] border-amber-300 p-1 bg-white shadow-md group-hover:scale-110 group-hover:border-amber-500 transition-all duration-300">
+                        <img src="image_8e5d9f.png" alt="Chameli Devi" class="w-full h-full object-contain rounded-full" onerror="this.src='https://placehold.co/100x100/fffbeb/d97706?text=School'">
                     </div>
-                    <span class="mt-2 text-xs font-semibold text-center text-gray-700">Chameli Devi</span>
+                    <span class="text-sm font-bold text-slate-700 text-center leading-tight">Chameli Devi</span>
                 </div>
 
-                <!-- School 4 -->
-                <div class="snap-center shrink-0 flex flex-col items-center group w-24">
-                    <div class="w-20 h-20 rounded-full border-2 border-amber-300 p-1 overflow-hidden shadow-sm group-hover:shadow-md transition-shadow group-hover:scale-105 duration-200 bg-white flex items-center justify-center">
-                        <img src="assets/lasagesse.png" alt="La Sagesse" class="w-full h-full object-contain rounded-full">
+                <!-- School 4: La Sagesse -->
+                <div class="snap-center shrink-0 flex flex-col items-center gap-3 w-28 group cursor-pointer">
+                    <div class="w-24 h-24 rounded-full border-[3px] border-amber-300 p-1 bg-white shadow-md group-hover:scale-110 group-hover:border-amber-500 transition-all duration-300">
+                        <img src="image_8e5d5c.png" alt="La Sagesse" class="w-full h-full object-contain rounded-full" onerror="this.src='https://placehold.co/100x100/fffbeb/d97706?text=School'">
                     </div>
-                    <span class="mt-2 text-xs font-semibold text-center text-gray-700">La Sagesse</span>
+                    <span class="text-sm font-bold text-slate-700 text-center leading-tight">La Sagesse</span>
                 </div>
 
-                <!-- School 5 -->
-                <div class="snap-center shrink-0 flex flex-col items-center group w-24">
-                    <div class="w-20 h-20 rounded-full border-2 border-amber-300 p-1 overflow-hidden shadow-sm group-hover:shadow-md transition-shadow group-hover:scale-105 duration-200 bg-white flex items-center justify-center">
-                        <img src="assets/aa.png" alt="Alpine Academy" class="w-full h-full object-contain rounded-full">
+                <!-- School 5: Alpine Academy -->
+                <div class="snap-center shrink-0 flex flex-col items-center gap-3 w-28 group cursor-pointer">
+                    <div class="w-24 h-24 rounded-full border-[3px] border-amber-300 p-1 bg-white shadow-md group-hover:scale-110 group-hover:border-amber-500 transition-all duration-300">
+                        <img src="image_8e5cc2.png" alt="Alpine Academy" class="w-full h-full object-contain rounded-full" onerror="this.src='https://placehold.co/100x100/fffbeb/d97706?text=School'">
                     </div>
-                    <span class="mt-2 text-xs font-semibold text-center text-gray-700">Alpine Academy</span>
+                    <span class="text-sm font-bold text-slate-700 text-center leading-tight">Alpine Academy</span>
                 </div>
 
-                <!-- School 6 -->
-                <div class="snap-center shrink-0 flex flex-col items-center group w-24">
-                    <div class="w-20 h-20 rounded-full border-2 border-amber-300 p-1 overflow-hidden shadow-sm group-hover:shadow-md transition-shadow group-hover:scale-105 duration-200 bg-white flex items-center justify-center">
-                        <img src="assets/xavier.png" alt="St Xavier" class="w-full h-full object-contain rounded-full">
+                <!-- School 6: St Xavier -->
+                <div class="snap-center shrink-0 flex flex-col items-center gap-3 w-28 group cursor-pointer">
+                    <div class="w-24 h-24 rounded-full border-[3px] border-amber-300 p-1 bg-white shadow-md group-hover:scale-110 group-hover:border-amber-500 transition-all duration-300">
+                        <img src="image_8e59d8.png" alt="St Xavier" class="w-full h-full object-contain rounded-full" onerror="this.src='https://placehold.co/100x100/fffbeb/d97706?text=School'">
                     </div>
-                    <span class="mt-2 text-xs font-semibold text-center text-gray-700">St Xavier</span>
+                    <span class="text-sm font-bold text-slate-700 text-center leading-tight">St Xavier</span>
                 </div>
 
-                <!-- School 7 -->
-                <div class="snap-center shrink-0 flex flex-col items-center group w-24">
-                    <div class="w-20 h-20 rounded-full border-2 border-amber-300 p-1 overflow-hidden shadow-sm group-hover:shadow-md transition-shadow group-hover:scale-105 duration-200 bg-white flex items-center justify-center">
-                        <img src="assets/ips.png" alt="IPS College" class="w-full h-full object-contain rounded-full">
+                <!-- School 7: IPS College -->
+                <div class="snap-center shrink-0 flex flex-col items-center gap-3 w-28 group cursor-pointer">
+                    <div class="w-24 h-24 rounded-full border-[3px] border-amber-300 p-1 bg-white shadow-md group-hover:scale-110 group-hover:border-amber-500 transition-all duration-300">
+                        <img src="image_8e5983.png" alt="IPS College" class="w-full h-full object-contain rounded-full" onerror="this.src='https://placehold.co/100x100/fffbeb/d97706?text=School'">
                     </div>
-                    <span class="mt-2 text-xs font-semibold text-center text-gray-700">IPS College</span>
+                    <span class="text-sm font-bold text-slate-700 text-center leading-tight">IPS College</span>
                 </div>
 
             </div>
         </div>
     </section>
+
+    <!-- Products Grid Section -->
+    <section id="products" class="max-w-7xl mx-auto py-16 px-4">
+        <div class="text-center mb-12">
+            <h2 class="text-3xl font-extrabold text-slate-800 mb-2 inline-block border-b-4 border-amber-400 pb-2">Our Diverse Catalog</h2>
+            <p class="text-slate-600 mt-4 text-lg">Browse our wide range of items. Spot something you need? Call or WhatsApp us to check availability and pricing!</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            
+            <!-- Category: School Uniforms & Books -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border-2 border-amber-100 hover:border-amber-300 hover:shadow-xl transition-all flex flex-col group">
+                <div class="overflow-hidden rounded-xl mb-5">
+                    <img src="https://placehold.co/600x400/fffbeb/d97706?text=School+Uniforms+%26+Books" alt="School Uniforms" class="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300">
+                </div>
+                <h3 class="font-extrabold text-2xl text-slate-800 mb-2">School Uniforms & Books</h3>
+                <p class="text-slate-600 mb-4 flex-grow text-sm leading-relaxed">
+                    <strong>Uniforms:</strong> Daily & winter wear (blazers, sweaters, etc.).<br>
+                    <strong>Books:</strong> Complete course books for all classes.<br>
+                </p>
+                <a href="https://wa.me/919926504567" target="_blank" class="w-full text-center bg-amber-50 hover:bg-amber-100 text-amber-800 font-bold py-3.5 rounded-xl transition-colors border-2 border-amber-200">
+                    <i class="fa-brands fa-whatsapp text-lg mr-1 text-green-600"></i> Check Availability
+                </a>
+            </div>
+
+            <!-- Category: School Essentials & Stationery -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border-2 border-amber-100 hover:border-amber-300 hover:shadow-xl transition-all flex flex-col group">
+                <div class="overflow-hidden rounded-xl mb-5">
+                    <img src="https://placehold.co/600x400/fffbeb/d97706?text=Essentials+%26+Stationery" alt="Stationery" class="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300">
+                </div>
+                <h3 class="font-extrabold text-2xl text-slate-800 mb-2">Essentials & Stationery</h3>
+                <p class="text-slate-600 mb-4 flex-grow text-sm leading-relaxed">
+                    Gear up for success with our premium quality school bags, comfortable school shoes, durable tiffins, and insulated water bottles. We also stock a massive variety of complete stationery sets, notebooks, art supplies, and project materials.
+                </p>
+                <a href="https://wa.me/919926504567" target="_blank" class="w-full text-center bg-amber-50 hover:bg-amber-100 text-amber-800 font-bold py-3.5 rounded-xl transition-colors border-2 border-amber-200">
+                    <i class="fa-brands fa-whatsapp text-lg mr-1 text-green-600"></i> Check Availability
+                </a>
+            </div>
+
+            <!-- Category: Gifts & Toys -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border-2 border-amber-100 hover:border-amber-300 hover:shadow-xl transition-all flex flex-col group">
+                <div class="overflow-hidden rounded-xl mb-5">
+                    <img src="https://placehold.co/600x400/fffbeb/d97706?text=Gifts+%26+Toys" alt="Gifts and Toys" class="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300">
+                </div>
+                <h3 class="font-extrabold text-2xl text-slate-800 mb-2">Gifts & Toys</h3>
+                <p class="text-slate-600 mb-4 flex-grow text-sm leading-relaxed">
+                    Find the perfect present for any occasion! We carry beautiful wall scenery, elegant photo frames, divine statues, delicate artificial flowers, and unique keychains. Plus, a fun collection of toys and soft toys for kids of all ages.
+                </p>
+                <a href="https://wa.me/919926504567" target="_blank" class="w-full text-center bg-amber-50 hover:bg-amber-100 text-amber-800 font-bold py-3.5 rounded-xl transition-colors border-2 border-amber-200">
+                    <i class="fa-brands fa-whatsapp text-lg mr-1 text-green-600"></i> Check Availability
+                </a>
+            </div>
+
+            <!-- Category: Sports Equipment -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border-2 border-amber-100 hover:border-amber-300 hover:shadow-xl transition-all flex flex-col group">
+                <div class="overflow-hidden rounded-xl mb-5">
+                    <img src="https://placehold.co/600x400/fffbeb/d97706?text=Sports+Equipment" alt="Sports Equipment" class="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300">
+                </div>
+                <h3 class="font-extrabold text-2xl text-slate-800 mb-2">Sports Equipment</h3>
+                <p class="text-slate-600 mb-4 flex-grow text-sm leading-relaxed">
+                    Stay active and healthy! We supply top-quality sports gear for local athletes and students. Whether you need cricket bats, balls, footballs, or various indoor and outdoor gaming accessories, we have you covered.
+                </p>
+                <a href="https://wa.me/919926504567" target="_blank" class="w-full text-center bg-amber-50 hover:bg-amber-100 text-amber-800 font-bold py-3.5 rounded-xl transition-colors border-2 border-amber-200">
+                    <i class="fa-brands fa-whatsapp text-lg mr-1 text-green-600"></i> Check Availability
+                </a>
+            </div>
+
+            <!-- Category: Lifestyle & Accessories -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border-2 border-amber-100 hover:border-amber-300 hover:shadow-xl transition-all flex flex-col group">
+                <div class="overflow-hidden rounded-xl mb-5">
+                    <img src="https://placehold.co/600x400/fffbeb/d97706?text=Lifestyle+%26+Accessories" alt="Lifestyle and Accessories" class="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300">
+                </div>
+                <h3 class="font-extrabold text-2xl text-slate-800 mb-2">Lifestyle & Accessories</h3>
+                <p class="text-slate-600 mb-4 flex-grow text-sm leading-relaxed">
+                    Add a touch of style to your daily look. Explore our elegant collection of artificial jewellery. We also stock premium quality men's and women's belts, stylish wallets, and a refreshing range of branded perfumes and deodorants.
+                </p>
+                <a href="https://wa.me/919926504567" target="_blank" class="w-full text-center bg-amber-50 hover:bg-amber-100 text-amber-800 font-bold py-3.5 rounded-xl transition-colors border-2 border-amber-200">
+                    <i class="fa-brands fa-whatsapp text-lg mr-1 text-green-600"></i> Check Availability
+                </a>
+            </div>
+
+            <!-- Category: Seasonal & Festival Needs -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border-2 border-amber-100 hover:border-amber-300 hover:shadow-xl transition-all flex flex-col group">
+                <div class="overflow-hidden rounded-xl mb-5">
+                    <img src="https://placehold.co/600x400/fffbeb/d97706?text=Seasonal+%26+Festival" alt="Seasonal and Festival" class="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300">
+                </div>
+                <h3 class="font-extrabold text-2xl text-slate-800 mb-2">Seasonal & Festival</h3>
+                <p class="text-slate-600 mb-4 flex-grow text-sm leading-relaxed">
+                    <strong>Monsoon:</strong> Umbrellas, raincoats.<br>
+                    <strong>Winter:</strong> Caps, gloves, warm socks.<br>
+                    <strong>Festivals:</strong> Holi colors, Christmas items, and complete Diwali decorations including light series, lanterns, electric diyas, and bamboo trees.
+                </p>
+                <a href="https://wa.me/919926504567" target="_blank" class="w-full text-center bg-amber-50 hover:bg-amber-100 text-amber-800 font-bold py-3.5 rounded-xl transition-colors border-2 border-amber-200">
+                    <i class="fa-brands fa-whatsapp text-lg mr-1 text-green-600"></i> Check Availability
+                </a>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Our Story Section -->
+    <section id="story" class="py-16 px-4 bg-orange-50/80 border-t border-b border-orange-100">
+        <div class="max-w-4xl mx-auto text-center">
+            <h2 class="text-3xl font-extrabold text-slate-800 mb-4 inline-block border-b-4 border-amber-400 pb-2">Our Commitment</h2>
+            <p class="text-lg text-slate-700 leading-relaxed mt-4 font-medium">
+                At <strong class="text-amber-800">Agrawal Stores</strong>, we take pride in being more than just a shop; we are a part of the Rajendra Nagar family. Managed by <strong>Manoj ji</strong>, our mission has always been to provide our community with reliable, high-quality products. From getting your children ready for the new school year to brightening up your home during Diwali, we are here to serve you with a smile and the utmost dedication.
+            </p>
+        </div>
+    </section>
+
+    <!-- Location & Footer -->
+    <footer id="location" class="bg-slate-900 text-slate-300 pt-16 pb-8 border-t-8 border-amber-600">
+        <div class="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-2 gap-12 mb-12">
+            
+            <!-- Store Info -->
+            <div>
+                <div class="flex items-center gap-3 mb-6 text-white">
+                    <i class="fa-solid fa-store text-3xl text-amber-500"></i>
+                    <span class="text-3xl font-extrabold tracking-wide">Agrawal Stores</span>
+                </div>
+                <p class="text-slate-400 mb-6 max-w-sm">Rajendra Nagar's most trusted shop for all your school, daily, and festival needs. Visit us today!</p>
+                
+                <ul class="space-y-4 text-lg font-medium">
+                    <li class="flex items-start gap-3">
+                        <i class="fa-solid fa-location-dot mt-1 text-amber-500 w-6"></i>
+                        <span>Rajendra Nagar, Indore,<br>Madhya Pradesh</span>
+                    </li>
+                    <li class="flex items-center gap-3">
+                        <i class="fa-solid fa-clock text-amber-500 w-6"></i>
+                        <span>Open Daily: 10:00 AM to 9:00 PM</span>
+                    </li>
+                    <li class="flex items-center gap-3">
+                        <i class="fa-solid fa-phone text-amber-500 w-6"></i>
+                        <a href="tel:+919926504567" class="hover:text-amber-400 transition-colors">+91 99265 04567</a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Map Iframe -->
+            <div class="bg-slate-800 p-2 rounded-2xl border border-slate-700 shadow-inner h-64 md:h-80">
+                <iframe 
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3681.4426514782046!2d75.8277259!3d22.6745585!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3962fd230e7c5ab3%3A0xb33bc7b7cb347ec9!2sRajendra%20Nagar%2C%20Indore%2C%20Madhya%20Pradesh!5e0!3m2!1sen!2sin!4v1700000000000!5m2!1sen!2sin" 
+                    width="100%" 
+                    height="100%" 
+                    style="border:0; border-radius: 0.75rem;" 
+                    allowfullscreen="" 
+                    loading="lazy" 
+                    referrerpolicy="no-referrer-when-downgrade">
+                </iframe>
+            </div>
+
+        </div>
+        
+        <div class="text-center text-slate-500 text-sm border-t border-slate-800 pt-8 font-medium">
+            <p>&copy; 2026 Agrawal Stores, Indore. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Sticky Floating Action Buttons -->
+    <div class="fixed bottom-6 right-6 flex flex-col gap-4 z-50">
+        <!-- Phone Button -->
+        <a href="tel:+919926504567" class="bg-amber-500 hover:bg-amber-600 text-white w-14 h-14 rounded-full flex items-center justify-center shadow-[0_10px_25px_rgba(245,158,11,0.5)] transition-transform transform hover:scale-110 border-2 border-white" title="Call Us">
+            <i class="fa-solid fa-phone-flip text-2xl"></i>
+        </a>
+        <!-- WhatsApp Button -->
+        <a href="https://wa.me/919926504567" target="_blank" class="bg-[#25D366] hover:bg-[#1ebd5a] text-white w-14 h-14 rounded-full flex items-center justify-center shadow-[0_10px_25px_rgba(37,211,102,0.5)] transition-transform transform hover:scale-110 border-2 border-white" title="WhatsApp Us">
+            <i class="fa-brands fa-whatsapp text-3xl"></i>
+        </a>
+    </div>
+
+</body>
+</html>
