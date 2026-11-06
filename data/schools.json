@@ -4,14 +4,79 @@
   "phone": "+919926504567",
   "phoneDisplay": "99265 04567",
   "hours": "10 AM – 9 PM",
-  "classes": ["Nursery", "LKG", "UKG", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"],
+  "classes": [
+    "Nursery",
+    "LKG",
+    "UKG",
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "8",
+    "9",
+    "10",
+    "11",
+    "12"
+  ],
   "schools": [
-    { "slug": "st-norbert", "name": "St. Norbert", "fullName": "St. Norbert School", "logo": "sns.png", "uniformPhotos": [], "books": {} },
-    { "slug": "st-joseph", "name": "St. Joseph", "fullName": "St. Joseph School", "logo": "joseph.png", "uniformPhotos": [], "books": {} },
-    { "slug": "chameli-devi-public-school", "name": "Chameli Devi Public School", "fullName": "Chameli Devi Public School", "logo": "cdps.png", "uniformPhotos": [], "books": {} },
-    { "slug": "la-sagesse", "name": "La Sagesse", "fullName": "La Sagesse School", "logo": "lasagesse.png", "uniformPhotos": [], "books": {} },
-    { "slug": "alpine-academy", "name": "Alpine Academy", "fullName": "Alpine Academy", "logo": "aa.png", "uniformPhotos": [], "books": {} },
-    { "slug": "st-xavier", "name": "St Xavier", "fullName": "St Xavier School", "logo": "xavier.png", "uniformPhotos": [], "books": {} },
-    { "slug": "ips", "name": "IPS", "fullName": "IPS", "logo": "ips.png", "uniformPhotos": [], "books": {} }
+    {
+      "slug": "st-norbert",
+      "name": "St. Norbert",
+      "fullName": "St. Norbert School",
+      "logo": "sns.webp",
+      "uniformPhotos": [],
+      "books": {}
+    },
+    {
+      "slug": "st-joseph",
+      "name": "St. Joseph",
+      "fullName": "St. Joseph School",
+      "logo": "joseph.webp",
+      "uniformPhotos": [],
+      "books": {}
+    },
+    {
+      "slug": "chameli-devi-public-school",
+      "name": "Chameli Devi Public School",
+      "fullName": "Chameli Devi Public School",
+      "logo": "cdps.webp",
+      "uniformPhotos": [],
+      "books": {}
+    },
+    {
+      "slug": "la-sagesse",
+      "name": "La Sagesse",
+      "fullName": "La Sagesse School",
+      "logo": "lasagesse.webp",
+      "uniformPhotos": [],
+      "books": {}
+    },
+    {
+      "slug": "alpine-academy",
+      "name": "Alpine Academy",
+      "fullName": "Alpine Academy",
+      "logo": "aa.webp",
+      "uniformPhotos": [],
+      "books": {}
+    },
+    {
+      "slug": "st-xavier",
+      "name": "St Xavier",
+      "fullName": "St Xavier School",
+      "logo": "xavier.webp",
+      "uniformPhotos": [],
+      "books": {}
+    },
+    {
+      "slug": "ips",
+      "name": "IPS",
+      "fullName": "IPS",
+      "logo": "ips.webp",
+      "uniformPhotos": [],
+      "books": {}
+    }
   ]
 }

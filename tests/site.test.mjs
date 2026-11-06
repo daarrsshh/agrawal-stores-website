@@ -214,7 +214,7 @@ test('a missing logo falls back once and does not loop forever', async () => {
   const page = await browser.newPage({ viewport: { width: 390, height: 800 } });
   let fallbackTries = 0;
   await page.route(/^https?:/, (r) => { if (r.request().url().includes('placehold.co')) fallbackTries++; return r.abort(); });
-  const html = readFileSync(path.join(root, 'index.html'), 'utf8').replace('assets/sns.png', 'assets/does-not-exist.png');
+  const html = readFileSync(path.join(root, 'index.html'), 'utf8').replace('assets/sns.webp', 'assets/does-not-exist.webp');
   await page.setContent(html, { waitUntil: 'domcontentloaded' });
   await page.waitForTimeout(1500);
   assert.ok(fallbackTries <= 2, `fallback image requested ${fallbackTries} times: it keeps retrying`);
