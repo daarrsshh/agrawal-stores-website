@@ -25,8 +25,8 @@ const icon = home.match(/<link rel="icon"[^>]*>/)[0];
 
 const callBtn = (label, track, extra = '') =>
   `<a href="tel:${data.phone}" data-call="${esc(track)}" class="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-full bg-brand-600 hover:bg-brand-700 text-white font-bold px-6 transition-colors ${extra}"><svg class="ic" viewBox="0 0 512 512" aria-hidden="true"><use href="#i-phone"/></svg> ${esc(label)}</a>`;
-const waBtn = (label, text, extra = '') =>
-  `<a href="${esc(wa(text))}" target="_blank" rel="noopener" class="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-full border-2 border-green-500 bg-white hover:bg-green-50 text-green-700 font-bold px-6 transition-colors ${extra}"><svg class="ic" viewBox="0 0 448 512" aria-hidden="true"><use href="#i-whatsapp"/></svg> ${esc(label)}</a>`;
+const waBtn = (label, text, extra = '', aria = '') =>
+  `<a${aria ? ` aria-label="${esc(aria)}"` : ''} href="${esc(wa(text))}" target="_blank" rel="noopener" class="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-full border-2 border-green-500 bg-white hover:bg-green-50 text-green-700 font-bold px-6 transition-colors ${extra}"><svg class="ic" viewBox="0 0 448 512" aria-hidden="true"><use href="#i-whatsapp"/></svg> ${esc(label)}</a>`;
 
 // Use the optimised .webp copy of a uniform photo when it exists (see npm run images).
 const webFile = (slug, f) => { const w = f.replace(/\.(jpe?g|png)$/i, '.webp'); return existsSync(path.join(root, 'assets/uniforms', slug, w)) ? w : f; };
@@ -51,7 +51,7 @@ function page(s) {
             ${list}
             <div class="grid gap-3 sm:grid-cols-2">
               ${callBtn(`Call for ${classLabel(c)} set price`, `${s.slug}:books:${c}`, 'w-full')}
-              ${waBtn('WhatsApp', `Hello Agrawal Stores, I need the ${s.fullName} ${classLabel(c)} book set.`, 'w-full')}
+              ${waBtn('WhatsApp', `Hello Agrawal Stores, I need the ${s.fullName} ${classLabel(c)} book set.`, 'w-full', `WhatsApp us about the ${classLabel(c)} book set`)}
             </div>
           </div>
         </details>`;
@@ -96,7 +96,7 @@ function page(s) {
     <header class="bg-white border-b-4 border-brand-500 py-10 px-4 text-center">
         <div class="max-w-3xl mx-auto">
             <div class="mx-auto mb-5 w-28 h-28 rounded-full border-[3px] border-brand-300 p-1 bg-white shadow-md flex items-center justify-center">
-                <img src="../assets/${esc(s.logo)}" alt="${esc(s.fullName)} logo" class="max-w-[70%] max-h-[70%] object-contain">
+                <img src="../assets/${esc(s.logo)}" width="${s.logoW || 160}" height="${s.logoH || 160}" alt="${esc(s.fullName)} logo" class="max-w-[70%] max-h-[70%] object-contain">
             </div>
             <h1 class="text-3xl md:text-5xl font-extrabold text-slate-900 leading-tight break-words">${esc(s.fullName)} <span class="text-brand-600">Uniform &amp; Books</span></h1>
             <p class="mt-4 text-lg text-slate-600">Daily and winter uniforms, and ${esc(data.session)} book sets for every class, at Agrawal Stores, Rajendra Nagar, Indore.</p>
@@ -168,15 +168,15 @@ function page(s) {
     ${footer}
 
     <!-- Call bar: fixed to the bottom on phones -->
-    <div class="sm:hidden fixed inset-x-0 bottom-0 z-50 grid grid-cols-[1fr_auto] gap-2 border-t border-brand-200 bg-white/95 p-3 backdrop-blur" style="padding-bottom:calc(0.75rem + env(safe-area-inset-bottom,0px))">
+    <aside aria-label="Call or WhatsApp" class="sm:hidden fixed inset-x-0 bottom-0 z-50 grid grid-cols-[1fr_auto] gap-2 border-t border-brand-200 bg-white/95 p-3 backdrop-blur" style="padding-bottom:calc(0.75rem + env(safe-area-inset-bottom,0px))">
         <a href="tel:${data.phone}" data-call="${esc(s.slug)}:bar" class="flex min-h-[48px] items-center justify-center gap-2 rounded-full bg-brand-600 font-extrabold text-white"><svg class="ic" viewBox="0 0 512 512" aria-hidden="true"><use href="#i-phone"/></svg> Call the store</a>
         <a href="${esc(wa(`Hello Agrawal Stores, I need ${s.fullName} items for Class `))}" target="_blank" rel="noopener" aria-label="WhatsApp Agrawal Stores" class="flex min-h-[48px] min-w-[48px] items-center justify-center rounded-full bg-[#25D366] text-2xl text-white"><svg class="ic" viewBox="0 0 448 512" aria-hidden="true"><use href="#i-whatsapp"/></svg></a>
-    </div>
+    </aside>
     <!-- Floating buttons on larger screens -->
-    <div class="hidden sm:flex fixed bottom-6 right-6 flex-col gap-4 z-50">
+    <aside aria-label="Call or WhatsApp" class="hidden sm:flex fixed bottom-6 right-6 flex-col gap-4 z-50">
         <a href="tel:${data.phone}" data-call="${esc(s.slug)}:float" aria-label="Call Agrawal Stores" class="bg-brand-500 hover:bg-brand-600 text-white w-14 h-14 rounded-full flex items-center justify-center shadow-lg"><svg class="ic text-2xl" viewBox="0 0 512 512" aria-hidden="true"><use href="#i-phone"/></svg></a>
         <a href="${esc(wa(`Hello Agrawal Stores, I need ${s.fullName} items for Class `))}" target="_blank" rel="noopener" aria-label="WhatsApp Agrawal Stores" class="bg-[#25D366] hover:bg-[#1ebd5a] text-white w-14 h-14 rounded-full flex items-center justify-center shadow-lg"><svg class="ic text-3xl" viewBox="0 0 448 512" aria-hidden="true"><use href="#i-whatsapp"/></svg></a>
-    </div>
+    </aside>
 
     <script>
         // Tapping a class button opens that class's book list.
