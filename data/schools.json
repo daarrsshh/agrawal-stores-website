@@ -28,7 +28,9 @@
       "fullName": "St. Norbert School",
       "logo": "sns.webp",
       "uniformPhotos": [],
-      "books": {}
+      "books": {},
+      "logoW": 168,
+      "logoH": 168
     },
     {
       "slug": "st-joseph",
@@ -36,7 +38,9 @@
       "fullName": "St. Joseph School",
       "logo": "joseph.webp",
       "uniformPhotos": [],
-      "books": {}
+      "books": {},
+      "logoW": 200,
+      "logoH": 200
     },
     {
       "slug": "chameli-devi-public-school",
@@ -44,7 +48,9 @@
       "fullName": "Chameli Devi Public School",
       "logo": "cdps.webp",
       "uniformPhotos": [],
-      "books": {}
+      "books": {},
+      "logoW": 112,
+      "logoH": 200
     },
     {
       "slug": "la-sagesse",
@@ -52,7 +58,9 @@
       "fullName": "La Sagesse School",
       "logo": "lasagesse.webp",
       "uniformPhotos": [],
-      "books": {}
+      "books": {},
+      "logoW": 200,
+      "logoH": 133
     },
     {
       "slug": "alpine-academy",
@@ -60,7 +68,9 @@
       "fullName": "Alpine Academy",
       "logo": "aa.webp",
       "uniformPhotos": [],
-      "books": {}
+      "books": {},
+      "logoW": 200,
+      "logoH": 199
     },
     {
       "slug": "st-xavier",
@@ -68,7 +78,9 @@
       "fullName": "St Xavier School",
       "logo": "xavier.webp",
       "uniformPhotos": [],
-      "books": {}
+      "books": {},
+      "logoW": 200,
+      "logoH": 188
     },
     {
       "slug": "ips",
@@ -76,7 +88,9 @@
       "fullName": "IPS",
       "logo": "ips.webp",
       "uniformPhotos": [],
-      "books": {}
+      "books": {},
+      "logoW": 200,
+      "logoH": 121
     }
   ]
 }
