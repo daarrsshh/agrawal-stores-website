@@ -1,6 +1,6 @@
 // Builds one page per school into schools/<slug>.html from data/schools.json.
 // Run: node scripts/build-schools.mjs
-import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -18,14 +18,18 @@ const wa = (text) => `https://wa.me/${data.phone.replace('+', '')}?text=${encode
 const footer = home.slice(home.indexOf('<!-- Location & Footer -->'), home.indexOf('</footer>') + '</footer>'.length)
   .replace(/pb-44 md:pb-8/, 'pb-36 md:pb-8')
   .replace(/src="assets\//g, 'src="../assets/');
-const head = home.slice(home.indexOf('<script src="https://cdn.tailwindcss.com'), home.indexOf('</head>'));
+const head = home.slice(home.indexOf('<!-- Styles are pre-built'), home.indexOf('</head>')).replace(/href="assets\//g, 'href="../assets/');
+const sprite = home.slice(home.indexOf('<!-- Icons: Font Awesome'), home.indexOf('</svg>', home.indexOf('id="icon-sprite"')) + 6);
 const storeLd = home.match(/<script type="application\/ld\+json">.*?<\/script>/s)[0];
 const icon = home.match(/<link rel="icon"[^>]*>/)[0];
 
 const callBtn = (label, track, extra = '') =>
-  `<a href="tel:${data.phone}" data-call="${esc(track)}" class="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-full bg-brand-600 hover:bg-brand-700 text-white font-bold px-6 transition-colors ${extra}"><i class="fa-solid fa-phone" aria-hidden="true"></i> ${esc(label)}</a>`;
+  `<a href="tel:${data.phone}" data-call="${esc(track)}" class="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-full bg-brand-600 hover:bg-brand-700 text-white font-bold px-6 transition-colors ${extra}"><svg class="ic" viewBox="0 0 512 512" aria-hidden="true"><use href="#i-phone"/></svg> ${esc(label)}</a>`;
 const waBtn = (label, text, extra = '') =>
-  `<a href="${esc(wa(text))}" target="_blank" rel="noopener" class="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-full border-2 border-green-500 bg-white hover:bg-green-50 text-green-700 font-bold px-6 transition-colors ${extra}"><i class="fa-brands fa-whatsapp" aria-hidden="true"></i> ${esc(label)}</a>`;
+  `<a href="${esc(wa(text))}" target="_blank" rel="noopener" class="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-full border-2 border-green-500 bg-white hover:bg-green-50 text-green-700 font-bold px-6 transition-colors ${extra}"><svg class="ic" viewBox="0 0 448 512" aria-hidden="true"><use href="#i-whatsapp"/></svg> ${esc(label)}</a>`;
+
+// Use the optimised .webp copy of a uniform photo when it exists (see npm run images).
+const webFile = (slug, f) => { const w = f.replace(/\.(jpe?g|png)$/i, '.webp'); return existsSync(path.join(root, 'assets/uniforms', slug, w)) ? w : f; };
 
 function page(s) {
   const title = `${s.fullName} Uniform & Books | Agrawal Stores, Rajendra Nagar, Indore`;
@@ -41,7 +45,7 @@ function page(s) {
         <details id="${classId(c)}" class="scroll-mt-28 sm:scroll-mt-20 group rounded-2xl border-2 border-brand-100 bg-white open:border-brand-300">
           <summary class="flex min-h-[56px] cursor-pointer list-none items-center justify-between gap-3 px-5 font-extrabold text-lg text-slate-800">
             <span>${esc(classLabel(c))} books${books.length ? ` <span class="ml-1 text-sm font-semibold text-slate-500">${books.length} items</span>` : ''}</span>
-            <i class="fa-solid fa-chevron-down text-brand-600 transition-transform group-open:rotate-180" aria-hidden="true"></i>
+            <svg class="ic text-brand-600 transition-transform group-open:rotate-180" viewBox="0 0 512 512" aria-hidden="true"><use href="#i-chevron-down"/></svg>
           </summary>
           <div class="px-5 pb-5 space-y-4">
             ${list}
@@ -54,7 +58,7 @@ function page(s) {
   }).join('');
 
   const photos = s.uniformPhotos.length
-    ? `<div class="grid grid-cols-2 md:grid-cols-3 gap-4">${s.uniformPhotos.map((p) => `<figure class="overflow-hidden rounded-2xl border-2 border-brand-100 bg-white"><img src="../assets/uniforms/${esc(s.slug)}/${esc(p.file)}" alt="${esc(s.fullName + ' ' + p.caption)}" loading="lazy" class="w-full aspect-[4/5] object-cover"><figcaption class="p-3 text-sm font-bold text-slate-700">${esc(p.caption)}</figcaption></figure>`).join('')}</div>`
+    ? `<div class="grid grid-cols-2 md:grid-cols-3 gap-4">${s.uniformPhotos.map((p) => `<figure class="overflow-hidden rounded-2xl border-2 border-brand-100 bg-white"><img src="../assets/uniforms/${esc(s.slug)}/${esc(webFile(s.slug, p.file))}" alt="${esc(s.fullName + ' ' + p.caption)}" loading="lazy" class="w-full aspect-[4/5] object-cover"><figcaption class="p-3 text-sm font-bold text-slate-700">${esc(p.caption)}</figcaption></figure>`).join('')}</div>`
     : `<ul class="grid gap-3 sm:grid-cols-2">
             <li class="rounded-2xl border-2 border-brand-100 bg-white p-5"><p class="font-extrabold text-slate-800">Daily uniform</p><p class="text-slate-600">For all classes, boys and girls.</p></li>
             <li class="rounded-2xl border-2 border-brand-100 bg-white p-5"><p class="font-extrabold text-slate-800">Winter wear</p><p class="text-slate-600">Blazers and sweaters.</p></li>
@@ -77,11 +81,12 @@ function page(s) {
     ${head.trim()}
 </head>
 <body class="bg-brand-50 text-slate-800 antialiased">
+    ${sprite}
 
     <nav class="bg-brand-600 text-white shadow-md sticky top-0 z-40">
         <div class="max-w-5xl mx-auto px-4 py-3 flex justify-between items-center gap-3">
             <a href="../index.html" class="flex items-center gap-2 min-h-[44px]">
-                <i class="fa-solid fa-store text-2xl" aria-hidden="true"></i>
+                <svg class="ic text-2xl" viewBox="0 0 576 512" aria-hidden="true"><use href="#i-store"/></svg>
                 <span class="text-xl font-extrabold tracking-wide">Agrawal Stores</span>
             </a>
             <a href="../index.html#schools" class="inline-flex min-h-[44px] items-center rounded-full bg-brand-700 px-4 text-sm font-semibold">All schools</a>
@@ -149,7 +154,7 @@ function page(s) {
         <section class="rounded-3xl bg-brand-600 text-white p-8 text-center">
             <h2 class="text-2xl md:text-3xl font-extrabold">Need anything for ${esc(s.fullName)}?</h2>
             <p class="mt-2 text-brand-100">Call ${esc(data.phoneDisplay)}, ${esc(data.hours)}.</p>
-            <a href="tel:${data.phone}" data-call="${esc(s.slug)}:bottom" class="mt-5 inline-flex min-h-[52px] items-center justify-center gap-2 rounded-full bg-white px-8 text-lg font-extrabold text-brand-700 hover:bg-brand-50"><i class="fa-solid fa-phone" aria-hidden="true"></i> Call now</a>
+            <a href="tel:${data.phone}" data-call="${esc(s.slug)}:bottom" class="mt-5 inline-flex min-h-[52px] items-center justify-center gap-2 rounded-full bg-white px-8 text-lg font-extrabold text-brand-700 hover:bg-brand-50"><svg class="ic" viewBox="0 0 512 512" aria-hidden="true"><use href="#i-phone"/></svg> Call now</a>
         </section>
 
         <section aria-labelledby="other-h">
@@ -164,13 +169,13 @@ function page(s) {
 
     <!-- Call bar: fixed to the bottom on phones -->
     <div class="sm:hidden fixed inset-x-0 bottom-0 z-50 grid grid-cols-[1fr_auto] gap-2 border-t border-brand-200 bg-white/95 p-3 backdrop-blur" style="padding-bottom:calc(0.75rem + env(safe-area-inset-bottom,0px))">
-        <a href="tel:${data.phone}" data-call="${esc(s.slug)}:bar" class="flex min-h-[48px] items-center justify-center gap-2 rounded-full bg-brand-600 font-extrabold text-white"><i class="fa-solid fa-phone" aria-hidden="true"></i> Call the store</a>
-        <a href="${esc(wa(`Hello Agrawal Stores, I need ${s.fullName} items for Class `))}" target="_blank" rel="noopener" aria-label="WhatsApp Agrawal Stores" class="flex min-h-[48px] min-w-[48px] items-center justify-center rounded-full bg-[#25D366] text-2xl text-white"><i class="fa-brands fa-whatsapp" aria-hidden="true"></i></a>
+        <a href="tel:${data.phone}" data-call="${esc(s.slug)}:bar" class="flex min-h-[48px] items-center justify-center gap-2 rounded-full bg-brand-600 font-extrabold text-white"><svg class="ic" viewBox="0 0 512 512" aria-hidden="true"><use href="#i-phone"/></svg> Call the store</a>
+        <a href="${esc(wa(`Hello Agrawal Stores, I need ${s.fullName} items for Class `))}" target="_blank" rel="noopener" aria-label="WhatsApp Agrawal Stores" class="flex min-h-[48px] min-w-[48px] items-center justify-center rounded-full bg-[#25D366] text-2xl text-white"><svg class="ic" viewBox="0 0 448 512" aria-hidden="true"><use href="#i-whatsapp"/></svg></a>
     </div>
     <!-- Floating buttons on larger screens -->
     <div class="hidden sm:flex fixed bottom-6 right-6 flex-col gap-4 z-50">
-        <a href="tel:${data.phone}" data-call="${esc(s.slug)}:float" aria-label="Call Agrawal Stores" class="bg-brand-500 hover:bg-brand-600 text-white w-14 h-14 rounded-full flex items-center justify-center shadow-lg"><i class="fa-solid fa-phone text-2xl" aria-hidden="true"></i></a>
-        <a href="${esc(wa(`Hello Agrawal Stores, I need ${s.fullName} items for Class `))}" target="_blank" rel="noopener" aria-label="WhatsApp Agrawal Stores" class="bg-[#25D366] hover:bg-[#1ebd5a] text-white w-14 h-14 rounded-full flex items-center justify-center shadow-lg"><i class="fa-brands fa-whatsapp text-3xl" aria-hidden="true"></i></a>
+        <a href="tel:${data.phone}" data-call="${esc(s.slug)}:float" aria-label="Call Agrawal Stores" class="bg-brand-500 hover:bg-brand-600 text-white w-14 h-14 rounded-full flex items-center justify-center shadow-lg"><svg class="ic text-2xl" viewBox="0 0 512 512" aria-hidden="true"><use href="#i-phone"/></svg></a>
+        <a href="${esc(wa(`Hello Agrawal Stores, I need ${s.fullName} items for Class `))}" target="_blank" rel="noopener" aria-label="WhatsApp Agrawal Stores" class="bg-[#25D366] hover:bg-[#1ebd5a] text-white w-14 h-14 rounded-full flex items-center justify-center shadow-lg"><svg class="ic text-3xl" viewBox="0 0 448 512" aria-hidden="true"><use href="#i-whatsapp"/></svg></a>
     </div>
 
     <script>

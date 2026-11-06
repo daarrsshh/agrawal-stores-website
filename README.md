@@ -34,4 +34,27 @@ To add uniform photos, put them in `assets/uniforms/<school-slug>/` and list the
 "uniformPhotos": [ { "file": "daily-boys.jpg", "caption": "Daily uniform (boys)" } ]
 ```
 
-Then run `node scripts/build-schools.mjs` and commit. `npm test` checks that the pages are up to date.
+Then run `npm run build` and commit. `npm test` checks that the pages are up to date.
+
+## Building
+
+The site is plain HTML with pre-built styles, so it loads fast and GitHub Pages can serve it as is.
+
+```
+npm install          # once
+npm run build        # rebuilds school pages and assets/site.css
+npm run images       # shrinks new uniform photos to .webp
+npm test
+```
+
+- Styles come from Tailwind classes in `index.html` and `scripts/build-schools.mjs`. After changing classes, run `npm run build` and commit `assets/site.css`.
+- The brand colour is set once in `tailwind.config.js`.
+- Icons are inline SVGs from Font Awesome Free (CC BY 4.0), defined once at the top of each page.
+
+### Adding uniform photos
+
+1. Put the phone photos in `assets/uniforms/<school-slug>/`, for example `assets/uniforms/st-norbert/daily-boys.jpg`.
+2. List them in `data/schools.json` under that school's `uniformPhotos` (use the .jpg name).
+3. Run `npm run images`, then `npm run build`, then `npm test`, and commit everything including the new `.webp` files.
+
+Don't photograph children wearing the uniform; use hangers, folded sets or a mannequin.
