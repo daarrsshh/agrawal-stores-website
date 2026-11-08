@@ -19,7 +19,7 @@ There are two shared Google Drive folders:
 | St Xavier | st-xavier |
 | IPS | ips |
 | Annie Besant | annie-besant |
-| Medicaps | no page yet: process the photo, keep it in assets/uniforms/medicaps/ (not referenced), tell the owner |
+| Medicaps | medicaps |
 | Common (many schools) | file name lists the schools (e.g. navy-blazer_alpine_joseph.jpg); add to each named school |
 
 ## Shop section folder -> data/sections.json

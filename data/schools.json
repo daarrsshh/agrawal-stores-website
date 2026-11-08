@@ -372,6 +372,21 @@
       "books": {},
       "logoW": 243,
       "logoH": 243
+    },
+    {
+      "slug": "medicaps",
+      "name": "Medi-Caps",
+      "fullName": "Medi-Caps International School",
+      "logo": "medicaps.webp",
+      "uniformPhotos": [
+        {
+          "file": "navy-blazer.webp",
+          "caption": "Navy blue blazer (winter)"
+        }
+      ],
+      "books": {},
+      "logoW": 300,
+      "logoH": 300
     }
   ]
 }
