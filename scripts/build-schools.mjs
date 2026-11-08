@@ -180,7 +180,7 @@ ${guide}
         <section aria-labelledby="other-h">
             <h2 id="other-h" class="text-xl font-extrabold text-slate-800 mb-4">Other schools we stock</h2>
             <div class="flex flex-wrap gap-2">
-                ${others.map((o) => `<a href="${o.slug}.html" class="inline-flex min-h-[44px] items-center rounded-full bg-white border-2 border-brand-100 px-4 font-semibold text-slate-700 hover:border-brand-400">${esc(o.fullName)}</a>`).join('\n                ')}
+                ${others.map((o) => `<a href="${o.slug}.html" class="inline-flex min-h-[48px] items-center gap-2 rounded-full bg-white border-2 border-brand-100 py-1 pl-1 pr-4 font-semibold text-slate-700 hover:border-brand-400"><span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white"><img src="../assets/${esc(o.logo)}" width="${o.logoW || 160}" height="${o.logoH || 160}" alt="" loading="lazy" class="max-h-8 max-w-8 object-contain"></span>${esc(o.fullName)}</a>`).join('\n                ')}
             </div>
         </section>
     </main>
@@ -213,7 +213,7 @@ mkdirSync(path.join(root, 'schools'), { recursive: true });
 for (const s of data.schools) writeFileSync(path.join(root, 'schools', `${s.slug}.html`), page(s));
 // Sitemap and robots.txt for Google Search Console.
 const sectionData = JSON.parse(readFileSync(path.join(root, 'data/sections.json'), 'utf8')).sections;
-const urls = [`${SITE_URL}/`, ...data.schools.map((s) => `${SITE_URL}/schools/${s.slug}.html`), ...sectionData.filter((x) => x.photos.length).map((x) => `${SITE_URL}/sections/${x.slug}.html`)];
+const urls = [`${SITE_URL}/`, ...data.schools.map((s) => `${SITE_URL}/schools/${s.slug}.html`), ...sectionData.map((x) => `${SITE_URL}/sections/${x.slug}.html`)];
 writeFileSync(path.join(root, 'sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.map((u) => `  <url><loc>${u}</loc></url>`).join('\n')}\n</urlset>\n`);
 writeFileSync(path.join(root, 'robots.txt'), `User-agent: *\nAllow: /\nDisallow: /tests/\nDisallow: /scripts/\nDisallow: /data/\n\nSitemap: ${SITE_URL}/sitemap.xml\n`);
 console.log(`Built ${data.schools.length} school pages.`);

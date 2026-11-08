@@ -27,15 +27,16 @@ test('building twice gives the same pages (no doubled links on the home page)', 
   const second = readFileSync(path.join(dir, 'index.html'), 'utf8');
   assert.equal(first, second);
   const slug0 = sec.sections[0].slug;
-  assert.equal(second.split(`<a href="sections/${slug0}.html" class="mt-2`).length - 1, 1, 'exactly one See photos link');
+  assert.equal(second.split(`<a href="sections/${slug0}.html" aria-label="See photos`).length - 1, 1, 'exactly one See photos link');
   assert.equal(second.split(`<a href="sections/${slug0}.html" data-sec`).length - 1, 1, 'card picture wrapped in a link exactly once');
   assert.equal(second.split(`href="sections/${sec.sections[0].slug}.html"`).length - 1, 2, 'picture + text link');
-  // and removing the photos removes the page and the link again
+  // removing the photos keeps the page, and the link goes back to "See what we stock"
   sec.sections[0].photos = [];
   writeFileSync(path.join(dir, 'data/sections.json'), JSON.stringify(sec));
   build(dir);
-  assert.ok(!readFileSync(path.join(dir, 'index.html'), 'utf8').includes(`sections/${sec.sections[0].slug}.html`));
-  assert.ok(!existsSync(path.join(dir, 'sections', `${sec.sections[0].slug}.html`)));
+  const third = readFileSync(path.join(dir, 'index.html'), 'utf8');
+  assert.ok(third.includes(`aria-label="See what we stock: `) && !third.includes(`See photos: ${sec.sections[0].title.replace(/&/g, '&amp;')}`));
+  assert.ok(readFileSync(path.join(dir, 'sections', `${sec.sections[0].slug}.html`), 'utf8').includes('Photos coming soon'));
 });
 
 test('section photos are grouped under their Drive subfolder headings, in order', () => {

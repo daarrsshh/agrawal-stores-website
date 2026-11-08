@@ -1,5 +1,5 @@
 // Builds a photo page for each shop section (Gifts & Toys, Stationery, ...) from data/sections.json.
-// A section gets a page, a home-page "See photos" link and a sitemap entry only once it has photos.
+// Every section gets a page with what we stock; photos appear on it as staff add them.
 // Run through: node scripts/build-schools.mjs  (it calls this file)
 import { readFileSync, writeFileSync, mkdirSync, rmSync, existsSync } from 'node:fs';
 import path from 'node:path';
@@ -25,7 +25,7 @@ const icon = home.match(/<link rel="icon"[^>]*>/)[0];
 const call = (track, extra = '') => `<a href="tel:${schools.phone}" data-call="${esc(track)}" class="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-full bg-brand-600 hover:bg-brand-700 text-white font-bold px-6 transition-colors ${extra}"><svg class="ic" viewBox="0 0 512 512" aria-hidden="true"><use href="#i-phone"/></svg> Call ${esc(schools.phoneDisplay)}</a>`;
 const wab = (text) => `<a href="${esc(wa(text))}" target="_blank" rel="noopener" class="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-full border-2 border-green-500 bg-white hover:bg-green-50 text-green-700 font-bold px-6 transition-colors"><svg class="ic" viewBox="0 0 448 512" aria-hidden="true"><use href="#i-whatsapp"/></svg> WhatsApp</a>`;
 
-const live = sections.filter((s) => s.photos.length);
+const live = sections;
 
 function page(s) {
   const title = `${s.title} | Agrawal Stores, Rajendra Nagar, Indore`;
@@ -77,9 +77,14 @@ function page(s) {
     </header>
 
     <main class="max-w-5xl mx-auto px-4 py-10 space-y-14">
+        <section aria-labelledby="stock-h">
+            <h2 id="stock-h" class="text-2xl font-extrabold text-slate-800 mb-4">What we stock</h2>
+            <ul class="grid gap-x-8 gap-y-2 sm:grid-cols-2 list-disc pl-6 marker:text-brand-500 text-lg text-slate-700">${(s.items || []).map((i) => `<li>${esc(i)}</li>`).join('')}</ul>
+        </section>
+
         <section aria-labelledby="photos-h">
-            <h2 id="photos-h" class="text-2xl font-extrabold text-slate-800 mb-4">A few things we stock</h2>
-            <div>${grid}</div>
+            <h2 id="photos-h" class="text-2xl font-extrabold text-slate-800 mb-4">${s.photos.length ? 'A few things we stock' : 'Photos coming soon'}</h2>
+            ${s.photos.length ? `<div>${grid}</div>` : `<p class="text-slate-600">We are adding photos of this section. Until then, call or WhatsApp us and we will tell you what we have.</p>`}
             <div class="mt-5 rounded-2xl bg-brand-100 p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <p class="font-bold text-brand-900">Looking for something specific? Call and we will tell you what we have.</p>
                 ${call(`${s.slug}:ask`)}
@@ -116,8 +121,8 @@ if (live.length) { mkdirSync(dir, { recursive: true }); for (const s of live) wr
 
 // Home page: show a "See photos" link in a section's card once that section has a page.
 for (const s of sections) {
-  const link = s.photos.length
-    ? `<br><a href="sections/${s.slug}.html" class="mt-2 inline-flex min-h-[44px] items-center gap-1 font-bold text-brand-700 underline underline-offset-4">See photos <svg class="ic" viewBox="0 0 448 512" aria-hidden="true"><use href="#i-arrow-right"/></svg></a>` : '';
+  // The link stretches over the whole card (after:inset-0), so tapping anywhere on the card opens the page.
+  const link = `<br><a href="sections/${s.slug}.html" aria-label="${s.photos.length ? 'See photos' : 'See what we stock'}: ${esc(s.title)}" class="mt-2 inline-flex min-h-[44px] items-center gap-1 font-bold text-brand-700 underline underline-offset-4 after:absolute after:inset-0 after:rounded-2xl after:content-['']">${s.photos.length ? 'See photos' : 'See what we stock'} <svg class="ic" viewBox="0 0 448 512" aria-hidden="true"><use href="#i-arrow-right"/></svg></a>`;
   const re = new RegExp(`<!--sec:${s.slug}-->[\\s\\S]*?<!--/sec:${s.slug}-->`);
   if (!re.test(home)) throw new Error(`index.html is missing the marker for ${s.slug}`);
   home = home.replace(re, `<!--sec:${s.slug}-->${link}<!--/sec:${s.slug}-->`);
@@ -126,7 +131,7 @@ for (const s of sections) {
   const m = home.match(ri);
   if (!m) throw new Error(`index.html is missing the picture marker for ${s.slug}`);
   const inner = m[1].replace(/^<a [^>]*data-sec[^>]*>/, '').replace(/<\/a>$/, '');
-  const wrapped = s.photos.length ? `<a href="sections/${s.slug}.html" data-sec aria-label="See photos: ${esc(s.title)}" class="block">${inner}</a>` : inner;
+  const wrapped = true ? `<a href="sections/${s.slug}.html" data-sec aria-label="${s.photos.length ? 'See photos' : 'See what we stock'}: ${esc(s.title)}" class="block">${inner}</a>` : inner;
   home = home.replace(ri, () => `<!--secimg:${s.slug}-->${wrapped}<!--/secimg:${s.slug}-->`);
 }
 writeFileSync(path.join(root, 'index.html'), home);
