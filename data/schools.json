@@ -341,6 +341,25 @@
       "books": {},
       "logoW": 200,
       "logoH": 121
+    },
+    {
+      "slug": "annie-besant",
+      "name": "Annie Besant",
+      "fullName": "Annie Besant School",
+      "logo": "annie-besant.webp",
+      "uniformPhotos": [
+        {
+          "file": "pink-shirt.webp",
+          "caption": "Pink check half-sleeve shirt"
+        },
+        {
+          "file": "blue-pink-stripe-elastic-pants.webp",
+          "caption": "Navy striped elastic-waist trousers"
+        }
+      ],
+      "books": {},
+      "logoW": 243,
+      "logoH": 243
     }
   ]
 }
