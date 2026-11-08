@@ -95,3 +95,35 @@ test('data/processed-photos.json is valid and has no duplicates', () => {
   assert.ok(Array.isArray(p.processedDriveFileIds));
   assert.equal(new Set(p.processedDriveFileIds).size, p.processedDriveFileIds.length);
 });
+
+test('uniform photos sit under Daily, House & sports, Winter headings in that order', () => {
+  const ORDER = ['Daily wear', 'House &amp; sports wear', 'Winter wear'];
+  for (const s of data.schools) {
+    const groups = new Set(s.uniformPhotos.map((p) => p.group || 'Daily wear'));
+    const html = readFileSync(path.join(root, 'schools', `${s.slug}.html`), 'utf8');
+    const sec = html.slice(html.indexOf('id="uniforms"'), html.indexOf('id="books"'));
+    const heads = [...sec.matchAll(/<h3[^>]*>([^<]*)<\/h3>/g)].map((m) => m[1]);
+    if (groups.size < 2) { assert.deepEqual(heads, [], `${s.slug}: no headings for a single group`); continue; }
+    assert.deepEqual(heads, ORDER.filter((o) => groups.has(o.replace('&amp;', '&'))), `${s.slug} headings`);
+    for (const p of s.uniformPhotos) {
+      assert.ok(['Daily wear', 'House & sports wear', 'Winter wear'].includes(p.group), `${s.slug}/${p.file}: unknown group "${p.group}"`);
+      if (/sweater|blazer/i.test(p.caption)) assert.equal(p.group, 'Winter wear', `${p.caption} should be Winter wear`);
+    }
+  }
+});
+
+test('uniform guide: shown only for schools that have one, every block has items', () => {
+  for (const s of data.schools) {
+    const html = readFileSync(path.join(root, 'schools', `${s.slug}.html`), 'utf8');
+    if (!s.guide || !s.guide.length) { assert.ok(!html.includes('id="guide"'), `${s.slug}: no guide section`); continue; }
+    assert.ok(html.includes('id="guide"'), `${s.slug}: guide section`);
+    for (const g of s.guide) { assert.ok(g.title && g.items.length, `${s.slug}: ${g.title}`); assert.ok(html.includes(`>${g.title.replace(/&/g, '&amp;')}</h3>`)); }
+  }
+});
+
+test('every school page has a Hindi line marked lang="hi"', () => {
+  for (const s of data.schools) {
+    const html = readFileSync(path.join(root, 'schools', `${s.slug}.html`), 'utf8');
+    assert.match(html, /<p lang="hi"[^>]*>[^<]*यूनिफॉर्म और किताबें/);
+  }
+});
