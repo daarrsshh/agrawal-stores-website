@@ -57,12 +57,29 @@ function page(s) {
         </details>`;
   }).join('');
 
+  const fig = (p) => `<figure class="overflow-hidden rounded-2xl border-2 border-brand-100 bg-white"><img src="../assets/uniforms/${esc(s.slug)}/${esc(webFile(s.slug, p.file))}" alt="${esc(s.fullName + ' ' + p.caption)}" width="1000" height="1250" loading="lazy" decoding="async" class="w-full aspect-[4/5] object-cover"><figcaption class="p-3 text-sm font-bold text-slate-700">${esc(p.caption)}</figcaption></figure>`;
+  // Photos are shown under fixed headings so long pages are easy to scan on a phone.
+  const ORDER = ['Daily wear', 'House & sports wear', 'Winter wear'];
+  const groups = [];
+  for (const p of s.uniformPhotos) { const g = p.group || 'Daily wear'; let e = groups.find((x) => x.name === g); if (!e) groups.push(e = { name: g, items: [] }); e.items.push(p); }
+  groups.sort((a, b) => (ORDER.indexOf(a.name) + 1 || 99) - (ORDER.indexOf(b.name) + 1 || 99));
   const photos = s.uniformPhotos.length
-    ? `<div class="grid grid-cols-2 md:grid-cols-3 gap-4">${s.uniformPhotos.map((p) => `<figure class="overflow-hidden rounded-2xl border-2 border-brand-100 bg-white"><img src="../assets/uniforms/${esc(s.slug)}/${esc(webFile(s.slug, p.file))}" alt="${esc(s.fullName + ' ' + p.caption)}" width="1000" height="1250" loading="lazy" decoding="async" class="w-full aspect-[4/5] object-cover"><figcaption class="p-3 text-sm font-bold text-slate-700">${esc(p.caption)}</figcaption></figure>`).join('')}</div>`
+    ? groups.map((g) => `${groups.length > 1 ? `<h3 class="mt-8 first:mt-0 mb-3 text-xl font-extrabold text-slate-800">${esc(g.name)}</h3>` : ''}<div class="grid grid-cols-2 md:grid-cols-3 gap-4">${g.items.map(fig).join('')}</div>`).join('\n            ')
     : `<ul class="grid gap-3 sm:grid-cols-2">
             <li class="rounded-2xl border-2 border-brand-100 bg-white p-5"><p class="font-extrabold text-slate-800">Daily uniform</p><p class="text-slate-600">For all classes, boys and girls.</p></li>
             <li class="rounded-2xl border-2 border-brand-100 bg-white p-5"><p class="font-extrabold text-slate-800">Winter wear</p><p class="text-slate-600">Blazers and sweaters.</p></li>
           </ul>`;
+  // Uniform guide: what each class wears, taken from the school's own published list.
+  const guide = (s.guide || []).length
+    ? `<section id="guide" aria-labelledby="guide-h" class="scroll-mt-28 sm:scroll-mt-20">
+            <h2 id="guide-h" class="text-2xl font-extrabold text-slate-800 mb-1">What your child needs</h2>
+            <p class="text-slate-600 mb-5">The ${esc(s.fullName)} uniform by class, as the school lists it. Schools sometimes change details, so check the latest circular, or just call us.</p>
+            <div class="grid gap-4 md:grid-cols-2">${s.guide.map((g) => `
+                <div class="rounded-2xl border-2 border-brand-100 bg-white p-5"><h3 class="font-extrabold text-lg text-slate-800 mb-2">${esc(g.title)}</h3><ul class="list-disc pl-5 space-y-1 text-slate-700">${g.items.map((i) => `<li>${esc(i)}</li>`).join('')}</ul></div>`).join('')}
+            </div>
+        </section>
+`
+    : '';
 
 
   return `<!DOCTYPE html>
@@ -100,6 +117,7 @@ function page(s) {
             </div>
             <h1 class="text-3xl md:text-5xl font-extrabold text-slate-900 leading-tight break-words">${esc(s.fullName)} <span class="text-brand-600">Uniform &amp; Books</span></h1>
             <p class="mt-4 text-lg text-slate-600">Daily and winter uniforms, and ${esc(data.session)} book sets for every class, at Agrawal Stores, Rajendra Nagar, Indore.</p>
+            <p lang="hi" class="mt-2 text-base font-semibold text-brand-700">${esc(s.fullName)} की यूनिफॉर्म और किताबें, अग्रवाल स्टोर्स, राजेंद्र नगर, इंदौर</p>
             <div class="mt-6 flex flex-col sm:flex-row justify-center gap-3">
                 ${callBtn(`Call ${data.phoneDisplay}`, `${s.slug}:top`, 'text-lg')}
                 ${waBtn('WhatsApp', `Hello Agrawal Stores, I need ${s.fullName} items for Class `)}
@@ -117,6 +135,7 @@ function page(s) {
             </div>
         </section>
 
+${guide}
         <section id="uniforms" aria-labelledby="uniforms-h" class="scroll-mt-28 sm:scroll-mt-20">
             <h2 id="uniforms-h" class="text-2xl font-extrabold text-slate-800 mb-4">${esc(s.fullName)} uniforms</h2>
             ${photos}

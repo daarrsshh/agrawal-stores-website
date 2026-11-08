@@ -30,60 +30,120 @@
       "uniformPhotos": [
         {
           "file": "blue-house.webp",
-          "caption": "Blue house T-shirt"
+          "caption": "Blue house T-shirt",
+          "group": "House & sports wear"
         },
         {
           "file": "green-house.webp",
-          "caption": "Green house T-shirt"
+          "caption": "Green house T-shirt",
+          "group": "House & sports wear"
         },
         {
           "file": "red-house.webp",
-          "caption": "Red house T-shirt"
+          "caption": "Red house T-shirt",
+          "group": "House & sports wear"
         },
         {
           "file": "yellow-house.webp",
-          "caption": "Yellow house T-shirt"
+          "caption": "Yellow house T-shirt",
+          "group": "House & sports wear"
         },
         {
           "file": "light-grey-shirt.webp",
-          "caption": "Light grey half-sleeve shirt"
+          "caption": "Light grey half-sleeve shirt",
+          "group": "Daily wear"
         },
         {
           "file": "blue-check-shirt.webp",
-          "caption": "Blue and white check half-sleeve shirt"
+          "caption": "Blue and white check half-sleeve shirt",
+          "group": "Daily wear"
         },
         {
           "file": "white-elastic-pants.webp",
-          "caption": "White elastic-waist trousers"
+          "caption": "White elastic-waist trousers",
+          "group": "Daily wear"
         },
         {
           "file": "blue-elastic-pants.webp",
-          "caption": "Royal blue elastic-waist pants"
+          "caption": "Royal blue elastic-waist pants",
+          "group": "Daily wear"
         },
         {
           "file": "pink-elastic-pants.webp",
-          "caption": "Pink elastic-waist pants"
+          "caption": "Pink elastic-waist pants",
+          "group": "Daily wear"
         },
         {
           "file": "grey-blazer.webp",
-          "caption": "Grey blazer (winter)"
+          "caption": "Grey blazer",
+          "group": "Winter wear"
         },
         {
           "file": "grey-sweater.webp",
-          "caption": "Grey sweater (winter)"
+          "caption": "Grey sweater",
+          "group": "Winter wear"
         },
         {
           "file": "navy-blue-sweater.webp",
-          "caption": "Navy blue sweater (winter)"
+          "caption": "Navy blue sweater",
+          "group": "Winter wear"
         },
         {
           "file": "red-sweater.webp",
-          "caption": "Maroon sweater (winter)"
+          "caption": "Maroon sweater",
+          "group": "Winter wear"
         }
       ],
       "books": {},
       "logoW": 168,
-      "logoH": 168
+      "logoH": 168,
+      "guide": [
+        {
+          "title": "Nursery",
+          "items": [
+            "Boys: pink checked shirt, pink trousers and pink bow",
+            "Girls: pink checked frock with black cycling shorts",
+            "Maroon socks, black Velcro shoes",
+            "Winter: maroon V-neck sweater with the school emblem"
+          ]
+        },
+        {
+          "title": "KG I and KG II",
+          "items": [
+            "Boys: navy checked shirt, navy trousers and navy bow",
+            "Girls: navy checked frock with black cycling shorts",
+            "Navy socks, black Velcro shoes",
+            "Winter: navy V-neck sweater with the school emblem"
+          ]
+        },
+        {
+          "title": "Classes I to V",
+          "items": [
+            "Light grey shirt with steel grey trousers (boys) or steel grey tunic and slacks (girls)",
+            "School tie and belt, grey socks, black shoes",
+            "Wednesday and Saturday: house T-shirt with white lower that has the house-colour stripe",
+            "Winter: grey V-neck sweater with the school emblem"
+          ]
+        },
+        {
+          "title": "Classes VI to VIII",
+          "items": [
+            "Light grey shirt with steel grey trousers (boys) or steel grey tunic (girls)",
+            "School tie and belt, grey socks, black shoes",
+            "Sports: house T-shirt with white trousers (boys) or white skirt (girls)",
+            "Winter: steel grey blazer with the school emblem"
+          ]
+        },
+        {
+          "title": "Classes IX to XII",
+          "items": [
+            "Boys: light grey shirt and steel grey trousers, tie and belt",
+            "Girls: light grey kameez, steel grey salwar and grey dupatta",
+            "Sports: house T-shirt with white trousers (boys) or white salwar suit (girls)",
+            "Winter: steel grey blazer with the school emblem"
+          ]
+        }
+      ]
     },
     {
       "slug": "st-joseph",
@@ -93,92 +153,157 @@
       "uniformPhotos": [
         {
           "file": "blue-house.webp",
-          "caption": "Blue house T-shirt"
+          "caption": "Blue house T-shirt",
+          "group": "House & sports wear"
         },
         {
           "file": "green-house.webp",
-          "caption": "Green house T-shirt"
+          "caption": "Green house T-shirt",
+          "group": "House & sports wear"
         },
         {
           "file": "red-house.webp",
-          "caption": "Red house T-shirt"
+          "caption": "Red house T-shirt",
+          "group": "House & sports wear"
         },
         {
           "file": "yellow-house.webp",
-          "caption": "Yellow house T-shirt"
+          "caption": "Yellow house T-shirt",
+          "group": "House & sports wear"
         },
         {
           "file": "20261107181346.webp",
-          "caption": "Navy track jacket, red house"
+          "caption": "Navy track jacket, red house",
+          "group": "House & sports wear"
         },
         {
           "file": "20261107181438.webp",
-          "caption": "Navy track jacket, green house"
+          "caption": "Navy track jacket, green house",
+          "group": "House & sports wear"
         },
         {
           "file": "20261107181535.webp",
-          "caption": "Navy track jacket, blue house"
+          "caption": "Navy track jacket, blue house",
+          "group": "House & sports wear"
         },
         {
           "file": "20261107181624.webp",
-          "caption": "Navy track jacket, yellow house"
+          "caption": "Navy track jacket, yellow house",
+          "group": "House & sports wear"
         },
         {
           "file": "navy-blue-stripe-lower.webp",
-          "caption": "Navy track pants, blue stripes"
+          "caption": "Navy track pants, blue stripes",
+          "group": "House & sports wear"
         },
         {
           "file": "navy-red-stripe-lower.webp",
-          "caption": "Navy track pants, red stripes"
+          "caption": "Navy track pants, red stripes",
+          "group": "House & sports wear"
         },
         {
           "file": "navy-yellow-stripe-lower.webp",
-          "caption": "Navy track pants, yellow stripes"
+          "caption": "Navy track pants, yellow stripes",
+          "group": "House & sports wear"
         },
         {
           "file": "white-blue-stripe-lower.webp",
-          "caption": "White house-wear pants, blue stripes"
+          "caption": "White house-wear pants, blue stripes",
+          "group": "House & sports wear"
         },
         {
           "file": "white-red-stripe-lower.webp",
-          "caption": "White house-wear pants, red stripes"
+          "caption": "White house-wear pants, red stripes",
+          "group": "House & sports wear"
         },
         {
           "file": "sky-blue-shirt-1.webp",
-          "caption": "Sky blue half-sleeve shirt"
+          "caption": "Sky blue half-sleeve shirt",
+          "group": "Daily wear"
         },
         {
           "file": "sky-blue-shirt-2.webp",
-          "caption": "Sky blue half-sleeve shirt (second view)"
+          "caption": "Sky blue half-sleeve shirt (second view)",
+          "group": "Daily wear"
         },
         {
           "file": "sky-blue-shirt-3.webp",
-          "caption": "Sky blue half-sleeve shirt (light shade)"
+          "caption": "Sky blue half-sleeve shirt (light shade)",
+          "group": "Daily wear"
         },
         {
           "file": "raymond-blue-elastic-pants.webp",
-          "caption": "Navy blue elastic-waist trousers"
+          "caption": "Navy blue elastic-waist trousers",
+          "group": "Daily wear"
         },
         {
           "file": "pink-shorts.webp",
-          "caption": "Pink elastic-waist pants (pre-primary)"
+          "caption": "Pink elastic-waist pants (pre-primary)",
+          "group": "Daily wear"
         },
         {
           "file": "navy-blazer.webp",
-          "caption": "Navy blue blazer (winter)"
+          "caption": "Navy blue blazer",
+          "group": "Winter wear"
         },
         {
           "file": "navy-blue-sweater.webp",
-          "caption": "Navy sweater with white stripe (winter)"
+          "caption": "Navy sweater with white stripe",
+          "group": "Winter wear"
         },
         {
           "file": "navy-red-sweater.webp",
-          "caption": "Maroon sweater with white stripe (winter)"
+          "caption": "Maroon sweater with white stripe",
+          "group": "Winter wear"
         }
       ],
       "books": {},
       "logoW": 200,
-      "logoH": 200
+      "logoH": 200,
+      "guide": [
+        {
+          "title": "Pre-primary",
+          "items": [
+            "Pink check shirt with pink half pants (boys) or pink tunic (girls)",
+            "Pink socks with two white stripes, black shoes",
+            "Winter: maroon V-neck sweater with a white stripe"
+          ]
+        },
+        {
+          "title": "Classes I and II",
+          "items": [
+            "Sky blue half-sleeve shirt",
+            "Navy blue half pants (boys) or navy blue skirt (girls)",
+            "School tie and belt, blue socks with white stripes, black shoes",
+            "Winter: navy V-neck sweater with a white stripe"
+          ]
+        },
+        {
+          "title": "Classes III to VII",
+          "items": [
+            "Sky blue half-sleeve shirt",
+            "Navy blue full pants (boys) or navy blue skirt with tights (girls)",
+            "School tie and belt, blue socks with white stripes, black shoes",
+            "Winter: navy V-neck sweater with a white stripe"
+          ]
+        },
+        {
+          "title": "Classes VIII to XII",
+          "items": [
+            "Sky blue full-sleeve shirt and navy blue full pants",
+            "Navy blue waistcoat, school tie and belt",
+            "Winter: navy blue blazer with the school monogram"
+          ]
+        },
+        {
+          "title": "House dress (Wednesday and Saturday)",
+          "items": [
+            "Classes I to V: house T-shirt with white lower that has house-colour stripes",
+            "Classes VI to XII: house T-shirt with the navy track suit",
+            "White canvas shoes and white socks"
+          ]
+        }
+      ]
     },
     {
       "slug": "chameli-devi-public-school",
@@ -188,19 +313,23 @@
       "uniformPhotos": [
         {
           "file": "sky-blue-shirt.webp",
-          "caption": "Sky blue striped half-sleeve shirt"
+          "caption": "Sky blue striped half-sleeve shirt",
+          "group": "House & sports wear"
         },
         {
           "file": "shirt.webp",
-          "caption": "Sky blue half-sleeve shirt"
+          "caption": "Sky blue half-sleeve shirt",
+          "group": "Daily wear"
         },
         {
           "file": "raymond-blue-elastic-pants.webp",
-          "caption": "Navy blue elastic-waist trousers"
+          "caption": "Navy blue elastic-waist trousers",
+          "group": "Daily wear"
         },
         {
           "file": "navy-blazer.webp",
-          "caption": "Navy blue blazer (winter)"
+          "caption": "Navy blue blazer",
+          "group": "Winter wear"
         }
       ],
       "books": {},
@@ -215,51 +344,63 @@
       "uniformPhotos": [
         {
           "file": "01.webp",
-          "caption": "Black track jacket, green trim"
+          "caption": "Black track jacket, green trim",
+          "group": "House & sports wear"
         },
         {
           "file": "20261107180731.webp",
-          "caption": "Black track jacket, red trim"
+          "caption": "Black track jacket, red trim",
+          "group": "House & sports wear"
         },
         {
           "file": "20261107180952.webp",
-          "caption": "Black track jacket, yellow trim"
+          "caption": "Black track jacket, yellow trim",
+          "group": "House & sports wear"
         },
         {
           "file": "20261107181249.webp",
-          "caption": "Black track jacket, blue trim"
+          "caption": "Black track jacket, blue trim",
+          "group": "House & sports wear"
         },
         {
           "file": "20261107173429.webp",
-          "caption": "Black T-shirt, green house"
+          "caption": "Black T-shirt, green house",
+          "group": "House & sports wear"
         },
         {
           "file": "20261107173506.webp",
-          "caption": "Black T-shirt, yellow house"
+          "caption": "Black T-shirt, yellow house",
+          "group": "House & sports wear"
         },
         {
           "file": "20261107173545.webp",
-          "caption": "Black T-shirt, red house"
+          "caption": "Black T-shirt, red house",
+          "group": "House & sports wear"
         },
         {
           "file": "20261107173626.webp",
-          "caption": "Black T-shirt, blue house"
+          "caption": "Black T-shirt, blue house",
+          "group": "House & sports wear"
         },
         {
           "file": "black-green-stripe-lower.webp",
-          "caption": "Black track pants, green stripes"
+          "caption": "Black track pants, green stripes",
+          "group": "House & sports wear"
         },
         {
           "file": "black-yellow-stripe-lower.webp",
-          "caption": "Black track pants, yellow stripes"
+          "caption": "Black track pants, yellow stripes",
+          "group": "House & sports wear"
         },
         {
           "file": "black-red-stripe-lower.webp",
-          "caption": "Black track pants, red stripes"
+          "caption": "Black track pants, red stripes",
+          "group": "House & sports wear"
         },
         {
           "file": "black-blue-stripe-lower.webp",
-          "caption": "Black track pants, blue stripes"
+          "caption": "Black track pants, blue stripes",
+          "group": "House & sports wear"
         }
       ],
       "books": {},
@@ -274,27 +415,33 @@
       "uniformPhotos": [
         {
           "file": "shirt.webp",
-          "caption": "Purple and red check half-sleeve shirt"
+          "caption": "Purple and red check half-sleeve shirt",
+          "group": "Daily wear"
         },
         {
           "file": "red-check-shirt.webp",
-          "caption": "Red check half-sleeve shirt"
+          "caption": "Red check half-sleeve shirt",
+          "group": "Daily wear"
         },
         {
           "file": "raymond-blue-elastic-pants.webp",
-          "caption": "Navy blue elastic-waist trousers"
+          "caption": "Navy blue elastic-waist trousers",
+          "group": "Daily wear"
         },
         {
           "file": "maroon-blazer.webp",
-          "caption": "Maroon blazer (winter)"
+          "caption": "Maroon blazer",
+          "group": "Winter wear"
         },
         {
           "file": "navy-red-trim-sweater.webp",
-          "caption": "Navy sweater with red trim (winter)"
+          "caption": "Navy sweater with red trim",
+          "group": "Winter wear"
         },
         {
           "file": "navy-blazer.webp",
-          "caption": "Navy blue blazer (winter)"
+          "caption": "Navy blue blazer",
+          "group": "Winter wear"
         }
       ],
       "books": {},
@@ -309,31 +456,38 @@
       "uniformPhotos": [
         {
           "file": "20261107170525.webp",
-          "caption": "Yellow house T-shirt"
+          "caption": "Yellow house T-shirt",
+          "group": "House & sports wear"
         },
         {
           "file": "blue-house.webp",
-          "caption": "Blue house T-shirt"
+          "caption": "Blue house T-shirt",
+          "group": "House & sports wear"
         },
         {
           "file": "green-house.webp",
-          "caption": "Green house T-shirt"
+          "caption": "Green house T-shirt",
+          "group": "House & sports wear"
         },
         {
           "file": "red-house.webp",
-          "caption": "Red house T-shirt"
+          "caption": "Red house T-shirt",
+          "group": "House & sports wear"
         },
         {
           "file": "20261107175444.webp",
-          "caption": "Navy blue sweater (winter)"
+          "caption": "Navy blue sweater",
+          "group": "Winter wear"
         },
         {
           "file": "20261107175525.webp",
-          "caption": "Maroon sweater (winter)"
+          "caption": "Maroon sweater",
+          "group": "Winter wear"
         },
         {
           "file": "sweater.webp",
-          "caption": "Grey sweater (winter)"
+          "caption": "Grey sweater",
+          "group": "Winter wear"
         }
       ],
       "books": {},
@@ -358,15 +512,18 @@
       "uniformPhotos": [
         {
           "file": "pink-shirt.webp",
-          "caption": "Pink check half-sleeve shirt"
+          "caption": "Pink check half-sleeve shirt",
+          "group": "Daily wear"
         },
         {
           "file": "blue-pink-stripe-elastic-pants.webp",
-          "caption": "Navy striped elastic-waist trousers"
+          "caption": "Navy striped elastic-waist trousers",
+          "group": "House & sports wear"
         },
         {
           "file": "navy-blazer.webp",
-          "caption": "Navy blue blazer (winter)"
+          "caption": "Navy blue blazer",
+          "group": "Winter wear"
         }
       ],
       "books": {},
@@ -381,7 +538,8 @@
       "uniformPhotos": [
         {
           "file": "navy-blazer.webp",
-          "caption": "Navy blue blazer (winter)"
+          "caption": "Navy blue blazer",
+          "group": "Winter wear"
         }
       ],
       "books": {},
