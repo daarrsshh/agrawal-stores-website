@@ -26,8 +26,9 @@ test('building twice gives the same pages (no doubled links on the home page)', 
   build(dir);
   const second = readFileSync(path.join(dir, 'index.html'), 'utf8');
   assert.equal(first, second);
-  assert.equal(second.split('>See photos <').length - 1, 1, 'exactly one See photos link');
-  assert.equal(second.split('data-sec ').length - 1, 1, 'card picture wrapped in a link exactly once');
+  const slug0 = sec.sections[0].slug;
+  assert.equal(second.split(`<a href="sections/${slug0}.html" class="mt-2`).length - 1, 1, 'exactly one See photos link');
+  assert.equal(second.split(`<a href="sections/${slug0}.html" data-sec`).length - 1, 1, 'card picture wrapped in a link exactly once');
   assert.equal(second.split(`href="sections/${sec.sections[0].slug}.html"`).length - 1, 2, 'picture + text link');
   // and removing the photos removes the page and the link again
   sec.sections[0].photos = [];

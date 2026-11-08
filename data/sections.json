@@ -14,7 +14,13 @@
       "cardTitle": "Gifts & Toys",
       "intro": "Wall décor, photo frames, statues, artificial flowers and keychains for every occasion, plus toys and soft toys for children.",
       "waText": "Hello Agrawal Stores, I want to ask about Gifts and Toys",
-      "photos": []
+      "photos": [
+        {
+          "file": "ganesh-ji-wooden-frame.webp",
+          "caption": "Ganesh ji wooden wall frame",
+          "group": "Photo Frames & Wall Decor"
+        }
+      ]
     },
     {
       "slug": "sports-goods",

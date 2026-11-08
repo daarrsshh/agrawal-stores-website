@@ -4,6 +4,8 @@ put the item on a cream background with a soft shadow and the Agrawal Stores bad
 
 usage: python3 scripts/studio.py <input.jpg> <output.webp> [--loose]
   --loose  skip the straight-edge clean-up (use for blazers, jackets and other items that are not in a plastic bag)
+  --whole  keep the whole photo, no background removal (use when the item fills the photo, e.g. photo frames,
+           wall pieces, boxed items; background removal would cut the frame away)
 
 needs: pip install rembg onnxruntime opencv-python-headless pillow numpy
 """
@@ -105,8 +107,14 @@ def compose(cut, out):
 
 if __name__ == '__main__':
     src, out = sys.argv[1], sys.argv[2]
-    cut = cut_out(src)
-    if '--loose' not in sys.argv:
-        cut = grabcut_clean(cut)
+    if '--whole' in sys.argv:
+        im = ImageOps.exif_transpose(Image.open(src)).convert('RGBA')
+        im.thumbnail((1400, 1400), Image.LANCZOS)
+        t = int(min(im.size) * 0.015)  # trim the very edge, where the shop background peeks in
+        cut = im.crop((t, t, im.width - t, im.height - t))
+    else:
+        cut = cut_out(src)
+        if '--loose' not in sys.argv:
+            cut = grabcut_clean(cut)
     compose(cut, out)
     print(out, os.path.getsize(out))
