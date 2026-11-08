@@ -127,3 +127,25 @@ test('every school page has a Hindi line marked lang="hi"', () => {
     assert.match(html, /<p lang="hi"[^>]*>[^<]*यूनिफॉर्म और किताबें/);
   }
 });
+
+test('every product photo has its own Call button and a WhatsApp Book button naming the item', () => {
+  const pages = [
+    ...data.schools.filter((s) => s.uniformPhotos.length).map((s) => ({ file: `schools/${s.slug}.html`, name: s.fullName, photos: s.uniformPhotos })),
+    ...sections.filter((s) => s.photos.length).map((s) => ({ file: `sections/${s.slug}.html`, name: s.title, photos: s.photos })),
+  ];
+  for (const pg of pages) {
+    const html = readFileSync(path.join(root, pg.file), 'utf8');
+    const figs = html.split('<figure').slice(1).map((f) => f.slice(0, f.indexOf('</figure>')));
+    assert.equal(figs.length, pg.photos.length, `${pg.file}: one card per photo`);
+    figs.forEach((f) => {
+      const cap = f.match(/<figcaption[^>]*>([^<]*)<\/figcaption>/)[1].replace(/&amp;/g, '&').replace(/&quot;/g, '"');
+      assert.ok(pg.photos.some((p) => p.caption === cap), `${pg.file}: unknown caption ${cap}`);
+      assert.ok(f.includes('href="tel:+919926504567"'), `${pg.file}: call on "${cap}"`);
+      const m = f.match(/href="(https:\/\/wa\.me\/919926504567\?text=[^"]+)"/);
+      assert.ok(m, `${pg.file}: book on "${cap}"`);
+      const text = decodeURIComponent(m[1].replace(/&amp;/g, '&').split('text=')[1]);
+      assert.ok(text.includes(cap) && text.includes(pg.name), `${pg.file}: message names the item: ${text}`);
+      assert.ok(f.indexOf('tel:') < f.indexOf('wa.me'), 'Call comes before Book');
+    });
+  }
+});
