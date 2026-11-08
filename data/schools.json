@@ -27,7 +27,60 @@
       "name": "St. Norbert",
       "fullName": "St. Norbert School",
       "logo": "sns.webp",
-      "uniformPhotos": [],
+      "uniformPhotos": [
+        {
+          "file": "blue-house.webp",
+          "caption": "Blue house T-shirt"
+        },
+        {
+          "file": "green-house.webp",
+          "caption": "Green house T-shirt"
+        },
+        {
+          "file": "red-house.webp",
+          "caption": "Red house T-shirt"
+        },
+        {
+          "file": "yellow-house.webp",
+          "caption": "Yellow house T-shirt"
+        },
+        {
+          "file": "light-grey-shirt.webp",
+          "caption": "Light grey half-sleeve shirt"
+        },
+        {
+          "file": "blue-check-shirt.webp",
+          "caption": "Blue and white check half-sleeve shirt"
+        },
+        {
+          "file": "white-elastic-pants.webp",
+          "caption": "White elastic-waist trousers"
+        },
+        {
+          "file": "blue-elastic-pants.webp",
+          "caption": "Royal blue elastic-waist pants"
+        },
+        {
+          "file": "pink-elastic-pants.webp",
+          "caption": "Pink elastic-waist pants"
+        },
+        {
+          "file": "grey-blazer.webp",
+          "caption": "Grey blazer (winter)"
+        },
+        {
+          "file": "grey-sweater.webp",
+          "caption": "Grey sweater (winter)"
+        },
+        {
+          "file": "navy-blue-sweater.webp",
+          "caption": "Navy blue sweater (winter)"
+        },
+        {
+          "file": "red-sweater.webp",
+          "caption": "Maroon sweater (winter)"
+        }
+      ],
       "books": {},
       "logoW": 168,
       "logoH": 168
@@ -37,7 +90,92 @@
       "name": "St. Joseph",
       "fullName": "St. Joseph School",
       "logo": "joseph.webp",
-      "uniformPhotos": [],
+      "uniformPhotos": [
+        {
+          "file": "blue-house.webp",
+          "caption": "Blue house T-shirt"
+        },
+        {
+          "file": "green-house.webp",
+          "caption": "Green house T-shirt"
+        },
+        {
+          "file": "red-house.webp",
+          "caption": "Red house T-shirt"
+        },
+        {
+          "file": "yellow-house.webp",
+          "caption": "Yellow house T-shirt"
+        },
+        {
+          "file": "20261107181346.webp",
+          "caption": "Navy track jacket, red house"
+        },
+        {
+          "file": "20261107181438.webp",
+          "caption": "Navy track jacket, green house"
+        },
+        {
+          "file": "20261107181535.webp",
+          "caption": "Navy track jacket, blue house"
+        },
+        {
+          "file": "20261107181624.webp",
+          "caption": "Navy track jacket, yellow house"
+        },
+        {
+          "file": "navy-blue-stripe-lower.webp",
+          "caption": "Navy track pants, blue stripes"
+        },
+        {
+          "file": "navy-red-stripe-lower.webp",
+          "caption": "Navy track pants, red stripes"
+        },
+        {
+          "file": "navy-yellow-stripe-lower.webp",
+          "caption": "Navy track pants, yellow stripes"
+        },
+        {
+          "file": "white-blue-stripe-lower.webp",
+          "caption": "White house-wear pants, blue stripes"
+        },
+        {
+          "file": "white-red-stripe-lower.webp",
+          "caption": "White house-wear pants, red stripes"
+        },
+        {
+          "file": "sky-blue-shirt-1.webp",
+          "caption": "Sky blue half-sleeve shirt"
+        },
+        {
+          "file": "sky-blue-shirt-2.webp",
+          "caption": "Sky blue half-sleeve shirt (second view)"
+        },
+        {
+          "file": "sky-blue-shirt-3.webp",
+          "caption": "Sky blue half-sleeve shirt (light shade)"
+        },
+        {
+          "file": "raymond-blue-elastic-pants.webp",
+          "caption": "Navy blue elastic-waist trousers"
+        },
+        {
+          "file": "pink-shorts.webp",
+          "caption": "Pink elastic-waist pants (pre-primary)"
+        },
+        {
+          "file": "navy-blazer.webp",
+          "caption": "Navy blue blazer (winter)"
+        },
+        {
+          "file": "navy-blue-sweater.webp",
+          "caption": "Navy sweater with white stripe (winter)"
+        },
+        {
+          "file": "navy-red-sweater.webp",
+          "caption": "Maroon sweater with white stripe (winter)"
+        }
+      ],
       "books": {},
       "logoW": 200,
       "logoH": 200
@@ -47,7 +185,20 @@
       "name": "Chameli Devi Public School",
       "fullName": "Chameli Devi Public School",
       "logo": "cdps.webp",
-      "uniformPhotos": [],
+      "uniformPhotos": [
+        {
+          "file": "sky-blue-shirt.webp",
+          "caption": "Sky blue striped half-sleeve shirt"
+        },
+        {
+          "file": "shirt.webp",
+          "caption": "Sky blue half-sleeve shirt"
+        },
+        {
+          "file": "raymond-blue-elastic-pants.webp",
+          "caption": "Navy blue elastic-waist trousers"
+        }
+      ],
       "books": {},
       "logoW": 112,
       "logoH": 200
@@ -57,7 +208,56 @@
       "name": "La Sagesse",
       "fullName": "La Sagesse School",
       "logo": "lasagesse.webp",
-      "uniformPhotos": [],
+      "uniformPhotos": [
+        {
+          "file": "01.webp",
+          "caption": "Black track jacket, green trim"
+        },
+        {
+          "file": "20261107180731.webp",
+          "caption": "Black track jacket, red trim"
+        },
+        {
+          "file": "20261107180952.webp",
+          "caption": "Black track jacket, yellow trim"
+        },
+        {
+          "file": "20261107181249.webp",
+          "caption": "Black track jacket, blue trim"
+        },
+        {
+          "file": "20261107173429.webp",
+          "caption": "Black T-shirt, green house"
+        },
+        {
+          "file": "20261107173506.webp",
+          "caption": "Black T-shirt, yellow house"
+        },
+        {
+          "file": "20261107173545.webp",
+          "caption": "Black T-shirt, red house"
+        },
+        {
+          "file": "20261107173626.webp",
+          "caption": "Black T-shirt, blue house"
+        },
+        {
+          "file": "black-green-stripe-lower.webp",
+          "caption": "Black track pants, green stripes"
+        },
+        {
+          "file": "black-yellow-stripe-lower.webp",
+          "caption": "Black track pants, yellow stripes"
+        },
+        {
+          "file": "black-red-stripe-lower.webp",
+          "caption": "Black track pants, red stripes"
+        },
+        {
+          "file": "black-blue-stripe-lower.webp",
+          "caption": "Black track pants, blue stripes"
+        }
+      ],
       "books": {},
       "logoW": 200,
       "logoH": 133
@@ -67,7 +267,28 @@
       "name": "Alpine Academy",
       "fullName": "Alpine Academy",
       "logo": "aa.webp",
-      "uniformPhotos": [],
+      "uniformPhotos": [
+        {
+          "file": "shirt.webp",
+          "caption": "Purple and red check half-sleeve shirt"
+        },
+        {
+          "file": "red-check-shirt.webp",
+          "caption": "Red check half-sleeve shirt"
+        },
+        {
+          "file": "raymond-blue-elastic-pants.webp",
+          "caption": "Navy blue elastic-waist trousers"
+        },
+        {
+          "file": "maroon-blazer.webp",
+          "caption": "Maroon blazer (winter)"
+        },
+        {
+          "file": "navy-red-trim-sweater.webp",
+          "caption": "Navy sweater with red trim (winter)"
+        }
+      ],
       "books": {},
       "logoW": 200,
       "logoH": 199
@@ -77,7 +298,36 @@
       "name": "St Xavier",
       "fullName": "St Xavier School",
       "logo": "xavier.webp",
-      "uniformPhotos": [],
+      "uniformPhotos": [
+        {
+          "file": "20261107170525.webp",
+          "caption": "Yellow house T-shirt"
+        },
+        {
+          "file": "blue-house.webp",
+          "caption": "Blue house T-shirt"
+        },
+        {
+          "file": "green-house.webp",
+          "caption": "Green house T-shirt"
+        },
+        {
+          "file": "red-house.webp",
+          "caption": "Red house T-shirt"
+        },
+        {
+          "file": "20261107175444.webp",
+          "caption": "Navy blue sweater (winter)"
+        },
+        {
+          "file": "20261107175525.webp",
+          "caption": "Maroon sweater (winter)"
+        },
+        {
+          "file": "sweater.webp",
+          "caption": "Grey sweater (winter)"
+        }
+      ],
       "books": {},
       "logoW": 200,
       "logoH": 188
