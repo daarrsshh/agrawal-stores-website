@@ -26,13 +26,34 @@ test('building twice gives the same pages (no doubled links on the home page)', 
   build(dir);
   const second = readFileSync(path.join(dir, 'index.html'), 'utf8');
   assert.equal(first, second);
-  assert.equal(second.split(`sections/${sec.sections[0].slug}.html`).length - 1, 1, 'exactly one See photos link');
+  assert.equal(second.split('>See photos <').length - 1, 1, 'exactly one See photos link');
+  assert.equal(second.split('data-sec ').length - 1, 1, 'card picture wrapped in a link exactly once');
+  assert.equal(second.split(`href="sections/${sec.sections[0].slug}.html"`).length - 1, 2, 'picture + text link');
   // and removing the photos removes the page and the link again
   sec.sections[0].photos = [];
   writeFileSync(path.join(dir, 'data/sections.json'), JSON.stringify(sec));
   build(dir);
   assert.ok(!readFileSync(path.join(dir, 'index.html'), 'utf8').includes(`sections/${sec.sections[0].slug}.html`));
   assert.ok(!existsSync(path.join(dir, 'sections', `${sec.sections[0].slug}.html`)));
+});
+
+test('section photos are grouped under their Drive subfolder headings, in order', () => {
+  const dir = sandbox();
+  const sec = JSON.parse(readFileSync(path.join(dir, 'data/sections.json'), 'utf8'));
+  const s = sec.sections.find((x) => x.slug === 'gifts-toys');
+  s.photos = [
+    { file: 'a.webp', caption: 'Wooden frame', group: 'Photo Frames & Wall Decor' },
+    { file: 'b.webp', caption: 'Teddy bear', group: 'Toys & Soft Toys' },
+    { file: 'c.webp', caption: 'Gold frame', group: 'Photo Frames & Wall Decor' },
+    { file: 'd.webp', caption: 'Gift hamper' },
+  ];
+  writeFileSync(path.join(dir, 'data/sections.json'), JSON.stringify(sec));
+  build(dir);
+  const html = readFileSync(path.join(dir, 'sections/gifts-toys.html'), 'utf8');
+  const heads = [...html.matchAll(/<h3[^>]*>([^<]*)<\/h3>/g)].map((m) => m[1]);
+  assert.deepEqual(heads, ['Photo Frames &amp; Wall Decor', 'Toys &amp; Soft Toys']);
+  const order = ['Wooden frame', 'Gold frame', 'Teddy bear', 'Gift hamper'].map((c) => html.indexOf(`>${c}<`));
+  assert.ok(order.every((v, i) => v > 0 && (i === 0 || v > order[i - 1])), 'photos stay with their group');
 });
 
 test('captions and names with &, quotes and < > are escaped, not broken HTML', () => {
@@ -61,6 +82,10 @@ test('a missing home-page marker stops the build instead of silently skipping', 
   const p = path.join(dir, 'index.html');
   writeFileSync(p, readFileSync(p, 'utf8').replace(/<!--sec:gifts-toys-->.*?<!--\/sec:gifts-toys-->/s, ''));
   assert.throws(() => build(dir), /gifts-toys/);
+  const dir2 = sandbox();
+  const p2 = path.join(dir2, 'index.html');
+  writeFileSync(p2, readFileSync(p2, 'utf8').replace('<!--secimg:sports-goods-->', ''));
+  assert.throws(() => build(dir2), /sports-goods/);
 });
 
 test('sitemap lists exactly the pages that exist', () => {
