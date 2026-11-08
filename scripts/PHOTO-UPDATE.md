@@ -38,6 +38,8 @@ There are two shared Google Drive folders:
 3. `pip install --break-system-packages rembg onnxruntime opencv-python-headless pillow numpy`
 4. `python3 scripts/studio.py in.jpg out.webp` for items in plastic bags (shirts, trousers, packed sweaters).
    Add `--loose` for everything else: blazers, jackets, gifts, toys, bottles, bags.
+   Add `--whole` (no background removal) when the item fills the photo: photo frames, wall pieces, boxed items.
+   Background removal cuts the frame away and keeps only the picture inside, which is wrong for these.
    Look at each result. If rembg cannot download its model or a cut-out is clearly wrong, leave that photo out and report it.
    Never publish a photo with the original shop background.
 5. School photo: save to assets/uniforms/<slug>/<name>.webp, add {"file","caption"} to that school's uniformPhotos in data/schools.json.
