@@ -58,7 +58,7 @@ function page(s) {
   }).join('');
 
   const photos = s.uniformPhotos.length
-    ? `<div class="grid grid-cols-2 md:grid-cols-3 gap-4">${s.uniformPhotos.map((p) => `<figure class="overflow-hidden rounded-2xl border-2 border-brand-100 bg-white"><img src="../assets/uniforms/${esc(s.slug)}/${esc(webFile(s.slug, p.file))}" alt="${esc(s.fullName + ' ' + p.caption)}" loading="lazy" class="w-full aspect-[4/5] object-cover"><figcaption class="p-3 text-sm font-bold text-slate-700">${esc(p.caption)}</figcaption></figure>`).join('')}</div>`
+    ? `<div class="grid grid-cols-2 md:grid-cols-3 gap-4">${s.uniformPhotos.map((p) => `<figure class="overflow-hidden rounded-2xl border-2 border-brand-100 bg-white"><img src="../assets/uniforms/${esc(s.slug)}/${esc(webFile(s.slug, p.file))}" alt="${esc(s.fullName + ' ' + p.caption)}" width="1000" height="1250" loading="lazy" decoding="async" class="w-full aspect-[4/5] object-cover"><figcaption class="p-3 text-sm font-bold text-slate-700">${esc(p.caption)}</figcaption></figure>`).join('')}</div>`
     : `<ul class="grid gap-3 sm:grid-cols-2">
             <li class="rounded-2xl border-2 border-brand-100 bg-white p-5"><p class="font-extrabold text-slate-800">Daily uniform</p><p class="text-slate-600">For all classes, boys and girls.</p></li>
             <li class="rounded-2xl border-2 border-brand-100 bg-white p-5"><p class="font-extrabold text-slate-800">Winter wear</p><p class="text-slate-600">Blazers and sweaters.</p></li>
