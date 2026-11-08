@@ -4,6 +4,7 @@
 import { readFileSync, writeFileSync, mkdirSync, rmSync, existsSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { zoomDialog } from './zoom.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SITE_URL = 'https://agrawalstores.in';
@@ -29,7 +30,7 @@ const live = sections.filter((s) => s.photos.length);
 function page(s) {
   const title = `${s.title} | Agrawal Stores, Rajendra Nagar, Indore`;
   const desc = `${s.intro} Visit Agrawal Stores, 57-B Rajendra Nagar, Indore, or call ${schools.phoneDisplay}.`.slice(0, 160);
-  const fig = (p) => `<figure class="overflow-hidden rounded-2xl border-2 border-brand-100 bg-white"><img src="../assets/gallery/${esc(s.slug)}/${esc(p.file)}" alt="${esc(s.title + ' ' + p.caption)}" width="1000" height="1250" loading="lazy" decoding="async" class="w-full aspect-[4/5] object-cover"><figcaption class="p-3 text-sm font-bold text-slate-700">${esc(p.caption)}</figcaption><div class="grid grid-cols-2 gap-2 px-3 pb-3"><a href="tel:${schools.phone}" data-call="${esc(s.slug)}:item" aria-label="Call about ${esc(p.caption)}" class="flex min-h-[44px] items-center justify-center gap-1.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-sm font-bold text-white"><svg class="ic" viewBox="0 0 512 512" aria-hidden="true"><use href="#i-phone"/></svg> Call</a><a href="${esc(wa(`Hello Agrawal Stores, I want to book: ${s.title} - ${p.caption}. Size/Class: `))}" target="_blank" rel="noopener" data-book="${esc(s.slug)}:item" aria-label="Book ${esc(p.caption)} on WhatsApp" class="flex min-h-[44px] items-center justify-center gap-1.5 rounded-xl border-2 border-green-500 bg-white hover:bg-green-50 text-sm font-bold text-green-700"><svg class="ic" viewBox="0 0 448 512" aria-hidden="true"><use href="#i-whatsapp"/></svg> Book</a></div></figure>`;
+  const fig = (p) => `<figure class="overflow-hidden rounded-2xl border-2 border-brand-100 bg-white"><button type="button" data-zoom aria-label="See larger photo: ${esc(p.caption)}" class="block w-full cursor-zoom-in"><img src="../assets/gallery/${esc(s.slug)}/${esc(p.file)}" alt="${esc(s.title + ' ' + p.caption)}" width="1000" height="1250" loading="lazy" decoding="async" class="w-full aspect-[4/5] object-cover"></button><figcaption class="p-3 text-sm font-bold text-slate-700">${esc(p.caption)}</figcaption><div class="grid grid-cols-2 gap-2 px-3 pb-3"><a href="tel:${schools.phone}" data-call="${esc(s.slug)}:item" aria-label="Call about ${esc(p.caption)}" class="flex min-h-[44px] items-center justify-center gap-1.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-sm font-bold text-white"><svg class="ic" viewBox="0 0 512 512" aria-hidden="true"><use href="#i-phone"/></svg> Call</a><a href="${esc(wa(`Hello Agrawal Stores, I want to book: ${s.title} - ${p.caption}. Size/Class: `))}" target="_blank" rel="noopener" data-book="${esc(s.slug)}:item" aria-label="Book ${esc(p.caption)} on WhatsApp" class="flex min-h-[44px] items-center justify-center gap-1.5 rounded-xl border-2 border-green-500 bg-white hover:bg-green-50 text-sm font-bold text-green-700"><svg class="ic" viewBox="0 0 448 512" aria-hidden="true"><use href="#i-whatsapp"/></svg> Book</a></div></figure>`;
   // Photos can carry a "group" (the Drive subfolder they came from); each group gets its own heading.
   const groups = [];
   for (const p of s.photos) { const g = p.group || ''; let e = groups.find((x) => x.name === g); if (!e) groups.push(e = { name: g, items: [] }); e.items.push(p); }
@@ -103,6 +104,7 @@ ${others.length ? `
         <a href="tel:${schools.phone}" data-call="${esc(s.slug)}:float" aria-label="Call Agrawal Stores" class="bg-brand-500 hover:bg-brand-600 text-white w-14 h-14 rounded-full flex items-center justify-center shadow-lg"><svg class="ic text-2xl" viewBox="0 0 512 512" aria-hidden="true"><use href="#i-phone"/></svg></a>
         <a href="${esc(wa(s.waText))}" target="_blank" rel="noopener" aria-label="WhatsApp Agrawal Stores" class="bg-[#25D366] hover:bg-[#1ebd5a] text-white w-14 h-14 rounded-full flex items-center justify-center shadow-lg"><svg class="ic text-3xl" viewBox="0 0 448 512" aria-hidden="true"><use href="#i-whatsapp"/></svg></a>
     </aside>
+${zoomDialog}
 </body>
 </html>
 `;

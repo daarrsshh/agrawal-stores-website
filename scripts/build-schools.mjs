@@ -3,6 +3,7 @@
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { zoomDialog } from './zoom.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SITE_URL = 'https://agrawalstores.in';
@@ -57,7 +58,7 @@ function page(s) {
         </details>`;
   }).join('');
 
-  const fig = (p) => `<figure class="overflow-hidden rounded-2xl border-2 border-brand-100 bg-white"><img src="../assets/uniforms/${esc(s.slug)}/${esc(webFile(s.slug, p.file))}" alt="${esc(s.fullName + ' ' + p.caption)}" width="1000" height="1250" loading="lazy" decoding="async" class="w-full aspect-[4/5] object-cover"><figcaption class="p-3 text-sm font-bold text-slate-700">${esc(p.caption)}</figcaption><div class="grid grid-cols-2 gap-2 px-3 pb-3"><a href="tel:${data.phone}" data-call="${esc(s.slug)}:item" aria-label="Call about ${esc(p.caption)}" class="flex min-h-[44px] items-center justify-center gap-1.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-sm font-bold text-white"><svg class="ic" viewBox="0 0 512 512" aria-hidden="true"><use href="#i-phone"/></svg> Call</a><a href="${esc(wa(`Hello Agrawal Stores, I want to book: ${s.fullName} - ${p.caption}. Size/Class: `))}" target="_blank" rel="noopener" data-book="${esc(s.slug)}:item" aria-label="Book ${esc(p.caption)} on WhatsApp" class="flex min-h-[44px] items-center justify-center gap-1.5 rounded-xl border-2 border-green-500 bg-white hover:bg-green-50 text-sm font-bold text-green-700"><svg class="ic" viewBox="0 0 448 512" aria-hidden="true"><use href="#i-whatsapp"/></svg> Book</a></div></figure>`;
+  const fig = (p) => `<figure class="overflow-hidden rounded-2xl border-2 border-brand-100 bg-white"><button type="button" data-zoom aria-label="See larger photo: ${esc(p.caption)}" class="block w-full cursor-zoom-in"><img src="../assets/uniforms/${esc(s.slug)}/${esc(webFile(s.slug, p.file))}" alt="${esc(s.fullName + ' ' + p.caption)}" width="1000" height="1250" loading="lazy" decoding="async" class="w-full aspect-[4/5] object-cover"></button><figcaption class="p-3 text-sm font-bold text-slate-700">${esc(p.caption)}</figcaption><div class="grid grid-cols-2 gap-2 px-3 pb-3"><a href="tel:${data.phone}" data-call="${esc(s.slug)}:item" aria-label="Call about ${esc(p.caption)}" class="flex min-h-[44px] items-center justify-center gap-1.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-sm font-bold text-white"><svg class="ic" viewBox="0 0 512 512" aria-hidden="true"><use href="#i-phone"/></svg> Call</a><a href="${esc(wa(`Hello Agrawal Stores, I want to book: ${s.fullName} - ${p.caption}. Size/Class: `))}" target="_blank" rel="noopener" data-book="${esc(s.slug)}:item" aria-label="Book ${esc(p.caption)} on WhatsApp" class="flex min-h-[44px] items-center justify-center gap-1.5 rounded-xl border-2 border-green-500 bg-white hover:bg-green-50 text-sm font-bold text-green-700"><svg class="ic" viewBox="0 0 448 512" aria-hidden="true"><use href="#i-whatsapp"/></svg> Book</a></div></figure>`;
   // Photos are shown under fixed headings so long pages are easy to scan on a phone.
   const ORDER = ['Daily wear', 'House & sports wear', 'Winter wear'];
   const groups = [];
@@ -202,6 +203,7 @@ ${guide}
         function openFromHash() { var d = document.getElementById(location.hash.slice(1)); if (d && d.tagName === 'DETAILS') d.open = true; }
         window.addEventListener('hashchange', openFromHash); openFromHash();
     </script>
+${zoomDialog}
 </body>
 </html>
 `;
