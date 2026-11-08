@@ -191,7 +191,9 @@ function page(s) {
 mkdirSync(path.join(root, 'schools'), { recursive: true });
 for (const s of data.schools) writeFileSync(path.join(root, 'schools', `${s.slug}.html`), page(s));
 // Sitemap and robots.txt for Google Search Console.
-const urls = [`${SITE_URL}/`, ...data.schools.map((s) => `${SITE_URL}/schools/${s.slug}.html`)];
+const sectionData = JSON.parse(readFileSync(path.join(root, 'data/sections.json'), 'utf8')).sections;
+const urls = [`${SITE_URL}/`, ...data.schools.map((s) => `${SITE_URL}/schools/${s.slug}.html`), ...sectionData.filter((x) => x.photos.length).map((x) => `${SITE_URL}/sections/${x.slug}.html`)];
 writeFileSync(path.join(root, 'sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.map((u) => `  <url><loc>${u}</loc></url>`).join('\n')}\n</urlset>\n`);
 writeFileSync(path.join(root, 'robots.txt'), `User-agent: *\nAllow: /\nDisallow: /tests/\nDisallow: /scripts/\nDisallow: /data/\n\nSitemap: ${SITE_URL}/sitemap.xml\n`);
 console.log(`Built ${data.schools.length} school pages.`);
+await import('./build-sections.mjs');

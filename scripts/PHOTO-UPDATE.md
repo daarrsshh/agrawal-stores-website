@@ -17,7 +17,12 @@ Staff drop photos into the shared Google Drive folder "Agrawal Stores Photos"
 | Annie Besant | annie-besant |
 | Medicaps | no page yet: process the photo, keep it in assets/uniforms/medicaps/, tell the owner |
 | Common (many schools) | file name lists the schools (e.g. navy-blazer_alpine_joseph.jpg); add to each named school |
-| Other Sections/* | no pages yet: keep in assets/gallery/<section-slug>/, tell the owner |
+| Other Sections/School Essentials & Stationery | section `essentials-stationery` in data/sections.json |
+| Other Sections/Gifts & Toys | `gifts-toys` |
+| Other Sections/Sports Goods | `sports-goods` |
+| Other Sections/Lifestyle & Accessories | `lifestyle-accessories` |
+| Other Sections/Seasonal & Festival | `seasonal-festival` |
+| Other Sections/Shop (front, inside, displays) | not a product section: process it (`--loose`, no cut-out needed), keep it aside and ask the owner where it should go |
 
 ## Steps
 1. List image files in the folders. Skip any whose Drive file id is in data/processed-photos.json.
@@ -25,7 +30,9 @@ Staff drop photos into the shared Google Drive folder "Agrawal Stores Photos"
 3. `pip install --break-system-packages rembg onnxruntime opencv-python-headless pillow numpy`
 4. `python3 scripts/studio.py in.jpg out.webp` (add `--loose` for blazers, jackets, anything not in a plastic bag).
    If rembg cannot download its model, stop and report that. Do not publish uncut photos.
-5. Save to assets/uniforms/<slug>/<name>.webp and add {"file","caption"} to that school's uniformPhotos in data/schools.json.
+5. School photos: save to assets/uniforms/<slug>/<name>.webp and add {"file","caption"} to that school's uniformPhotos in data/schools.json.
+   Section photos: save to assets/gallery/<section-slug>/<name>.webp and add {"file","caption"} to that section's `photos` in data/sections.json.
+   A section page, its home-page "See photos" link and its sitemap entry appear automatically once it has at least one photo.
    Caption = the item in plain words from the file name, e.g. "Navy blue blazer (winter)". Never put a price in a caption.
 6. Record the Drive file id in data/processed-photos.json.
 7. `node scripts/build-schools.mjs && npm run build && npm test` (all must pass).
