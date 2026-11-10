@@ -65,6 +65,7 @@
             <div class="grid gap-3">
                 <button type="button" data-go="add-page" class="tile flex items-center gap-4 rounded-2xl bg-brand-600 px-5 text-left text-white shadow"><span class="text-4xl" aria-hidden="true">📷</span><span><span class="block text-xl font-extrabold">Add a product</span><span lang="hi" class="block text-base opacity-90">नया प्रोडक्ट डालें (फोटो के साथ)</span></span></button>
                 <button type="button" data-go="edit-page" class="tile flex items-center gap-4 rounded-2xl border-2 border-brand-200 bg-white px-5 text-left shadow-sm"><span class="text-4xl" aria-hidden="true">✏️</span><span><span class="block text-xl font-extrabold">Change or hide a product</span><span lang="hi" class="block text-base text-slate-600">नाम बदलें, छुपाएँ, ऊपर-नीचे करें</span></span></button>
+                <button type="button" data-go="stock-page" class="tile flex items-center gap-4 rounded-2xl border-2 border-brand-200 bg-white px-5 text-left shadow-sm"><span class="text-4xl" aria-hidden="true">📦</span><span><span class="block text-xl font-extrabold">Update stock</span><span lang="hi" class="block text-base text-slate-600">स्टॉक: है / थोड़ा बचा / खत्म</span></span></button>
                 <button type="button" data-go="publish" data-owner class="tile flex items-center gap-4 rounded-2xl border-2 border-green-500 bg-white px-5 text-left shadow-sm" hidden><span class="text-4xl" aria-hidden="true">✅</span><span><span class="block text-xl font-extrabold">Check &amp; publish <span id="pending-count" class="ml-1 rounded-full bg-green-600 px-2 text-base text-white empty:hidden"></span></span><span class="block text-base text-slate-600">See what staff changed, then put it on the website</span></span></button>
                 <button type="button" data-go="banner" data-owner class="tile flex items-center gap-4 rounded-2xl border-2 border-brand-200 bg-white px-5 text-left shadow-sm" hidden><span class="text-4xl" aria-hidden="true">📢</span><span><span class="block text-xl font-extrabold">Home page banner</span><span class="block text-base text-slate-600">The message at the top of the website</span></span></button>
                 <button type="button" data-go="structure" data-owner class="tile flex items-center gap-4 rounded-2xl border-2 border-brand-200 bg-white px-5 text-left shadow-sm" hidden><span class="text-4xl" aria-hidden="true">🏫</span><span><span class="block text-xl font-extrabold">Schools &amp; sections</span><span class="block text-base text-slate-600">Add a new school or section (like Men's), rename or hide one</span></span></button>
@@ -193,6 +194,14 @@
             </form>
         </section>
 
+        <!-- Stock -->
+        <section id="s-stock" class="screen" hidden>
+            <button type="button" data-go="stock-page" class="mb-4 min-h-[44px] font-bold text-brand-700">← Back</button>
+            <h1 class="text-2xl font-extrabold mb-1"><span id="stock-page-name"></span>: stock</h1>
+            <p class="text-slate-600 mb-4">Tap one button per product. Sizes are optional. · <span lang="hi">हर प्रोडक्ट के लिए एक बटन दबाएँ</span></p>
+            <ul id="stock-list" class="space-y-3"></ul>
+        </section>
+
         <!-- Working... -->
         <section id="s-busy" class="screen flex flex-col items-center gap-4 py-16" hidden>
             <div class="spinner" aria-hidden="true"></div>
@@ -214,6 +223,23 @@
             <button type="button" id="ed-hide" class="w-full min-h-[52px] rounded-xl border-2 border-red-300 bg-white text-lg font-bold text-red-700"></button>
             <button value="close" class="w-full min-h-[48px] font-bold text-slate-600">Close</button>
         </form>
+    </dialog>
+
+    <!-- Sizes of one product -->
+    <dialog id="sizes-dialog" aria-labelledby="sz-title" class="m-auto w-[min(94vw,520px)] max-h-[92vh] overflow-y-auto rounded-3xl p-0 backdrop:bg-slate-950/70">
+        <div class="p-5 space-y-4">
+            <h2 id="sz-title" class="text-xl font-extrabold">Sizes</h2>
+            <p class="text-slate-600">Tap a size to change it: ✓ in stock → few → ✗ out. · <span lang="hi">साइज़ पर टैप करें</span></p>
+            <div id="sz-list" class="grid grid-cols-3 gap-2"></div>
+            <div class="flex gap-2"><input id="sz-new" maxlength="10" placeholder="New size, e.g. 32" class="min-w-0 flex-1 min-h-[48px] rounded-xl border-2 border-brand-200 px-3 text-lg"><button type="button" id="sz-add" class="min-h-[48px] rounded-xl bg-brand-600 px-4 font-bold text-white">Add</button></div>
+            <div class="flex flex-wrap gap-2">
+                <button type="button" data-preset="20,22,24,26,28,30,32,34,36,38,40" class="min-h-[44px] rounded-full border-2 border-brand-200 px-3 font-bold">Uniform 20–40</button>
+                <button type="button" data-preset="S,M,L,XL,XXL" class="min-h-[44px] rounded-full border-2 border-brand-200 px-3 font-bold">S M L XL XXL</button>
+                <button type="button" data-preset="" class="min-h-[44px] rounded-full border-2 border-red-200 px-3 font-bold text-red-700">No sizes</button>
+            </div>
+            <button type="button" id="sz-save" class="w-full min-h-[56px] rounded-2xl bg-brand-600 text-white text-lg font-extrabold">Save sizes</button>
+            <button type="button" id="sz-close" class="w-full min-h-[48px] font-bold text-slate-600">Cancel</button>
+        </div>
     </dialog>
 
     <script src="config.js"></script>
@@ -339,7 +365,7 @@
         function thumbOf(p, item) { return img('assets/' + (p.kind === 'school' ? 'uniforms' : 'gallery') + '/' + p.slug + '/thumb/' + item.file); }
         function goPick(mode) {
             S.mode = mode;
-            $('pick-title').textContent = mode === 'add' ? 'Add a product: which page?' : 'Change a product: which page?';
+            $('pick-title').textContent = mode === 'add' ? 'Add a product: which page?' : mode === 'stock' ? 'Update stock: which page?' : 'Change a product: which page?';
             var l = pageList();
             $('pick-schools').innerHTML = l.schools.map(function (p) {
                 return '<button type="button" data-page="' + esc(p.id) + '" class="flex min-h-[72px] items-center gap-3 rounded-2xl border-2 border-brand-200 bg-white px-3 text-left font-extrabold shadow-sm"><img src="' + esc(img('assets/' + p.logo)) + '" alt="" class="h-10 w-10 object-contain">' + esc(p.name) + '</button>';
@@ -353,7 +379,7 @@
             var b = e.target.closest('[data-page]'); if (!b) return;
             S.page = findPage(b.getAttribute('data-page'));
             say('');
-            if (S.mode === 'add') openAdd(); else openEdit();
+            if (S.mode === 'add') openAdd(); else if (S.mode === 'stock') openStock(); else openEdit();
         });
 
         // ---------- add ----------
@@ -580,6 +606,86 @@
             saveStructure(op, editing ? 'Section updated.' : 'Section added. Staff can now add its photos.').catch(function (err) { say(err.message, 'bad'); show('section-form'); });
         });
 
+        // ---------- stock ----------
+        var ST = { in: { t: 'In stock', hi: 'है', on: 'bg-green-600 text-white border-green-600' }, few: { t: 'Few left', hi: 'थोड़ा', on: 'bg-amber-500 text-white border-amber-500' }, out: { t: 'Out', hi: 'खत्म', on: 'bg-slate-600 text-white border-slate-600' } };
+        function overallStock(it) {
+            var sz = (it.sizes || []);
+            if (!sz.length) return it.stock || null;
+            if (sz.every(function (s) { return s.stock === 'out'; })) return 'out';
+            if (sz.some(function (s) { return s.stock === 'in'; })) return it.stock === 'few' ? 'few' : 'in';
+            return 'few';
+        }
+        function openStock() {
+            var p = S.page;
+            $('stock-page-name').textContent = p.name;
+            $('stock-list').innerHTML = p.items.length ? p.items.map(function (it, i) {
+                var cur = it.stock;
+                var btns = ['in', 'few', 'out'].map(function (k) {
+                    var on = cur === k;
+                    return '<button type="button" data-stock-i="' + i + '" data-stock="' + k + '" aria-pressed="' + on + '" class="min-h-[52px] rounded-xl border-2 px-1 text-sm font-extrabold leading-tight ' + (on ? ST[k].on : 'border-brand-200 bg-white text-slate-700') + '">' + ST[k].t + '<span lang="hi" class="block text-xs font-bold opacity-80">' + ST[k].hi + '</span></button>';
+                }).join('');
+                var sz = (it.sizes || []);
+                var szText = sz.length ? sz.map(function (s) { return esc(s.size) + (s.stock === 'in' ? ' ✓' : s.stock === 'few' ? ' few' : ' ✗'); }).join(' · ') : 'No sizes';
+                return '<li class="rounded-2xl border-2 border-brand-100 bg-white p-3 shadow-sm' + (it.hidden ? ' opacity-50' : '') + '">' +
+                    '<div class="flex items-center gap-3 mb-2"><img src="' + esc(thumbOf(p, it)) + '" alt="" loading="lazy" class="h-16 w-12 rounded-lg object-cover bg-brand-50"><b class="flex-1 text-lg leading-tight">' + esc(it.caption) + '</b></div>' +
+                    '<div class="grid grid-cols-3 gap-2">' + btns + '</div>' +
+                    '<button type="button" data-sizes-i="' + i + '" class="mt-2 flex min-h-[44px] w-full items-center justify-between rounded-xl bg-brand-50 px-3 text-left text-sm font-bold text-brand-800"><span>Sizes: ' + szText + '</span><span aria-hidden="true">›</span></button></li>';
+            }).join('') : '<li class="text-lg text-slate-600">No products on this page yet.</li>';
+            show('stock');
+        }
+        function saveStock(it, op, note) {
+            var pageId = S.page.id, y = window.scrollY;
+            busy('Saving…');
+            return api('POST', '/edit', Object.assign({ op: 'stock', page: pageId, file: it.file }, op))
+                .then(function () { return refresh(); })
+                .then(function () { S.page = findPage(pageId); say('✅ Saved: ' + it.caption + ' ' + note); openStock(); window.scrollTo(0, y); })
+                .catch(function (err) { say(err.message, 'bad'); openStock(); });
+        }
+        $('stock-list').addEventListener('click', function (e) {
+            var b = e.target.closest('[data-stock-i]');
+            if (b) { var it = S.page.items[+b.getAttribute('data-stock-i')], k = b.getAttribute('data-stock'); saveStock(it, { stock: k }, '→ ' + ST[k].t); return; }
+            var z = e.target.closest('[data-sizes-i]');
+            if (z) openSizes(S.page.items[+z.getAttribute('data-sizes-i')]);
+        });
+        var szItem = null, szList = [];
+        function drawSizes() {
+            $('sz-list').innerHTML = szList.length ? szList.map(function (s, i) {
+                var cls = s.stock === 'in' ? 'border-green-600 bg-green-50 text-green-800' : s.stock === 'few' ? 'border-amber-500 bg-amber-50 text-amber-800' : 'border-slate-300 bg-slate-100 text-slate-500 line-through';
+                return '<button type="button" data-sz="' + i + '" class="min-h-[56px] rounded-xl border-2 text-lg font-extrabold ' + cls + '">' + esc(s.size) + '<span class="block text-xs no-underline">' + (s.stock === 'in' ? '✓ in stock' : s.stock === 'few' ? 'few left' : '✗ out') + '</span></button>';
+            }).join('') : '<p class="col-span-3 text-slate-600">No sizes yet. Add sizes below or use a quick list.</p>';
+        }
+        function openSizes(it) {
+            szItem = it; szList = (it.sizes || []).map(function (s) { return { size: s.size, stock: s.stock }; });
+            $('sz-title').textContent = 'Sizes: ' + it.caption; $('sz-new').value = '';
+            drawSizes(); $('sizes-dialog').showModal();
+        }
+        $('sz-list').addEventListener('click', function (e) {
+            var b = e.target.closest('[data-sz]'); if (!b) return;
+            var s = szList[+b.getAttribute('data-sz')];
+            s.stock = s.stock === 'in' ? 'few' : s.stock === 'few' ? 'out' : 'in';
+            drawSizes();
+        });
+        function addSize(v) {
+            v = String(v).trim(); if (!v) return;
+            if (szList.some(function (s) { return s.size.toLowerCase() === v.toLowerCase(); })) return;
+            szList.push({ size: v, stock: 'in' });
+        }
+        $('sz-add').addEventListener('click', function () { addSize($('sz-new').value); $('sz-new').value = ''; drawSizes(); });
+        $('sz-new').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); $('sz-add').click(); } });
+        document.querySelectorAll('[data-preset]').forEach(function (b) {
+            b.addEventListener('click', function () {
+                var v = b.getAttribute('data-preset');
+                if (!v) szList = []; else v.split(',').forEach(addSize);
+                drawSizes();
+            });
+        });
+        $('sz-close').addEventListener('click', function () { $('sizes-dialog').close(); });
+        $('sz-save').addEventListener('click', function () {
+            $('sizes-dialog').close();
+            var it = szItem, st = it.stock || 'in';
+            saveStock(it, { stock: st, sizes: szList }, szList.length ? '(sizes updated)' : '(sizes removed)');
+        });
+
         // ---------- navigation ----------
         document.addEventListener('click', function (e) {
             var b = e.target.closest('[data-go]'); if (!b) return;
@@ -588,6 +694,7 @@
             else if (to === 'names') show('names');
             else if (to === 'add-page') goPick('add');
             else if (to === 'edit-page') goPick('edit');
+            else if (to === 'stock-page') goPick('stock');
             else if (to === 'publish') openPublish();
             else if (to === 'banner') openBanner();
             else if (to === 'structure') { busy(); refresh().then(openStructure).catch(function (err) { say(err.message, 'bad'); show('home'); }); }

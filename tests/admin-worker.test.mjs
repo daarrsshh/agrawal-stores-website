@@ -247,3 +247,32 @@ test('owner can rename a school, edit a section, and hide or show a whole page',
   r = await call(env, 'POST', '/edit', { op: 'showPage', page: `section:${sec.slug}` }, owner);
   assert.equal(pendingJson('data/sections.json').sections[2].hidden, undefined);
 });
+
+test('stock: staff can mark a product and its sizes; bad values are refused; new photos start as in stock', async () => {
+  resetGit();
+  const env = await makeEnv();
+  const staff = await loginAs(env, 'Sandeep', '482913');
+  const s = mainJson('data/schools.json').schools.find((x) => x.uniformPhotos.length > 1);
+  const page = `school:${s.slug}`, file = s.uniformPhotos[0].file;
+  let r = await call(env, 'POST', '/edit', { op: 'stock', page, file, stock: 'in', sizes: [{ size: '22', stock: 'in' }, { size: '24', stock: 'few' }, { size: '26', stock: 'out' }] }, staff);
+  assert.equal(r.status, 200, JSON.stringify(r.body));
+  let p = pendingJson('data/schools.json').schools.find((x) => x.slug === s.slug).uniformPhotos[0];
+  assert.equal(p.stock, 'in');
+  assert.deepEqual(p.sizes, [{ size: '22', stock: 'in' }, { size: '24', stock: 'few' }, { size: '26', stock: 'out' }]);
+  assert.match(r.body.message, /in stock \(sizes: 22 ✓, 24 few, 26 ✗\)/);
+  // status only, sizes kept
+  r = await call(env, 'POST', '/edit', { op: 'stock', page, file, stock: 'out' }, staff);
+  p = pendingJson('data/schools.json').schools.find((x) => x.slug === s.slug).uniformPhotos[0];
+  assert.equal(p.stock, 'out'); assert.equal(p.sizes.length, 3);
+  // empty list clears sizes
+  r = await call(env, 'POST', '/edit', { op: 'stock', page, file, stock: 'few', sizes: [] }, staff);
+  p = pendingJson('data/schools.json').schools.find((x) => x.slug === s.slug).uniformPhotos[0];
+  assert.equal(p.sizes, undefined);
+  for (const bad of [{ stock: 'maybe' }, { stock: 'in', sizes: [{ size: '', stock: 'in' }] }, { stock: 'in', sizes: [{ size: '22', stock: 'in' }, { size: '22', stock: 'out' }] }, { stock: 'in', sizes: [{ size: 'M', stock: 'lots' }] }, { stock: 'in', sizes: Array.from({ length: 31 }, (_, i) => ({ size: String(i), stock: 'in' })) }]) {
+    assert.equal((await call(env, 'POST', '/edit', { op: 'stock', page, file, ...bad }, staff)).status, 400, JSON.stringify(bad).slice(0, 60));
+  }
+  r = await call(env, 'POST', '/edit', { op: 'stock', page, file, stock: 'in', sizes: [{ size: '<b>XL</b>', stock: 'in' }] }, staff);
+  assert.equal(pendingJson('data/schools.json').schools.find((x) => x.slug === s.slug).uniformPhotos[0].sizes[0].size, 'bXL/b', 'no tags in sizes');
+  await call(env, 'POST', '/photo', { page, caption: 'Navy tie', mode: 'bag', image: fakeJpeg }, staff);
+  assert.equal(pendingJson('data/incoming.json').photos[0].stock, 'in');
+});

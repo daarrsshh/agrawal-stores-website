@@ -270,6 +270,29 @@ export function applyEdit(all, op, user) {
     [pg.list[i], pg.list[j]] = [pg.list[j], pg.list[i]];
     return { file: pg.file, message: `${pg.title}: moved "${p.caption}" ${op.dir < 0 ? 'up' : 'down'}` };
   }
+  if (op.op === 'stock') {
+    // Staff may set this. stock: in | few | out; sizes: [{ size, stock }] (sizes optional, [] clears them)
+    const OK = ['in', 'few', 'out'];
+    if (!OK.includes(op.stock)) throw new HttpError(400, 'Choose In stock, Few left or Out of stock.');
+    let sizes;
+    if (op.sizes !== undefined) {
+      if (!Array.isArray(op.sizes) || op.sizes.length > 30) throw new HttpError(400, 'Too many sizes (30 at most).');
+      const seen = new Set();
+      sizes = op.sizes.map((s) => {
+        const size = String((s && s.size) || '').replace(/[^\p{L}\p{N} ./-]/gu, '').trim().slice(0, 10);
+        if (!size) throw new HttpError(400, 'A size is empty.');
+        if (seen.has(size.toLowerCase())) throw new HttpError(400, `Size ${size} is listed twice.`);
+        seen.add(size.toLowerCase());
+        if (!OK.includes(s.stock)) throw new HttpError(400, `Choose stock for size ${size}.`);
+        return { size, stock: s.stock };
+      });
+    }
+    p.stock = op.stock;
+    if (sizes !== undefined) { if (sizes.length) p.sizes = sizes; else delete p.sizes; }
+    const words = { in: 'in stock', few: 'few left', out: 'out of stock' };
+    const sz = (p.sizes || []).length ? ` (sizes: ${p.sizes.map((s) => `${s.size} ${s.stock === 'in' ? '✓' : s.stock === 'few' ? 'few' : '✗'}`).join(', ')})` : '';
+    return { file: pg.file, message: `${pg.title}: "${p.caption}" ${words[op.stock]}${sz}` };
+  }
   if (op.op === 'group') {
     const allowed = pg.kind === 'school' ? ['Daily wear', 'House & sports wear', 'Winter wear'] : null;
     const group = cleanText(op.group, 40);
@@ -384,7 +407,7 @@ async function route(req, env) {
     await g.writeFile(`incoming/${id}.jpg`, img, `New photo for ${pg.title}: ${caption} (by ${me.n})`);
     const fresh = await loadAll(g);
     const list = fresh.incoming.json.photos || [];
-    list.push({ id, page: `${pg.kind}:${pg.slug}`, caption, group, mode, by: me.n, at: new Date().toISOString() });
+    list.push({ id, page: `${pg.kind}:${pg.slug}`, caption, group, mode, stock: 'in', by: me.n, at: new Date().toISOString() });
     await g.writeFile(DATA.incoming, utf8b64(JSON.stringify({ photos: list }, null, 2) + '\n'), `Queue photo ${id} for processing`, fresh.incoming.sha);
     await g.ensurePr('Changes made on agrawalstores.in/admin. The owner publishes them from the admin page.');
     return { ok: true, message: `Photo sent. It will be ready to check in a few minutes.` };

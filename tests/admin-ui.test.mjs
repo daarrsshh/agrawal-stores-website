@@ -223,6 +223,34 @@ test('owner: adds a new school (with logo) and a Men\'s section; staff can then 
   await ctx.close();
 });
 
+test('staff: update stock with one tap, then set sizes from a quick list', async () => {
+  fake.reset();
+  const { ctx, page } = await phone();
+  await loginStaff(page);
+  await page.locator('#s-home [data-go="stock-page"]').click();
+  await page.getByRole('button', { name: 'St. Norbert School' }).click();
+  const first = JSON.parse(fake.branches.get('main').get('data/schools.json')).schools.find((s) => s.slug === 'st-norbert').uniformPhotos[0];
+  await page.locator('[data-stock-i="0"][data-stock="few"]').click();
+  await page.getByText(`Saved: ${first.caption}`).waitFor();
+  assert.equal(await page.locator('[data-stock-i="0"][data-stock="few"]').getAttribute('aria-pressed'), 'true', 'button shows it is chosen');
+  await page.locator('[data-sizes-i="0"]').click();
+  await page.getByRole('button', { name: 'Uniform 20–40' }).click();
+  await page.locator('[data-sz="0"]').click(); // 20: in -> few
+  await page.locator('[data-sz="1"]').click(); // 22: in -> few
+  await page.locator('[data-sz="1"]').click(); //     few -> out
+  await page.locator('#sz-new').fill('42');
+  await page.locator('#sz-add').click();
+  await page.locator('#sz-save').click();
+  await page.getByText('(sizes updated)').waitFor();
+  const p = pending('data/schools.json').schools.find((s) => s.slug === 'st-norbert').uniformPhotos[0];
+  assert.equal(p.stock, 'few');
+  assert.equal(p.sizes.length, 12);
+  assert.deepEqual(p.sizes.slice(0, 3), [{ size: '20', stock: 'few' }, { size: '22', stock: 'out' }, { size: '24', stock: 'in' }]);
+  assert.deepEqual(p.sizes.at(-1), { size: '42', stock: 'in' });
+  assert.match(await page.locator('[data-sizes-i="0"]').textContent(), /20 few · 22 ✗ · 24 ✓/);
+  await ctx.close();
+});
+
 test('admin page is hidden from Google and not part of the public site', () => {
   const html = readFileSync(path.join(root, 'admin/index.html'), 'utf8');
   assert.match(html, /<meta name="robots" content="noindex, nofollow">/);

@@ -82,6 +82,8 @@ def main():
             group = item.get('group') or (school_group(item['caption']) if kind == 'school' else None)
             if group:
                 entry['group'] = group
+            if item.get('stock') in ('in', 'few', 'out'):
+                entry['stock'] = item['stock']
             lst.append(entry)
             os.remove(raw)
             done += 1
