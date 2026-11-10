@@ -48,8 +48,11 @@ test('no photo file sits unused in assets (would be published but never shown)',
     const dir = path.join(root, g.dir);
     if (!existsSync(dir)) continue;
     const used = new Set(g.photos.map((p) => p.file));
-    const extra = readdirSync(dir).filter((f) => !used.has(f));
+    const extra = readdirSync(dir).filter((f) => f !== 'thumb' && !used.has(f));
     assert.deepEqual(extra, [], `${g.dir} has unused files`);
+    const thumbs = existsSync(path.join(dir, 'thumb')) ? readdirSync(path.join(dir, 'thumb')) : [];
+    assert.deepEqual(thumbs.filter((f) => !used.has(f)), [], `${g.dir}/thumb has thumbnails of removed photos`);
+    for (const f of used) assert.ok(thumbs.includes(f), `${g.dir}: thumbnail for ${f}`);
   }
   for (const base of ['assets/uniforms', 'assets/gallery']) {
     if (!existsSync(path.join(root, base))) continue;
@@ -84,7 +87,7 @@ test('photo alt text names the school or section', () => {
   for (const s of data.schools) {
     if (!s.uniformPhotos.length) continue;
     const html = readFileSync(path.join(root, 'schools', `${s.slug}.html`), 'utf8');
-    const alts = [...html.matchAll(/<img src="\.\.\/assets\/uniforms\/[^"]+" alt="([^"]*)"/g)].map((m) => m[1]);
+    const alts = [...html.matchAll(/<img src="\.\.\/assets\/uniforms\/[^"]+"[^>]*? alt="([^"]*)"/g)].map((m) => m[1]);
     assert.equal(alts.length, s.uniformPhotos.length, `${s.slug}: photo count on page`);
     for (const a of alts) assert.ok(a.includes(s.fullName.replace(/&/g, '&amp;')), `${s.slug}: alt "${a}"`);
   }
@@ -101,7 +104,8 @@ test('uniform photos sit under Daily, House & sports, Winter headings in that or
   for (const s of data.schools) {
     const groups = new Set(s.uniformPhotos.map((p) => p.group || 'Daily wear'));
     const html = readFileSync(path.join(root, 'schools', `${s.slug}.html`), 'utf8');
-    const sec = html.slice(html.indexOf('id="uniforms"'), html.indexOf('id="books"'));
+    const end = html.indexOf('id="guide"') > 0 ? html.indexOf('<section id="guide"') : html.indexOf('<section id="books"');
+    const sec = html.slice(html.indexOf('id="uniforms"'), end);
     const heads = [...sec.matchAll(/<h3[^>]*>([^<]*)<\/h3>/g)].map((m) => m[1]);
     if (groups.size < 2) { assert.deepEqual(heads, [], `${s.slug}: no headings for a single group`); continue; }
     assert.deepEqual(heads, ORDER.filter((o) => groups.has(o.replace('&amp;', '&'))), `${s.slug} headings`);
@@ -147,5 +151,31 @@ test('every product photo has its own Call button and a WhatsApp Book button nam
       assert.ok(text.includes(cap) && text.includes(pg.name), `${pg.file}: message names the item: ${text}`);
       assert.ok(f.indexOf('tel:') < f.indexOf('wa.me'), 'Call comes before Book');
     });
+  }
+});
+
+test('photo grids load small thumbnails; the full photo is kept for the pop-up', async () => {
+  for (const s of data.schools.filter((x) => x.uniformPhotos.length)) {
+    const html = readFileSync(path.join(root, 'schools', `${s.slug}.html`), 'utf8');
+    const imgs = [...html.matchAll(/<img src="(\.\.\/assets\/uniforms\/[^"]+)" srcset="([^"]+)"[^>]*data-full="([^"]+)"/g)];
+    assert.equal(imgs.length, s.uniformPhotos.length, s.slug);
+    for (const [, src, srcset, full] of imgs) {
+      assert.match(src, /\/thumb\//);
+      assert.match(srcset, /\/thumb\/\S+ 640w, \S+ 1000w$/);
+      assert.doesNotMatch(full, /\/thumb\//);
+      const m = await sharp(path.join(root, 'schools', src)).metadata();
+      assert.equal(m.width, 640);
+      assert.ok(statSync(path.join(root, 'schools', src)).size < 70 * 1024, `${src} is small`);
+    }
+  }
+});
+
+test('visit counter is off until a GoatCounter code is set, and then on every page', () => {
+  const pages = ['index.html', ...data.schools.map((s) => `schools/${s.slug}.html`), ...sections.map((s) => `sections/${s.slug}.html`)];
+  for (const pg of pages) {
+    const html = readFileSync(path.join(root, pg), 'utf8');
+    assert.ok(html.includes('<!--analytics-->'), `${pg}: marker`);
+    assert.equal(html.includes('gc.zgo.at/count.js'), Boolean(data.goatcounter), `${pg}: counter ${data.goatcounter ? 'on' : 'off'}`);
+    if (data.goatcounter) assert.ok(html.includes(`https://${data.goatcounter}.goatcounter.com/count`));
   }
 });

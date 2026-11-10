@@ -22,7 +22,7 @@ export const zoomDialog = `
                 var b = e.target.closest && e.target.closest('[data-zoom]');
                 if (!b) return;
                 var f = b.closest('figure'), src = f.querySelector('img');
-                img.src = src.currentSrc || src.src; img.alt = src.alt;
+                img.src = src.getAttribute('data-full') ? new URL(src.getAttribute('data-full'), location.href).href : (src.currentSrc || src.src); img.alt = src.alt;
                 cap.textContent = f.querySelector('figcaption').textContent;
                 var c = f.querySelector('a[href^="tel:"]'), w = f.querySelector('a[href*="wa.me"]');
                 call.href = c.href; call.setAttribute('aria-label', c.getAttribute('aria-label'));

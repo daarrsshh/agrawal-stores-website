@@ -4,11 +4,24 @@ import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { zoomDialog } from './zoom.mjs';
+import { makeThumbs } from './make-thumbs.mjs';
+
+await makeThumbs();
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SITE_URL = 'https://agrawalstores.in';
 const data = JSON.parse(readFileSync(path.join(root, 'data/schools.json'), 'utf8'));
-const home = readFileSync(path.join(root, 'index.html'), 'utf8');
+// Visit and tap counting (GoatCounter). Off until data/schools.json has "goatcounter": "<code>".
+// Counts page visits plus taps on Call, Book and WhatsApp buttons. No cookies, no personal data.
+const analytics = data.goatcounter
+  ? `<script data-goatcounter="https://${data.goatcounter}.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
+    <script>document.addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('a[href^="tel:"],a[href*="wa.me"]');if(!a||!window.goatcounter||!window.goatcounter.count)return;var k=a.hasAttribute('data-book')?'book':(a.href.indexOf('tel:')===0?'call':'whatsapp');var w=a.getAttribute('data-book')||a.getAttribute('data-call')||'';window.goatcounter.count({path:k+'/'+location.pathname.replace(/^\\//,'')+(w?'#'+w:''),title:k,event:true});});</script>`
+  : '';
+let homeSrc = readFileSync(path.join(root, 'index.html'), 'utf8');
+if (!homeSrc.includes('<!--analytics-->')) throw new Error('index.html is missing the <!--analytics--> marker');
+homeSrc = homeSrc.replace(/<!--analytics-->[\s\S]*?<!--\/analytics-->/, () => `<!--analytics-->${analytics}<!--/analytics-->`);
+writeFileSync(path.join(root, 'index.html'), homeSrc);
+const home = homeSrc;
 
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const classLabel = (c) => (/^\d+$/.test(c) ? `Class ${c}` : c);
@@ -58,7 +71,7 @@ function page(s) {
         </details>`;
   }).join('');
 
-  const fig = (p) => `<figure class="overflow-hidden rounded-2xl border-2 border-brand-100 bg-white"><button type="button" data-zoom aria-label="See larger photo: ${esc(p.caption)}" class="block w-full cursor-zoom-in"><img src="../assets/uniforms/${esc(s.slug)}/${esc(webFile(s.slug, p.file))}" alt="${esc(s.fullName + ' ' + p.caption)}" width="1000" height="1250" loading="lazy" decoding="async" class="w-full aspect-[4/5] object-cover"></button><figcaption class="p-3 text-sm font-bold text-slate-700">${esc(p.caption)}</figcaption><div class="grid grid-cols-2 gap-2 px-3 pb-3"><a href="tel:${data.phone}" data-call="${esc(s.slug)}:item" aria-label="Call about ${esc(p.caption)}" class="flex min-h-[44px] items-center justify-center gap-1.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-sm font-bold text-white"><svg class="ic" viewBox="0 0 512 512" aria-hidden="true"><use href="#i-phone"/></svg> Call</a><a href="${esc(wa(`Hello Agrawal Stores, I want to book: ${s.fullName} - ${p.caption}. Size/Class: `))}" target="_blank" rel="noopener" data-book="${esc(s.slug)}:item" aria-label="Book ${esc(p.caption)} on WhatsApp" class="flex min-h-[44px] items-center justify-center gap-1.5 rounded-xl border-2 border-green-500 bg-white hover:bg-green-50 text-sm font-bold text-green-700"><svg class="ic" viewBox="0 0 448 512" aria-hidden="true"><use href="#i-whatsapp"/></svg> Book</a></div></figure>`;
+  const fig = (p) => `<figure class="overflow-hidden rounded-2xl border-2 border-brand-100 bg-white"><button type="button" data-zoom aria-label="See larger photo: ${esc(p.caption)}" class="block w-full cursor-zoom-in"><img src="../assets/uniforms/${esc(s.slug)}/thumb/${esc(webFile(s.slug, p.file))}" srcset="../assets/uniforms/${esc(s.slug)}/thumb/${esc(webFile(s.slug, p.file))} 640w, ../assets/uniforms/${esc(s.slug)}/${esc(webFile(s.slug, p.file))} 1000w" sizes="(min-width: 768px) 300px, 46vw" data-full="../assets/uniforms/${esc(s.slug)}/${esc(webFile(s.slug, p.file))}" alt="${esc(s.fullName + ' ' + p.caption)}" width="1000" height="1250" loading="lazy" decoding="async" class="w-full aspect-[4/5] object-cover"></button><figcaption class="p-3 text-sm font-bold text-slate-700">${esc(p.caption)}</figcaption><div class="grid grid-cols-2 gap-2 px-3 pb-3"><a href="tel:${data.phone}" data-call="${esc(s.slug)}:${esc(p.caption)}" aria-label="Call about ${esc(p.caption)}" class="flex min-h-[44px] items-center justify-center gap-1.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-sm font-bold text-white"><svg class="ic" viewBox="0 0 512 512" aria-hidden="true"><use href="#i-phone"/></svg> Call</a><a href="${esc(wa(`Hello Agrawal Stores, I want to book: ${s.fullName} - ${p.caption}. Size/Class: `))}" target="_blank" rel="noopener" data-book="${esc(s.slug)}:${esc(p.caption)}" aria-label="Book ${esc(p.caption)} on WhatsApp" class="flex min-h-[44px] items-center justify-center gap-1.5 rounded-xl border-2 border-green-500 bg-white hover:bg-green-50 text-sm font-bold text-green-700"><svg class="ic" viewBox="0 0 448 512" aria-hidden="true"><use href="#i-whatsapp"/></svg> Book</a></div></figure>`;
   // Photos are shown under fixed headings so long pages are easy to scan on a phone.
   const ORDER = ['Daily wear', 'House & sports wear', 'Winter wear'];
   const groups = [];
@@ -74,9 +87,9 @@ function page(s) {
   const guide = (s.guide || []).length
     ? `<section id="guide" aria-labelledby="guide-h" class="scroll-mt-28 sm:scroll-mt-20">
             <h2 id="guide-h" class="text-2xl font-extrabold text-slate-800 mb-1">What your child needs</h2>
-            <p class="text-slate-600 mb-5">The ${esc(s.fullName)} uniform by class, as the school lists it. Schools sometimes change details, so check the latest circular, or just call us.</p>
-            <div class="grid gap-4 md:grid-cols-2">${s.guide.map((g) => `
-                <div class="rounded-2xl border-2 border-brand-100 bg-white p-5"><h3 class="font-extrabold text-lg text-slate-800 mb-2">${esc(g.title)}</h3><ul class="list-disc pl-5 space-y-1 text-slate-700">${g.items.map((i) => `<li>${esc(i)}</li>`).join('')}</ul></div>`).join('')}
+            <p class="text-slate-600 mb-4">Tap a class to see the ${esc(s.fullName)} uniform, as the school lists it. Schools sometimes change details, so check the latest circular, or just call us.</p>
+            <div class="space-y-2">${s.guide.map((g) => `
+                <details class="group rounded-2xl border-2 border-brand-100 bg-white"><summary class="flex min-h-[52px] cursor-pointer list-none items-center justify-between gap-3 px-5 font-extrabold text-lg text-slate-800"><h3>${esc(g.title)}</h3><span aria-hidden="true" class="text-brand-600 transition-transform group-open:rotate-45 text-2xl">+</span></summary><ul class="list-disc pl-10 pr-5 pb-4 space-y-1 text-slate-700">${g.items.map((i) => `<li>${esc(i)}</li>`).join('')}</ul></details>`).join('')}
             </div>
         </section>
 `
@@ -124,19 +137,16 @@ function page(s) {
                 ${waBtn('WhatsApp', `Hello Agrawal Stores, I need ${s.fullName} items for Class `)}
             </div>
             <p class="mt-3 text-sm font-medium text-slate-500">Calls answered ${esc(data.hours)}</p>
+            <nav aria-label="On this page" class="mt-6 flex flex-wrap justify-center gap-2">
+                ${s.uniformPhotos.length ? '<a href="#uniforms" class="inline-flex min-h-[44px] items-center rounded-full bg-brand-100 px-4 font-bold text-brand-800">Uniform photos</a>' : ''}
+                ${(s.guide || []).length ? '<a href="#guide" class="inline-flex min-h-[44px] items-center rounded-full bg-brand-100 px-4 font-bold text-brand-800">What your child needs</a>' : ''}
+                <a href="#books" class="inline-flex min-h-[44px] items-center rounded-full bg-brand-100 px-4 font-bold text-brand-800">Book sets</a>
+            </nav>
         </div>
     </header>
 
     <main class="max-w-5xl mx-auto px-4 py-10 space-y-14">
 
-        <section aria-labelledby="pick-class">
-            <h2 id="pick-class" class="text-2xl font-extrabold text-slate-800 mb-4">Choose your child's class</h2>
-            <div class="flex flex-wrap gap-2">
-                ${data.classes.map((c) => `<a href="#${classId(c)}" data-open="${classId(c)}" class="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full border-2 border-brand-200 bg-white px-4 font-bold text-brand-800 hover:border-brand-400">${esc(c)}</a>`).join('\n                ')}
-            </div>
-        </section>
-
-${guide}
         <section id="uniforms" aria-labelledby="uniforms-h" class="scroll-mt-28 sm:scroll-mt-20">
             <h2 id="uniforms-h" class="text-2xl font-extrabold text-slate-800 mb-4">${esc(s.fullName)} uniforms</h2>
             ${photos}
@@ -146,9 +156,13 @@ ${guide}
             </div>
         </section>
 
+${guide}
         <section id="books" aria-labelledby="books-h" class="scroll-mt-28 sm:scroll-mt-20">
             <h2 id="books-h" class="text-2xl font-extrabold text-slate-800 mb-1">${esc(data.session)} book sets</h2>
-            <p class="text-slate-600 mb-5">Tap your child's class to see the list. Call us for the set price and we will pack it for you.</p>
+            <p class="text-slate-600 mb-4">${data.booksNote ? esc(data.booksNote) + ' ' : ''}Call us with your child's class for the set price, and we will pack it for you.</p>
+            <div class="flex flex-wrap gap-2 mb-5" aria-label="Choose your child's class">
+                ${data.classes.map((c) => `<a href="#${classId(c)}" data-open="${classId(c)}" class="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full border-2 border-brand-200 bg-white px-4 font-bold text-brand-800 hover:border-brand-400">${esc(c)}</a>`).join('\n                ')}
+            </div>
             <div class="space-y-3">${classes}
             </div>
         </section>

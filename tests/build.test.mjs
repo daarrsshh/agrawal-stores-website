@@ -1,7 +1,7 @@
 // The page builder: runs cleanly twice, escapes odd text, and keeps the sitemap honest.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync, writeFileSync, mkdtempSync, cpSync, existsSync, readdirSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdtempSync, cpSync, existsSync, readdirSync, symlinkSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import os from 'node:os';
 import path from 'node:path';
@@ -12,9 +12,10 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 function sandbox() {
   const dir = mkdtempSync(path.join(os.tmpdir(), 'site-'));
   for (const f of ['index.html', 'data', 'scripts', 'assets']) cpSync(path.join(root, f), path.join(dir, f), { recursive: true });
+  symlinkSync(path.join(root, 'node_modules'), path.join(dir, 'node_modules'), 'dir');
   return dir;
 }
-const build = (dir) => execFileSync('node', ['scripts/build-schools.mjs'], { cwd: dir, encoding: 'utf8' });
+const build = (dir) => execFileSync('node', ['scripts/build-schools.mjs'], { cwd: dir, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
 
 test('building twice gives the same pages (no doubled links on the home page)', () => {
   const dir = sandbox();
@@ -131,4 +132,19 @@ test('every src and srcset file on every page exists (including the footer photo
     }
   }
   assert.deepEqual(missing, []);
+});
+
+test('setting a GoatCounter code switches the counter on for every page in one build', () => {
+  const dir = sandbox();
+  const d = JSON.parse(readFileSync(path.join(dir, 'data/schools.json'), 'utf8'));
+  d.goatcounter = 'agrawaltest';
+  writeFileSync(path.join(dir, 'data/schools.json'), JSON.stringify(d));
+  build(dir);
+  for (const pg of ['index.html', `schools/${d.schools[0].slug}.html`, 'sections/gifts-toys.html']) {
+    const html = readFileSync(path.join(dir, pg), 'utf8');
+    assert.ok(html.includes('https://agrawaltest.goatcounter.com/count'), pg);
+    assert.equal(html.split('gc.zgo.at/count.js').length - 1, 1, `${pg}: loaded once`);
+  }
+  build(dir);
+  assert.equal(readFileSync(path.join(dir, 'index.html'), 'utf8').split('gc.zgo.at/count.js').length - 1, 1, 'still once after a rebuild');
 });

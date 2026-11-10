@@ -12,6 +12,7 @@
     <meta property="og:description" content="Umbrellas and raincoats for the monsoon, caps, gloves and warm socks for winter, and Holi, Christmas and Diwali decorations. Visit Agrawal Stores, 57-B Rajendra">
     <script type="application/ld+json">{"@context": "https://schema.org", "@type": "Store", "name": "Agrawal Stores", "description": "School uniforms, course books, stationery, gifts, sports goods and festival items in Rajendra Nagar, Indore.", "address": {"@type": "PostalAddress", "streetAddress": "57-B, Rajendra Nagar", "addressLocality": "Indore", "addressRegion": "Madhya Pradesh", "postalCode": "452012", "addressCountry": "IN"}, "telephone": ["+919926504567", "+919826390495", "+917974569831"], "areaServed": "Indore", "knowsAbout": ["School uniforms", "School books", "Stationery"], "geo": {"@type": "GeoCoordinates", "latitude": 22.6693228, "longitude": 75.8278608}, "hasMap": "https://www.google.com/maps?cid=7134028350108918958", "url": "https://agrawalstores.in/", "image": "https://agrawalstores.in/assets/shop-banner.jpg"}</script>
     <!-- Styles are pre-built: run `npm run build` after changing classes -->
+    <!--analytics--><!--/analytics-->
     <link rel="preload" href="../assets/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="../assets/site.css">
     <style>
@@ -156,7 +157,7 @@
                 var b = e.target.closest && e.target.closest('[data-zoom]');
                 if (!b) return;
                 var f = b.closest('figure'), src = f.querySelector('img');
-                img.src = src.currentSrc || src.src; img.alt = src.alt;
+                img.src = src.getAttribute('data-full') ? new URL(src.getAttribute('data-full'), location.href).href : (src.currentSrc || src.src); img.alt = src.alt;
                 cap.textContent = f.querySelector('figcaption').textContent;
                 var c = f.querySelector('a[href^="tel:"]'), w = f.querySelector('a[href*="wa.me"]');
                 call.href = c.href; call.setAttribute('aria-label', c.getAttribute('aria-label'));
