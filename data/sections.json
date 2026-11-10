@@ -6,7 +6,15 @@
       "cardTitle": "School Essentials & Stationery",
       "intro": "School bags, shoes, tiffin boxes and water bottles, along with notebooks, stationery sets, art supplies and project materials.",
       "waText": "Hello Agrawal Stores, I want to ask about Essentials and Stationery",
-      "photos": []
+      "photos": [],
+      "items": [
+        "School bags",
+        "School shoes and socks",
+        "Tiffin boxes and water bottles",
+        "Notebooks and registers",
+        "Stationery sets, pens, pencils and geometry boxes",
+        "Art supplies and project materials"
+      ]
     },
     {
       "slug": "gifts-toys",
@@ -25,31 +33,56 @@
           "caption": "Deer wall painting with crystal finish",
           "group": "Photo Frames & Wall Decor"
         }
+      ],
+      "items": [
+        "Wall décor and photo frames",
+        "Statues and showpieces",
+        "Artificial flowers",
+        "Keychains and small gifts",
+        "Toys and soft toys for children"
       ]
     },
     {
       "slug": "sports-goods",
       "title": "Sports Goods",
       "cardTitle": "Sports Goods",
-      "intro": "Sports equipment for school and play at Agrawal Stores, Rajendra Nagar, Indore.",
+      "intro": "Cricket bats, balls, footballs and a range of indoor and outdoor games for students and players.",
       "waText": "Hello Agrawal Stores, I want to ask about Sports Goods",
-      "photos": []
+      "photos": [],
+      "items": [
+        "Cricket bats and balls",
+        "Footballs",
+        "Indoor games",
+        "Outdoor games"
+      ]
     },
     {
       "slug": "lifestyle-accessories",
       "title": "Lifestyle & Accessories",
       "cardTitle": "Lifestyle & Accessories",
-      "intro": "Everyday lifestyle items and accessories at Agrawal Stores, Rajendra Nagar, Indore.",
+      "intro": "Artificial jewellery, belts and wallets for men and women, and branded perfumes and deodorants.",
       "waText": "Hello Agrawal Stores, I want to ask about Lifestyle and Accessories",
-      "photos": []
+      "photos": [],
+      "items": [
+        "Artificial jewellery",
+        "Belts and wallets for men and women",
+        "Branded perfumes and deodorants"
+      ]
     },
     {
       "slug": "seasonal-festival",
       "title": "Seasonal & Festival",
       "cardTitle": "Seasonal & Festival",
-      "intro": "Items for festivals and the seasons, such as Diwali, Rakhi and more, at Agrawal Stores, Rajendra Nagar, Indore.",
+      "intro": "Umbrellas and raincoats for the monsoon, caps, gloves and warm socks for winter, and Holi, Christmas and Diwali decorations.",
       "waText": "Hello Agrawal Stores, I want to ask about Seasonal and Festival items",
-      "photos": []
+      "photos": [],
+      "items": [
+        "Monsoon: umbrellas and raincoats",
+        "Winter: caps, gloves and warm socks",
+        "Holi colours",
+        "Christmas décor",
+        "Diwali decorations: light series, lanterns, electric diyas and bamboo trees"
+      ]
     }
   ]
 }
