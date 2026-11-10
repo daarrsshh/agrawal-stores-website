@@ -9,7 +9,7 @@ const { sections } = JSON.parse(readFileSync(path.join(root, 'data/sections.json
 const home = readFileSync(path.join(root, 'index.html'), 'utf8');
 const sitemap = readFileSync(path.join(root, 'sitemap.xml'), 'utf8');
 
-for (const s of sections) {
+for (const s of sections.filter((x) => !x.hidden)) {
   test(`section "${s.slug}": has its page, a home link and a sitemap entry, with or without photos`, () => {
     const file = path.join(root, 'sections', `${s.slug}.html`);
     const url = `https://agrawalstores.in/sections/${s.slug}.html`;

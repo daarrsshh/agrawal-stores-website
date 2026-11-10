@@ -8,6 +8,7 @@ import path from 'node:path';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const data = JSON.parse(readFileSync(path.join(root, 'data/schools.json'), 'utf8'));
+data.schools = data.schools.filter((s) => !s.hidden);
 for (const s of data.schools) s.uniformPhotos = s.uniformPhotos.filter((p) => !p.hidden);
 let browser;
 before(async () => { browser = await chromium.launch(); });
@@ -34,7 +35,8 @@ for (const width of [390, 1280]) {
     const page = await open('index.html', width);
     const cards = page.locator('#products h3');
     const n = await cards.count();
-    assert.equal(n, 6);
+    const shownSections = JSON.parse(readFileSync(path.join(root, 'data/sections.json'), 'utf8')).sections.filter((s) => !s.hidden).length;
+    assert.equal(n, 1 + shownSections, 'uniforms card + one card per shown section');
     for (let i = 0; i < n; i++) {
       const card = cards.nth(i).locator('xpath=ancestor::div[contains(@class,"group")][1]');
       const title = (await cards.nth(i).textContent()).trim();

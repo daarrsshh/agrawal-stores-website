@@ -174,6 +174,55 @@ test('owner: sees changes, cannot publish while photos are being prepared, then 
     await ctx.close();
 });
 
+test('owner: adds a new school (with logo) and a Men\'s section; staff can then add products to them', async () => {
+  fake.reset();
+  const { ctx, page } = await phone();
+  await page.getByRole('button', { name: 'Darshit' }).click();
+  await page.locator('#owner-pass').fill('owner-pass-123');
+  await page.getByRole('button', { name: 'Log in' }).click();
+  await page.getByText('Namaste,').waitFor();
+  await page.locator('#s-home [data-go="structure"]').click();
+  await page.locator('#new-section').click();
+  await page.locator('#xf-name').fill("Men's Section");
+  await page.locator('#xf-intro').fill('Shirts, trousers, belts and wallets for men.');
+  await page.locator('#xf-items').fill('Formal shirts\nTrousers\nBelts and wallets');
+  await page.getByRole('button', { name: 'Save section' }).click();
+  await page.getByText('Section added').waitFor();
+  await page.locator('#new-school').click();
+  await page.locator('#sf-full').fill('Delhi Public School');
+  await page.locator('#sf-short').fill('DPS');
+  await page.getByRole('button', { name: 'Save school' }).click();
+  await page.getByText('Please choose the school logo').waitFor();
+  await page.locator('#sf-logo').setInputFiles(path.join(root, 'assets/medicaps.webp'));
+  await page.locator('#sf-preview:not(.hidden)').waitFor();
+  await page.getByRole('button', { name: 'Save school' }).click();
+  await page.getByText('School added').waitFor();
+  assert.ok(await page.locator('#st-schools').getByText('Delhi Public School').isVisible());
+  // hide and show the new section
+  await page.locator('[data-st-toggle="section:men-s-section"]').click();
+  await page.getByText('Hidden.').waitFor();
+  assert.equal(pending('data/sections.json').sections.at(-1).hidden, true);
+  await page.locator('[data-st-toggle="section:men-s-section"]').click();
+  await page.getByText('Shown again.').waitFor();
+  const school = pending('data/schools.json').schools.at(-1);
+  assert.deepEqual([school.slug, school.name, school.logo], ['delhi-public-school', 'DPS', 'logos/delhi-public-school.jpg']);
+  assert.ok(school.logoW <= 300 && school.logoH <= 300);
+  await page.locator('#logout-btn').click();
+  // staff sees the new section when adding a product
+  await loginStaff(page);
+  await page.locator('#s-home [data-go="add-page"]').click();
+  await page.getByRole('button', { name: "Men's Section" }).click();
+  await page.locator('#add-photo').setInputFiles(path.join(root, 'assets/shop-front.webp'));
+  await page.locator('#add-preview:not(.hidden)').waitFor();
+  await page.locator('#add-name').fill('White formal shirt');
+  await page.locator('#add-send').click();
+  await page.getByText('Photo sent').waitFor();
+  assert.equal(pending('data/incoming.json').photos[0].page, 'section:men-s-section');
+  // staff do not get the schools & sections screen
+  assert.ok(!(await page.locator('#s-home [data-go="structure"]').isVisible()));
+  await ctx.close();
+});
+
 test('admin page is hidden from Google and not part of the public site', () => {
   const html = readFileSync(path.join(root, 'admin/index.html'), 'utf8');
   assert.match(html, /<meta name="robots" content="noindex, nofollow">/);

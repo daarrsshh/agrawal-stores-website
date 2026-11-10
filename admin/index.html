@@ -65,8 +65,9 @@
             <div class="grid gap-3">
                 <button type="button" data-go="add-page" class="tile flex items-center gap-4 rounded-2xl bg-brand-600 px-5 text-left text-white shadow"><span class="text-4xl" aria-hidden="true">📷</span><span><span class="block text-xl font-extrabold">Add a product</span><span lang="hi" class="block text-base opacity-90">नया प्रोडक्ट डालें (फोटो के साथ)</span></span></button>
                 <button type="button" data-go="edit-page" class="tile flex items-center gap-4 rounded-2xl border-2 border-brand-200 bg-white px-5 text-left shadow-sm"><span class="text-4xl" aria-hidden="true">✏️</span><span><span class="block text-xl font-extrabold">Change or hide a product</span><span lang="hi" class="block text-base text-slate-600">नाम बदलें, छुपाएँ, ऊपर-नीचे करें</span></span></button>
-                <button type="button" data-go="publish" data-owner class="tile flex items-center gap-4 rounded-2xl border-2 border-green-500 bg-white px-5 text-left shadow-sm" hidden><span class="text-4xl" aria-hidden="true">✅</span><span><span class="block text-xl font-extrabold">Check &amp; publish <span id="pending-count" class="ml-1 rounded-full bg-green-600 px-2 text-base text-white"></span></span><span class="block text-base text-slate-600">See what staff changed, then put it on the website</span></span></button>
+                <button type="button" data-go="publish" data-owner class="tile flex items-center gap-4 rounded-2xl border-2 border-green-500 bg-white px-5 text-left shadow-sm" hidden><span class="text-4xl" aria-hidden="true">✅</span><span><span class="block text-xl font-extrabold">Check &amp; publish <span id="pending-count" class="ml-1 rounded-full bg-green-600 px-2 text-base text-white empty:hidden"></span></span><span class="block text-base text-slate-600">See what staff changed, then put it on the website</span></span></button>
                 <button type="button" data-go="banner" data-owner class="tile flex items-center gap-4 rounded-2xl border-2 border-brand-200 bg-white px-5 text-left shadow-sm" hidden><span class="text-4xl" aria-hidden="true">📢</span><span><span class="block text-xl font-extrabold">Home page banner</span><span class="block text-base text-slate-600">The message at the top of the website</span></span></button>
+                <button type="button" data-go="structure" data-owner class="tile flex items-center gap-4 rounded-2xl border-2 border-brand-200 bg-white px-5 text-left shadow-sm" hidden><span class="text-4xl" aria-hidden="true">🏫</span><span><span class="block text-xl font-extrabold">Schools &amp; sections</span><span class="block text-base text-slate-600">Add a new school or section (like Men's), rename or hide one</span></span></button>
             </div>
             <p id="pending-note" class="mt-5 text-slate-600"></p>
         </section>
@@ -143,6 +144,52 @@
                 <div class="rounded-2xl bg-brand-800 px-4 py-3 text-center text-white"><p id="banner-preview" class="font-bold"></p><p id="banner-preview-btn" class="font-extrabold underline"></p></div>
                 <button class="w-full min-h-[56px] rounded-2xl bg-brand-600 text-white text-lg font-extrabold">Save banner</button>
                 <p class="text-sm text-slate-600">It goes live when you publish.</p>
+            </form>
+        </section>
+
+        <!-- Schools & sections (owner) -->
+        <section id="s-structure" class="screen" hidden>
+            <button type="button" data-go="home" class="mb-4 min-h-[44px] font-bold text-brand-700">← Back</button>
+            <h1 class="text-2xl font-extrabold mb-4">Schools &amp; sections</h1>
+            <div class="grid grid-cols-2 gap-3 mb-6">
+                <button type="button" id="new-school" class="min-h-[64px] rounded-2xl bg-brand-600 px-3 text-lg font-extrabold text-white">➕ Add a school</button>
+                <button type="button" id="new-section" class="min-h-[64px] rounded-2xl bg-brand-600 px-3 text-lg font-extrabold text-white">➕ Add a section</button>
+            </div>
+            <h2 class="font-extrabold text-slate-700 mb-2">Schools</h2>
+            <ul id="st-schools" class="space-y-2 mb-6"></ul>
+            <h2 class="font-extrabold text-slate-700 mb-2">Shop sections</h2>
+            <ul id="st-sections" class="space-y-2"></ul>
+            <p class="mt-5 text-sm text-slate-600">Changes here go live when you publish. A hidden school or section disappears from the website but nothing is deleted; you can show it again.</p>
+        </section>
+
+        <!-- Add / edit a school (owner) -->
+        <section id="s-school-form" class="screen" hidden>
+            <button type="button" data-go="structure" class="mb-4 min-h-[44px] font-bold text-brand-700">← Back</button>
+            <h1 id="sf-title" class="text-2xl font-extrabold mb-4">Add a school</h1>
+            <form id="school-form" class="space-y-5">
+                <div><label for="sf-full" class="block text-lg font-bold mb-1">Full school name</label><input id="sf-full" maxlength="70" placeholder="e.g. Delhi Public School" class="w-full min-h-[52px] rounded-xl border-2 border-brand-200 px-4 text-lg"></div>
+                <div><label for="sf-short" class="block text-lg font-bold mb-1">Short name under the logo</label><input id="sf-short" maxlength="30" placeholder="e.g. DPS" class="w-full min-h-[52px] rounded-xl border-2 border-brand-200 px-4 text-lg"></div>
+                <div id="sf-logo-wrap">
+                    <p class="text-lg font-bold mb-1">School logo</p>
+                    <label class="flex min-h-[110px] cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-4 border-dashed border-brand-300 bg-white p-4 text-center">
+                        <img id="sf-preview" alt="" class="hidden max-h-32">
+                        <span id="sf-logo-label" class="text-lg font-extrabold text-brand-700">🖼 Choose the logo picture</span>
+                        <input id="sf-logo" type="file" accept="image/*" class="sr-only">
+                    </label>
+                </div>
+                <button class="w-full min-h-[56px] rounded-2xl bg-brand-600 text-white text-lg font-extrabold">Save school</button>
+            </form>
+        </section>
+
+        <!-- Add / edit a section (owner) -->
+        <section id="s-section-form" class="screen" hidden>
+            <button type="button" data-go="structure" class="mb-4 min-h-[44px] font-bold text-brand-700">← Back</button>
+            <h1 id="xf-title" class="text-2xl font-extrabold mb-4">Add a section</h1>
+            <form id="section-form" class="space-y-5">
+                <div><label for="xf-name" class="block text-lg font-bold mb-1">Section name</label><input id="xf-name" maxlength="50" placeholder="e.g. Men's Section" class="w-full min-h-[52px] rounded-xl border-2 border-brand-200 px-4 text-lg"></div>
+                <div><label for="xf-intro" class="block text-lg font-bold mb-1">Short description</label><textarea id="xf-intro" rows="3" maxlength="300" placeholder="e.g. Shirts, trousers, belts and wallets for men." class="w-full rounded-xl border-2 border-brand-200 px-4 py-3 text-lg"></textarea></div>
+                <div><label for="xf-items" class="block text-lg font-bold mb-1">What you sell here (one per line)</label><textarea id="xf-items" rows="6" placeholder="Formal shirts&#10;Trousers&#10;Belts and wallets" class="w-full rounded-xl border-2 border-brand-200 px-4 py-3 text-lg"></textarea></div>
+                <button class="w-full min-h-[56px] rounded-2xl bg-brand-600 text-white text-lg font-extrabold">Save section</button>
             </form>
         </section>
 
@@ -283,8 +330,8 @@
         function pageList() {
             var st = S.state;
             return {
-                schools: st.schools.map(function (s) { return { id: 'school:' + s.slug, slug: s.slug, kind: 'school', name: s.fullName, logo: s.logo, items: s.uniformPhotos }; }),
-                sections: st.sections.map(function (s) { return { id: 'section:' + s.slug, slug: s.slug, kind: 'section', name: s.title, items: s.photos }; })
+                schools: st.schools.map(function (s) { return { id: 'school:' + s.slug, slug: s.slug, kind: 'school', name: s.fullName + (s.hidden ? ' (hidden)' : ''), logo: s.logo, items: s.uniformPhotos }; }),
+                sections: st.sections.map(function (s) { return { id: 'section:' + s.slug, slug: s.slug, kind: 'section', name: s.title + (s.hidden ? ' (hidden)' : ''), items: s.photos }; })
             };
         }
         function findPage(id) { var l = pageList(); return l.schools.concat(l.sections).filter(function (p) { return p.id === id; })[0]; }
@@ -446,6 +493,93 @@
                 .catch(function (err) { say(err.message, 'bad'); show('banner'); });
         });
 
+        // ---------- schools & sections (owner) ----------
+        var editing = null, logoData = null, logoW = 0, logoH = 0;
+        function openStructure() {
+            var st = S.state;
+            var row = function (kind, slug, name, hidden, logo) {
+                return '<li class="flex items-center gap-3 rounded-2xl border-2 border-brand-100 bg-white p-3' + (hidden ? ' opacity-60' : '') + '">' +
+                    (logo ? '<img src="' + esc(img('assets/' + logo)) + '" alt="" class="h-10 w-10 object-contain">' : '') +
+                    '<span class="flex-1 font-extrabold">' + esc(name) + (hidden ? ' <span class="block text-sm font-bold text-red-700">Hidden</span>' : '') + '</span>' +
+                    '<button type="button" data-st-edit="' + kind + ':' + esc(slug) + '" class="min-h-[44px] rounded-xl border-2 border-brand-200 px-3 font-bold">Edit</button>' +
+                    '<button type="button" data-st-toggle="' + kind + ':' + esc(slug) + '" data-hidden="' + (hidden ? '1' : '') + '" class="min-h-[44px] rounded-xl border-2 border-brand-200 px-3 font-bold">' + (hidden ? 'Show' : 'Hide') + '</button></li>';
+            };
+            $('st-schools').innerHTML = st.schools.map(function (s) { return row('school', s.slug, s.fullName, s.hidden, s.logo); }).join('');
+            $('st-sections').innerHTML = st.sections.map(function (s) { return row('section', s.slug, s.title, s.hidden); }).join('');
+            show('structure');
+        }
+        function saveStructure(op, message) {
+            busy('Saving…');
+            return api('POST', '/edit', op).then(function () { return refresh(); }).then(function () { say('✅ ' + message + ' Publish to put it on the website.'); openStructure(); });
+        }
+        $('s-structure').addEventListener('click', function (e) {
+            var t = e.target.closest('[data-st-toggle]');
+            if (t) {
+                var hide = !t.getAttribute('data-hidden');
+                if (hide && !window.confirm('Hide this from the website? You can show it again later.')) return;
+                saveStructure({ op: hide ? 'hidePage' : 'showPage', page: t.getAttribute('data-st-toggle') }, hide ? 'Hidden.' : 'Shown again.').catch(function (err) { say(err.message, 'bad'); openStructure(); });
+                return;
+            }
+            var ed = e.target.closest('[data-st-edit]');
+            if (ed) {
+                var parts = ed.getAttribute('data-st-edit').split(':');
+                if (parts[0] === 'school') openSchoolForm(S.state.schools.filter(function (s) { return s.slug === parts[1]; })[0]);
+                else openSectionForm(S.state.sections.filter(function (s) { return s.slug === parts[1]; })[0]);
+            }
+        });
+        $('new-school').addEventListener('click', function () { openSchoolForm(null); });
+        $('new-section').addEventListener('click', function () { openSectionForm(null); });
+
+        function openSchoolForm(s) {
+            editing = s; logoData = null; say('');
+            $('school-form').reset();
+            $('sf-title').textContent = s ? 'Edit ' + s.fullName : 'Add a school';
+            $('sf-full').value = s ? s.fullName : ''; $('sf-short').value = s ? s.name : '';
+            $('sf-logo-wrap').hidden = !!s;
+            $('sf-preview').className = 'hidden max-h-32'; $('sf-logo-label').textContent = '🖼 Choose the logo picture';
+            show('school-form');
+        }
+        // Logos: shrink to 300px on a white background (no see-through corners).
+        $('sf-logo').addEventListener('change', function () {
+            var f = this.files && this.files[0]; if (!f) return;
+            var url = URL.createObjectURL(f), im = new Image();
+            im.onload = function () {
+                var k = Math.min(1, 300 / Math.max(im.naturalWidth, im.naturalHeight));
+                var c = document.createElement('canvas'); c.width = Math.round(im.naturalWidth * k); c.height = Math.round(im.naturalHeight * k);
+                var x = c.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, c.width, c.height); x.drawImage(im, 0, 0, c.width, c.height);
+                URL.revokeObjectURL(url);
+                logoData = c.toDataURL('image/jpeg', 0.9); logoW = c.width; logoH = c.height;
+                $('sf-preview').src = logoData; $('sf-preview').className = 'max-h-32'; $('sf-logo-label').textContent = 'Change logo';
+            };
+            im.onerror = function () { say('This picture could not be opened.', 'bad'); };
+            im.src = url;
+        });
+        $('school-form').addEventListener('submit', function (e) {
+            e.preventDefault();
+            var full = $('sf-full').value.trim(), short = $('sf-short').value.trim() || full;
+            if (full.length < 2) { say('Please type the school name.', 'bad'); window.scrollTo(0, 0); return; }
+            var op = editing ? { op: 'editSchool', slug: editing.slug, fullName: full, name: short }
+                : { op: 'addSchool', fullName: full, name: short, logo: logoData, logoW: logoW, logoH: logoH };
+            if (!editing && !logoData) { say('Please choose the school logo.', 'bad'); window.scrollTo(0, 0); return; }
+            saveStructure(op, editing ? 'School updated.' : 'School added. Staff can now add its uniform photos.').catch(function (err) { say(err.message, 'bad'); show('school-form'); });
+        });
+
+        function openSectionForm(s) {
+            editing = s; say('');
+            $('section-form').reset();
+            $('xf-title').textContent = s ? 'Edit ' + s.title : 'Add a section';
+            $('xf-name').value = s ? s.title : '';
+            $('xf-intro').value = s ? (s.cardText || s.intro || '') : '';
+            $('xf-items').value = s ? (s.items || []).join('\n') : '';
+            show('section-form');
+        }
+        $('section-form').addEventListener('submit', function (e) {
+            e.preventDefault();
+            var op = { op: editing ? 'editSection' : 'addSection', title: $('xf-name').value.trim(), intro: $('xf-intro').value, items: $('xf-items').value };
+            if (editing) op.slug = editing.slug;
+            saveStructure(op, editing ? 'Section updated.' : 'Section added. Staff can now add its photos.').catch(function (err) { say(err.message, 'bad'); show('section-form'); });
+        });
+
         // ---------- navigation ----------
         document.addEventListener('click', function (e) {
             var b = e.target.closest('[data-go]'); if (!b) return;
@@ -456,6 +590,7 @@
             else if (to === 'edit-page') goPick('edit');
             else if (to === 'publish') openPublish();
             else if (to === 'banner') openBanner();
+            else if (to === 'structure') { busy(); refresh().then(openStructure).catch(function (err) { say(err.message, 'bad'); show('home'); }); }
         });
         $('home-btn').addEventListener('click', function () { if (S.token) goHome(); });
         $('logout-btn').addEventListener('click', logout);

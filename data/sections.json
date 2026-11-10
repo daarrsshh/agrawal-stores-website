@@ -14,7 +14,11 @@
         "Notebooks and registers",
         "Stationery sets, pens, pencils and geometry boxes",
         "Art supplies and project materials"
-      ]
+      ],
+      "image": "categories/essentials.svg",
+      "imageAlt": "School bags, stationery and essentials",
+      "cardText": "School bags, shoes, tiffin boxes and water bottles, along with notebooks, stationery sets, art supplies and project materials.",
+      "waLabel": "WhatsApp us about Essentials and Stationery"
     },
     {
       "slug": "gifts-toys",
@@ -40,7 +44,11 @@
         "Artificial flowers",
         "Keychains and small gifts",
         "Toys and soft toys for children"
-      ]
+      ],
+      "image": "categories/gifts-toys.svg",
+      "imageAlt": "Gifts and Toys",
+      "cardText": "Wall décor, photo frames, statues, artificial flowers and keychains for every occasion, plus toys and soft toys for children.",
+      "waLabel": "WhatsApp us about Gifts and Toys"
     },
     {
       "slug": "sports-goods",
@@ -54,7 +62,11 @@
         "Footballs",
         "Indoor games",
         "Outdoor games"
-      ]
+      ],
+      "image": "categories/sports.svg",
+      "imageAlt": "Sports Equipment",
+      "cardText": "Cricket bats, balls, footballs and a range of indoor and outdoor games for students and players.",
+      "waLabel": "WhatsApp us about Sports Equipment"
     },
     {
       "slug": "lifestyle-accessories",
@@ -67,7 +79,11 @@
         "Artificial jewellery",
         "Belts and wallets for men and women",
         "Branded perfumes and deodorants"
-      ]
+      ],
+      "image": "categories/lifestyle.svg",
+      "imageAlt": "Lifestyle and Accessories",
+      "cardText": "Artificial jewellery, belts and wallets for men and women, and branded perfumes and deodorants.",
+      "waLabel": "WhatsApp us about Lifestyle and Accessories"
     },
     {
       "slug": "seasonal-festival",
@@ -82,7 +98,11 @@
         "Holi colours",
         "Christmas décor",
         "Diwali decorations: light series, lanterns, electric diyas and bamboo trees"
-      ]
+      ],
+      "image": "categories/seasonal.svg",
+      "imageAlt": "Seasonal and festival items",
+      "cardText": "Monsoon: Umbrellas and raincoats.\nWinter: Caps, gloves and warm socks.\nFestivals: Holi colours, Christmas décor, and Diwali decorations including light series, lanterns, electric diyas and bamboo trees.",
+      "waLabel": "WhatsApp us about Seasonal and Festival items"
     }
   ]
 }

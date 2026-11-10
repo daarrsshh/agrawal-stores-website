@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400" role="img" aria-label="Shop section">
+  <rect width="600" height="400" fill="#fbefdf"/>
+  <circle cx="300" cy="215" r="150" fill="#f3dcc2"/>
+  <path d="M215 150h170l18 170H197z" fill="#b9623f"/>
+  <path d="M250 150v-18a50 50 0 0 1 100 0v18" fill="none" stroke="#6a3223" stroke-width="14" stroke-linecap="round"/>
+  <circle cx="255" cy="185" r="8" fill="#fffaf2"/><circle cx="345" cy="185" r="8" fill="#fffaf2"/>
+  <path d="M255 185v16a45 45 0 0 0 90 0v-16" fill="none" stroke="#fffaf2" stroke-width="8" stroke-linecap="round"/>
+</svg>

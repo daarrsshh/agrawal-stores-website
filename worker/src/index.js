@@ -165,6 +165,79 @@ export function cleanText(v, max = 60) {
   return s;
 }
 
+
+// ---------- schools and sections (owner only) ----------
+export const slugify = (s) => String(s).toLowerCase().normalize('NFKD').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40).replace(/-+$/, '');
+
+function cleanItems(items) {
+  const list = (Array.isArray(items) ? items : String(items || '').split('\n')).map((x) => String(x).trim()).filter(Boolean);
+  if (list.length < 1) throw new HttpError(400, 'Please write at least one thing you sell here (one per line).');
+  if (list.length > 20) throw new HttpError(400, 'Please keep the list to 20 lines or fewer.');
+  return list.map((x) => cleanText(x, 80));
+}
+
+function cleanLong(v, max) {
+  const lines = String(v == null ? '' : v).split('\n').map((l) => l.trim()).filter(Boolean);
+  if (!lines.length) throw new HttpError(400, 'Please write a short description.');
+  return lines.map((l) => cleanText(l, max)).join('\n').slice(0, max);
+}
+
+// Returns { file, message, extraFiles? } or null when the edit is not about schools/sections.
+export function applyStructure(all, op, user) {
+  const ops = ['addSchool', 'editSchool', 'addSection', 'editSection', 'hidePage', 'showPage'];
+  if (!ops.includes(op.op)) return null;
+  if (user.r !== 'owner') throw new HttpError(403, 'Only the owner can add or change schools and sections.');
+  const schools = all.schools.json.schools, sections = all.sections.json.sections;
+  const taken = (slug) => schools.some((s) => s.slug === slug) || sections.some((s) => s.slug === slug);
+
+  if (op.op === 'addSchool') {
+    const fullName = cleanText(op.fullName, 70);
+    const name = op.name ? cleanText(op.name, 30) : fullName;
+    const slug = slugify(fullName);
+    if (!slug) throw new HttpError(400, 'Please type the school name in English letters.');
+    if (taken(slug) || schools.some((s) => s.fullName.toLowerCase() === fullName.toLowerCase())) throw new HttpError(400, 'A school or section with this name already exists.');
+    const logo = String(op.logo || '').replace(/^data:image\/jpeg;base64,/, '');
+    if (!logo.startsWith('/9j/') || logo.length < 500) throw new HttpError(400, 'Please add the school logo (a photo of it is fine).');
+    if (logo.length * 0.75 > 400 * 1024) throw new HttpError(400, 'The logo is too big.');
+    const w = Math.max(16, Math.min(600, Number(op.logoW) || 300)), h = Math.max(16, Math.min(600, Number(op.logoH) || 300));
+    schools.push({ slug, name, fullName, logo: `logos/${slug}.jpg`, logoW: w, logoH: h, uniformPhotos: [], books: {} });
+    return { file: 'schools', message: `New school: ${fullName}`, extraFiles: [{ path: `assets/logos/${slug}.jpg`, b64: logo }] };
+  }
+  if (op.op === 'editSchool') {
+    const s = schools.find((x) => x.slug === op.slug);
+    if (!s) throw new HttpError(404, 'School not found.');
+    const fullName = cleanText(op.fullName, 70), name = cleanText(op.name || op.fullName, 30);
+    if (schools.some((x) => x !== s && x.fullName.toLowerCase() === fullName.toLowerCase())) throw new HttpError(400, 'Another school already has that name.');
+    s.fullName = fullName; s.name = name;
+    return { file: 'schools', message: `School renamed: ${fullName}` };
+  }
+  if (op.op === 'addSection') {
+    const title = cleanText(op.title, 50);
+    const slug = slugify(title);
+    if (!slug) throw new HttpError(400, 'Please type the section name in English letters.');
+    if (taken(slug)) throw new HttpError(400, 'A school or section with this name already exists.');
+    const intro = cleanLong(op.intro, 300);
+    sections.push({ slug, title, cardTitle: title, intro, cardText: intro, items: cleanItems(op.items), photos: [],
+      waText: `Hello Agrawal Stores, I want to ask about ${title}`, waLabel: `WhatsApp us about ${title}` });
+    return { file: 'sections', message: `New section: ${title}` };
+  }
+  if (op.op === 'editSection') {
+    const s = sections.find((x) => x.slug === op.slug);
+    if (!s) throw new HttpError(404, 'Section not found.');
+    const title = cleanText(op.title, 50);
+    if (sections.some((x) => x !== s && x.title.toLowerCase() === title.toLowerCase())) throw new HttpError(400, 'Another section already has that name.');
+    const intro = cleanLong(op.intro, 300);
+    Object.assign(s, { title, cardTitle: title, intro, cardText: intro, items: cleanItems(op.items),
+      waText: `Hello Agrawal Stores, I want to ask about ${title}`, waLabel: `WhatsApp us about ${title}` });
+    return { file: 'sections', message: `Section updated: ${title}` };
+  }
+  // hidePage / showPage
+  const pg = findPage(all, op.page);
+  const target = (pg.kind === 'school' ? schools : sections).find((x) => x.slug === pg.slug);
+  if (op.op === 'hidePage') target.hidden = true; else delete target.hidden;
+  return { file: pg.file, message: `${pg.title}: ${op.op === 'hidePage' ? 'hidden from the website' : 'shown on the website again'}` };
+}
+
 // Apply one edit. Returns { file, message } describing what changed.
 export function applyEdit(all, op, user) {
   if (op.op === 'banner') {
@@ -174,6 +247,8 @@ export function applyEdit(all, op, user) {
     all.site.json.banner = { show: Boolean(op.show), text, button };
     return { file: 'site', message: `Banner: ${op.show ? text : 'hidden'}` };
   }
+  const structure = applyStructure(all, op, user);
+  if (structure) return structure;
   const pg = findPage(all, op.page);
   const i = pg.list.findIndex((p) => p.file === op.file);
   if (i < 0) throw new HttpError(404, 'That product was not found. Refresh the page.');
@@ -273,7 +348,7 @@ async function route(req, env) {
       pending: {
         exists: all.ref === BRANCH && Boolean(cmp && cmp.ahead_by),
         pr: pr ? pr.number : null,
-        changes: cmp ? (cmp.commits || []).map((c) => c.commit.message.split('\n')[0]).filter((m) => !/^(Merge|Queue photo|Prepare website changes)/.test(m)) : [],
+        changes: cmp ? (cmp.commits || []).map((c) => c.commit.message.split('\n')[0]).filter((m) => !/^(Merge|Queue photo|Prepare website changes)/.test(m) && !/: logo$/.test(m)) : [],
         incoming: incoming.map((p) => ({ page: p.page, caption: p.caption, by: p.by })),
         processing: incoming.length > 0 || Boolean(run && run.status !== 'completed'),
         failed: Boolean(run && run.status === 'completed' && run.conclusion && run.conclusion !== 'success'),
@@ -285,8 +360,9 @@ async function route(req, env) {
   if (path === '/edit' && req.method === 'POST') {
     await g.ensureBranch();
     const all = await loadAll(g);
-    const { file, message } = applyEdit(all, body, me);
+    const { file, message, extraFiles } = applyEdit(all, body, me);
     const msg = `${message} (by ${me.n})`;
+    for (const f of extraFiles || []) await g.writeFile(f.path, f.b64, `${msg}: logo`);
     await g.writeFile(DATA[file], utf8b64(JSON.stringify(all[file].json, null, 2) + '\n'), msg, all[file].sha);
     await g.ensurePr('Changes made on agrawalstores.in/admin. The owner publishes them from the admin page.');
     return { ok: true, message };

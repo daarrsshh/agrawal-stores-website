@@ -81,14 +81,12 @@ test('a school with no photos still gets a sensible uniform section', () => {
 });
 
 test('a missing home-page marker stops the build instead of silently skipping', () => {
-  const dir = sandbox();
-  const p = path.join(dir, 'index.html');
-  writeFileSync(p, readFileSync(p, 'utf8').replace(/<!--sec:gifts-toys-->.*?<!--\/sec:gifts-toys-->/s, ''));
-  assert.throws(() => build(dir), /gifts-toys/);
-  const dir2 = sandbox();
-  const p2 = path.join(dir2, 'index.html');
-  writeFileSync(p2, readFileSync(p2, 'utf8').replace('<!--secimg:sports-goods-->', ''));
-  assert.throws(() => build(dir2), /sports-goods/);
+  for (const marker of ['section-cards', 'schools-strip', 'banner', 'analytics']) {
+    const dir = sandbox();
+    const p = path.join(dir, 'index.html');
+    writeFileSync(p, readFileSync(p, 'utf8').replace(`<!--${marker}-->`, ''));
+    assert.throws(() => build(dir), new RegExp(marker), marker);
+  }
 });
 
 test('sitemap lists exactly the pages that exist', () => {
@@ -203,4 +201,36 @@ test('photos sent from the admin page become website photos; a broken one is kep
   const left = JSON.parse(readFileSync(path.join(dir, 'data/incoming.json'), 'utf8')).photos;
   assert.deepEqual(left.map((x) => x.id), ['gone']);
   assert.match(left[0].error, /missing/);
+});
+
+test('a new school and a new section appear everywhere; hiding them removes them everywhere', () => {
+  const dir = sandbox();
+  const d = JSON.parse(readFileSync(path.join(dir, 'data/schools.json'), 'utf8'));
+  const sec = JSON.parse(readFileSync(path.join(dir, 'data/sections.json'), 'utf8'));
+  mkdirSync(path.join(dir, 'assets/logos'), { recursive: true });
+  cpSync(path.join(root, 'assets/medicaps.webp'), path.join(dir, 'assets/logos/delhi-public-school.jpg'));
+  d.schools.push({ slug: 'delhi-public-school', name: 'DPS', fullName: 'Delhi Public School', logo: 'logos/delhi-public-school.jpg', logoW: 300, logoH: 300, uniformPhotos: [], books: {} });
+  sec.sections.push({ slug: 'mens', title: "Men's Section", intro: 'Shirts and belts for men.', cardText: 'Shirts and belts for men.', items: ['Formal shirts', 'Belts'], photos: [] });
+  writeFileSync(path.join(dir, 'data/schools.json'), JSON.stringify(d));
+  writeFileSync(path.join(dir, 'data/sections.json'), JSON.stringify(sec));
+  build(dir);
+  const read = (f) => readFileSync(path.join(dir, f), 'utf8');
+  let home = read('index.html'), map = read('sitemap.xml');
+  assert.ok(home.includes('href="schools/delhi-public-school.html"') && home.includes('assets/logos/delhi-public-school.jpg'), 'school logo on home');
+  assert.ok(home.includes('Men&#39;s Section') || home.includes("Men's Section"), 'section card on home');
+  assert.ok(home.includes('assets/categories/generic.svg'), 'new section card has a picture');
+  assert.ok(existsSync(path.join(dir, 'schools/delhi-public-school.html')) && existsSync(path.join(dir, 'sections/mens.html')));
+  assert.ok(map.includes('/schools/delhi-public-school.html') && map.includes('/sections/mens.html'));
+  assert.ok(read(`schools/${d.schools[0].slug}.html`).includes('href="delhi-public-school.html"'), 'listed under other schools');
+  assert.ok(read('sections/gifts-toys.html').includes('href="mens.html"'), 'listed under more from the store');
+  // hide both
+  d.schools.at(-1).hidden = true; sec.sections.at(-1).hidden = true;
+  writeFileSync(path.join(dir, 'data/schools.json'), JSON.stringify(d));
+  writeFileSync(path.join(dir, 'data/sections.json'), JSON.stringify(sec));
+  build(dir);
+  home = read('index.html'); map = read('sitemap.xml');
+  assert.ok(!home.includes('delhi-public-school') && !home.includes('sections/mens.html'), 'gone from home');
+  assert.ok(!existsSync(path.join(dir, 'schools/delhi-public-school.html')) && !existsSync(path.join(dir, 'sections/mens.html')), 'pages removed');
+  assert.ok(!map.includes('delhi-public-school') && !map.includes('/sections/mens.html'), 'gone from sitemap');
+  assert.ok(!read(`schools/${d.schools[0].slug}.html`).includes('delhi-public-school.html'), 'gone from other schools');
 });

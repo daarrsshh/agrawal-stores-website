@@ -181,3 +181,69 @@ test('only the shop website may call the service (CORS)', async () => {
   const pre = await worker.fetch(new Request('https://admin.example/edit', { method: 'OPTIONS', headers: { origin: 'https://agrawalstores.in' } }), env);
   assert.equal(pre.status, 204);
 });
+
+test('owner can add a new school with its logo and a new section; staff cannot', async () => {
+  resetGit();
+  const env = await makeEnv();
+  const staff = await loginAs(env, 'Sandeep', '482913');
+  const owner = await loginAs(env, 'Darshit', 'owner-pass-123');
+  const logo = '/9j/' + 'B'.repeat(3000);
+  assert.equal((await call(env, 'POST', '/edit', { op: 'addSchool', fullName: 'Delhi Public School', name: 'DPS', logo }, staff)).status, 403);
+  assert.equal((await call(env, 'POST', '/edit', { op: 'addSection', title: "Men's Section", intro: 'x y', items: 'a' }, staff)).status, 403);
+  let r = await call(env, 'POST', '/edit', { op: 'addSchool', fullName: 'Delhi Public School', name: 'DPS', logo, logoW: 300, logoH: 280 }, owner);
+  assert.equal(r.status, 200, JSON.stringify(r.body));
+  const school = pendingJson('data/schools.json').schools.at(-1);
+  assert.deepEqual([school.slug, school.name, school.fullName, school.logo, school.logoW, school.logoH], ['delhi-public-school', 'DPS', 'Delhi Public School', 'logos/delhi-public-school.jpg', 300, 280]);
+  assert.deepEqual(school.uniformPhotos, []);
+  assert.ok(gitState.branches.get('admin-pending').get('assets/logos/delhi-public-school.jpg').startsWith('BINARY:'));
+  r = await call(env, 'POST', '/edit', { op: 'addSection', title: "Men's Section", intro: 'Shirts, trousers and accessories for men.', items: "Formal shirts\nTrousers\n\nBelts and wallets" }, owner);
+  assert.equal(r.status, 200, JSON.stringify(r.body));
+  const sec = pendingJson('data/sections.json').sections.at(-1);
+  assert.deepEqual([sec.slug, sec.title, sec.items], ['men-s-section', "Men's Section", ['Formal shirts', 'Trousers', 'Belts and wallets']]);
+  assert.match(sec.waText, /Men's Section/);
+  const st = (await call(env, 'GET', '/state', null, owner)).body;
+  assert.deepEqual(st.pending.changes, ['New school: Delhi Public School (by Darshit)', "New section: Men's Section (by Darshit)"], 'logo commit not listed separately');
+  // staff can now add photos to the new section
+  r = await call(env, 'POST', '/photo', { page: 'section:men-s-section', caption: 'White formal shirt', mode: 'bag', image: fakeJpeg }, staff);
+  assert.equal(r.status, 200, JSON.stringify(r.body));
+});
+
+test('adding schools and sections: duplicates, missing logo, empty lists and prices are refused', async () => {
+  resetGit();
+  const env = await makeEnv();
+  const owner = await loginAs(env, 'Darshit', 'owner-pass-123');
+  const existing = mainJson('data/schools.json').schools[0];
+  const logo = '/9j/' + 'B'.repeat(3000);
+  const bad = [
+    { op: 'addSchool', fullName: existing.fullName, logo },
+    { op: 'addSchool', fullName: 'New School' },
+    { op: 'addSchool', fullName: 'New School', logo: 'not-an-image' },
+    { op: 'addSchool', fullName: 'हिंदी', logo },
+    { op: 'addSection', title: 'Gifts & Toys', intro: 'More gifts', items: 'Toys' },
+    { op: 'addSection', title: 'Mens', intro: 'Shirts for men', items: '' },
+    { op: 'addSection', title: 'Mens', intro: '', items: 'Shirts' },
+    { op: 'addSection', title: 'Mens', intro: 'Shirts from Rs. 300', items: 'Shirts' },
+  ];
+  for (const b of bad) assert.equal((await call(env, 'POST', '/edit', b, owner)).status, 400, JSON.stringify(b).slice(0, 80));
+});
+
+test('owner can rename a school, edit a section, and hide or show a whole page', async () => {
+  resetGit();
+  const env = await makeEnv();
+  const owner = await loginAs(env, 'Darshit', 'owner-pass-123');
+  const staff = await loginAs(env, 'Sandeep', '482913');
+  const sec = mainJson('data/sections.json').sections[2];
+  let r = await call(env, 'POST', '/edit', { op: 'editSection', slug: sec.slug, title: 'Sports & Games', intro: 'Bats, balls and board games.', items: ['Cricket bats', 'Board games'] }, owner);
+  assert.equal(r.status, 200, JSON.stringify(r.body));
+  const s2 = pendingJson('data/sections.json').sections[2];
+  assert.deepEqual([s2.slug, s2.title, s2.cardText, s2.items], [sec.slug, 'Sports & Games', 'Bats, balls and board games.', ['Cricket bats', 'Board games']], 'address of the page stays the same');
+  const sch = mainJson('data/schools.json').schools[1];
+  r = await call(env, 'POST', '/edit', { op: 'editSchool', slug: sch.slug, fullName: "St. Joseph's Convent School", name: "St. Joseph's" }, owner);
+  assert.equal(r.status, 200);
+  assert.equal(pendingJson('data/schools.json').schools[1].fullName, "St. Joseph's Convent School");
+  assert.equal((await call(env, 'POST', '/edit', { op: 'hidePage', page: `school:${sch.slug}` }, staff)).status, 403);
+  r = await call(env, 'POST', '/edit', { op: 'hidePage', page: `section:${sec.slug}` }, owner);
+  assert.equal(pendingJson('data/sections.json').sections[2].hidden, true);
+  r = await call(env, 'POST', '/edit', { op: 'showPage', page: `section:${sec.slug}` }, owner);
+  assert.equal(pendingJson('data/sections.json').sections[2].hidden, undefined);
+});

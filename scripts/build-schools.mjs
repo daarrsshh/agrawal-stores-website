@@ -1,6 +1,6 @@
 // Builds one page per school into schools/<slug>.html from data/schools.json.
 // Run: node scripts/build-schools.mjs
-import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync, rmSync, existsSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { zoomDialog } from './zoom.mjs';
@@ -13,6 +13,8 @@ const SITE_URL = 'https://agrawalstores.in';
 const data = JSON.parse(readFileSync(path.join(root, 'data/schools.json'), 'utf8'));
 // Products hidden from the admin page stay in the data (and keep their photo) but are not shown.
 for (const s of data.schools) s.uniformPhotos = s.uniformPhotos.filter((p) => !p.hidden);
+// A school hidden from the admin page gets no page, no home-page logo and no sitemap entry.
+data.schools = data.schools.filter((s) => !s.hidden);
 const site = JSON.parse(readFileSync(path.join(root, 'data/site.json'), 'utf8'));
 // Visit and tap counting (GoatCounter). Off until data/schools.json has "goatcounter": "<code>".
 // Counts page visits plus taps on Call, Book and WhatsApp buttons. No cookies, no personal data.
@@ -36,6 +38,18 @@ const bannerHtml = b.show && b.text ? `
     ` : '';
 if (!homeSrc.includes('<!--banner-->')) throw new Error('index.html is missing the <!--banner--> marker');
 homeSrc = homeSrc.replace(/<!--banner-->[\s\S]*?<!--\/banner-->/, () => `<!--banner-->${bannerHtml}<!--/banner-->`);
+writeFileSync(path.join(root, 'index.html'), homeSrc);
+// Home page school logos, generated from data/schools.json so new schools appear automatically.
+const strip = data.schools.map((s) => `
+                <a href="schools/${s.slug}.html" class="snap-center shrink-0 flex flex-col items-center gap-3 w-28 group">
+                    <div class="w-28 h-28 rounded-full border-[3px] border-brand-300 p-1 bg-white shadow-md flex items-center justify-center group-hover:scale-110 group-hover:border-brand-500 transition-all duration-300">
+                        <img src="assets/${escH(s.logo)}" width="${s.logoW || 160}" height="${s.logoH || 160}" alt="${escH(s.fullName)}" class="max-w-[70%] max-h-[70%] object-contain">
+                    </div>
+                    <span class="text-sm font-bold text-slate-700 text-center leading-tight break-words">${escH(s.name)}</span>
+                    <span class="inline-flex items-center gap-1 rounded-full bg-brand-600 px-3 py-1 text-xs font-bold text-white">See list <svg class="ic" viewBox="0 0 448 512" aria-hidden="true"><use href="#i-arrow-right"/></svg></span>
+                </a>`).join('\n');
+if (!homeSrc.includes('<!--schools-strip-->')) throw new Error('index.html is missing the <!--schools-strip--> marker');
+homeSrc = homeSrc.replace(/<!--schools-strip-->[\s\S]*?<!--\/schools-strip-->/, () => `<!--schools-strip-->${strip}\n                <!--/schools-strip-->`);
 writeFileSync(path.join(root, 'index.html'), homeSrc);
 const home = homeSrc;
 
@@ -239,11 +253,12 @@ ${zoomDialog}
 `;
 }
 
+rmSync(path.join(root, 'schools'), { recursive: true, force: true }); // drops pages of hidden or removed schools
 mkdirSync(path.join(root, 'schools'), { recursive: true });
 for (const s of data.schools) writeFileSync(path.join(root, 'schools', `${s.slug}.html`), page(s));
 // Sitemap and robots.txt for Google Search Console.
 const sectionData = JSON.parse(readFileSync(path.join(root, 'data/sections.json'), 'utf8')).sections;
-const urls = [`${SITE_URL}/`, ...data.schools.map((s) => `${SITE_URL}/schools/${s.slug}.html`), ...sectionData.map((x) => `${SITE_URL}/sections/${x.slug}.html`)];
+const urls = [`${SITE_URL}/`, ...data.schools.map((s) => `${SITE_URL}/schools/${s.slug}.html`), ...sectionData.filter((x) => !x.hidden).map((x) => `${SITE_URL}/sections/${x.slug}.html`)];
 writeFileSync(path.join(root, 'sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.map((u) => `  <url><loc>${u}</loc></url>`).join('\n')}\n</urlset>\n`);
 writeFileSync(path.join(root, 'robots.txt'), `User-agent: *\nAllow: /\nDisallow: /tests/\nDisallow: /scripts/\nDisallow: /data/\nDisallow: /admin/\nDisallow: /worker/\nDisallow: /incoming/\n\nSitemap: ${SITE_URL}/sitemap.xml\n`);
 console.log(`Built ${data.schools.length} school pages.`);

@@ -12,8 +12,10 @@ const rawSections = JSON.parse(readFileSync(path.join(root, 'data/sections.json'
 // Page checks use what is shown (hidden products are skipped); file checks use everything.
 const data = JSON.parse(JSON.stringify(raw));
 for (const s of data.schools) s.uniformPhotos = s.uniformPhotos.filter((p) => !p.hidden);
+data.schools = data.schools.filter((s) => !s.hidden);
 const sections = JSON.parse(JSON.stringify(rawSections));
 for (const s of sections) s.photos = s.photos.filter((p) => !p.hidden);
+sections.splice(0, sections.length, ...sections.filter((s) => !s.hidden));
 const groups = [
   ...raw.schools.map((s) => ({ name: s.slug, dir: `assets/uniforms/${s.slug}`, photos: s.uniformPhotos })),
   ...rawSections.map((s) => ({ name: s.slug, dir: `assets/gallery/${s.slug}`, photos: s.photos })),

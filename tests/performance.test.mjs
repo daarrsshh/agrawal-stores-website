@@ -10,6 +10,7 @@ import path from 'node:path';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const data = JSON.parse(readFileSync(path.join(root, 'data/schools.json'), 'utf8'));
 for (const s of data.schools) s.uniformPhotos = s.uniformPhotos.filter((p) => !p.hidden);
+data.schools = data.schools.filter((s) => !s.hidden);
 const pages = ['index.html', ...data.schools.map((s) => `schools/${s.slug}.html`)];
 const read = (p) => readFileSync(path.join(root, p), 'utf8');
 const kb = (p) => statSync(p).size / 1024;
