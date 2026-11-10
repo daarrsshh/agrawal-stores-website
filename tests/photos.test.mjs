@@ -7,11 +7,16 @@ import { fileURLToPath } from 'node:url';
 import sharp from 'sharp';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const data = JSON.parse(readFileSync(path.join(root, 'data/schools.json'), 'utf8'));
-const { sections } = JSON.parse(readFileSync(path.join(root, 'data/sections.json'), 'utf8'));
+const raw = JSON.parse(readFileSync(path.join(root, 'data/schools.json'), 'utf8'));
+const rawSections = JSON.parse(readFileSync(path.join(root, 'data/sections.json'), 'utf8')).sections;
+// Page checks use what is shown (hidden products are skipped); file checks use everything.
+const data = JSON.parse(JSON.stringify(raw));
+for (const s of data.schools) s.uniformPhotos = s.uniformPhotos.filter((p) => !p.hidden);
+const sections = JSON.parse(JSON.stringify(rawSections));
+for (const s of sections) s.photos = s.photos.filter((p) => !p.hidden);
 const groups = [
-  ...data.schools.map((s) => ({ name: s.slug, dir: `assets/uniforms/${s.slug}`, photos: s.uniformPhotos })),
-  ...sections.map((s) => ({ name: s.slug, dir: `assets/gallery/${s.slug}`, photos: s.photos })),
+  ...raw.schools.map((s) => ({ name: s.slug, dir: `assets/uniforms/${s.slug}`, photos: s.uniformPhotos })),
+  ...rawSections.map((s) => ({ name: s.slug, dir: `assets/gallery/${s.slug}`, photos: s.photos })),
 ];
 const PRICE = /(?:₹|\brs\.?\s?\d|\bmrp\b|\bprice\b|\b\d+\s?\/-)/i;
 

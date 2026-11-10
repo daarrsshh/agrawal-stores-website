@@ -1,7 +1,7 @@
 // The page builder: runs cleanly twice, escapes odd text, and keeps the sitemap honest.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync, writeFileSync, mkdtempSync, cpSync, existsSync, readdirSync, symlinkSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdtempSync, cpSync, existsSync, readdirSync, symlinkSync, mkdirSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import os from 'node:os';
 import path from 'node:path';
@@ -147,4 +147,60 @@ test('setting a GoatCounter code switches the counter on for every page in one b
   }
   build(dir);
   assert.equal(readFileSync(path.join(dir, 'index.html'), 'utf8').split('gc.zgo.at/count.js').length - 1, 1, 'still once after a rebuild');
+});
+
+test('a hidden product disappears from its page but keeps its photo file; showing it again brings it back', () => {
+  const dir = sandbox();
+  const d = JSON.parse(readFileSync(path.join(dir, 'data/schools.json'), 'utf8'));
+  const s = d.schools.find((x) => x.uniformPhotos.length > 1);
+  const p = s.uniformPhotos[0];
+  p.hidden = true;
+  writeFileSync(path.join(dir, 'data/schools.json'), JSON.stringify(d));
+  build(dir);
+  let html = readFileSync(path.join(dir, 'schools', `${s.slug}.html`), 'utf8');
+  assert.ok(!html.includes(`/${p.file}"`), 'hidden photo not on the page');
+  assert.ok(existsSync(path.join(dir, 'assets/uniforms', s.slug, p.file)), 'file kept');
+  delete p.hidden;
+  writeFileSync(path.join(dir, 'data/schools.json'), JSON.stringify(d));
+  build(dir);
+  html = readFileSync(path.join(dir, 'schools', `${s.slug}.html`), 'utf8');
+  assert.ok(html.includes(`/${p.file}"`), 'shown again');
+});
+
+test('the home page banner comes from data/site.json: text is escaped, and it can be switched off', () => {
+  const dir = sandbox();
+  const f = path.join(dir, 'data/site.json');
+  writeFileSync(f, JSON.stringify({ banner: { show: true, text: 'Diwali gifts & <lights> are here', button: 'Call now' } }));
+  build(dir);
+  let home = readFileSync(path.join(dir, 'index.html'), 'utf8');
+  assert.ok(home.includes('Diwali gifts &amp; &lt;lights&gt; are here') && home.includes('Call now'));
+  assert.equal(home.split('aria-label="This season"').length - 1, 1);
+  writeFileSync(f, JSON.stringify({ banner: { show: false, text: 'x' } }));
+  build(dir);
+  home = readFileSync(path.join(dir, 'index.html'), 'utf8');
+  assert.ok(!home.includes('aria-label="This season"'), 'banner off');
+});
+
+test('photos sent from the admin page become website photos; a broken one is kept aside with its error', (t) => {
+  try { execFileSync('python3', ['-c', 'import cv2, numpy, PIL'], { stdio: 'ignore' }); } catch { return t.skip('python libs missing'); }
+  const dir = sandbox();
+  mkdirSync(path.join(dir, 'incoming'));
+  execFileSync('python3', ['-c', `from PIL import Image; Image.new('RGB',(1200,1600),(120,60,40)).save('${path.join(dir, 'incoming', 'ok1.jpg')}')`]);
+  writeFileSync(path.join(dir, 'data/incoming.json'), JSON.stringify({ photos: [
+    { id: 'ok1', page: 'school:st-norbert', caption: 'Grey sweater', mode: 'whole', by: 'Test' },
+    { id: 'gone', page: 'section:gifts-toys', caption: 'Teddy bear', mode: 'loose', by: 'Test' },
+  ] }));
+  let code = 0;
+  try { execFileSync('python3', ['scripts/process-incoming.py'], { cwd: dir, stdio: 'ignore' }); } catch (e) { code = e.status; }
+  assert.equal(code, 1, 'reports the broken one');
+  const s = JSON.parse(readFileSync(path.join(dir, 'data/schools.json'), 'utf8')).schools.find((x) => x.slug === 'st-norbert');
+  const added = s.uniformPhotos.at(-1);
+  assert.equal(added.caption, 'Grey sweater');
+  assert.equal(added.group, 'Winter wear', 'sweater goes under Winter wear');
+  assert.notEqual(added.file, 'grey-sweater.webp', 'did not overwrite the existing grey-sweater photo');
+  assert.ok(existsSync(path.join(dir, 'assets/uniforms/st-norbert', added.file)));
+  assert.ok(!existsSync(path.join(dir, 'incoming', 'ok1.jpg')), 'raw photo removed');
+  const left = JSON.parse(readFileSync(path.join(dir, 'data/incoming.json'), 'utf8')).photos;
+  assert.deepEqual(left.map((x) => x.id), ['gone']);
+  assert.match(left[0].error, /missing/);
 });

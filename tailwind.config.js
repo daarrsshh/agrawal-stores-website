@@ -1,6 +1,6 @@
 /** Styles for every page. Run `npm run build` after changing classes in index.html or scripts/build-schools.mjs. */
 module.exports = {
-  content: ['./index.html', './schools/**/*.html', './sections/**/*.html', './scripts/**/*.mjs'],
+  content: ['./index.html', './schools/**/*.html', './sections/**/*.html', './admin/**/*.html', './scripts/**/*.mjs'],
   theme: {
     extend: {
       colors: {

@@ -8,7 +8,9 @@ import path from 'node:path';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const data = JSON.parse(readFileSync(path.join(root, 'data/schools.json'), 'utf8'));
+for (const s of data.schools) s.uniformPhotos = s.uniformPhotos.filter((p) => !p.hidden);
 const { sections } = JSON.parse(readFileSync(path.join(root, 'data/sections.json'), 'utf8'));
+for (const s of sections) s.photos = s.photos.filter((p) => !p.hidden);
 const school = data.schools.find((s) => s.uniformPhotos.length > 1);
 const pages = [`schools/${school.slug}.html`, ...sections.filter((s) => s.photos.length).map((s) => `sections/${s.slug}.html`)];
 

@@ -10,6 +10,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SITE_URL = 'https://agrawalstores.in';
 const schools = JSON.parse(readFileSync(path.join(root, 'data/schools.json'), 'utf8'));
 const { sections } = JSON.parse(readFileSync(path.join(root, 'data/sections.json'), 'utf8'));
+for (const s of sections) s.photos = s.photos.filter((p) => !p.hidden);
 let home = readFileSync(path.join(root, 'index.html'), 'utf8');
 
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');

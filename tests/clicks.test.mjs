@@ -8,6 +8,7 @@ import path from 'node:path';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const data = JSON.parse(readFileSync(path.join(root, 'data/schools.json'), 'utf8'));
+for (const s of data.schools) s.uniformPhotos = s.uniformPhotos.filter((p) => !p.hidden);
 let browser;
 before(async () => { browser = await chromium.launch(); });
 after(async () => { await browser.close(); });

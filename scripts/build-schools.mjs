@@ -11,6 +11,9 @@ await makeThumbs();
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SITE_URL = 'https://agrawalstores.in';
 const data = JSON.parse(readFileSync(path.join(root, 'data/schools.json'), 'utf8'));
+// Products hidden from the admin page stay in the data (and keep their photo) but are not shown.
+for (const s of data.schools) s.uniformPhotos = s.uniformPhotos.filter((p) => !p.hidden);
+const site = JSON.parse(readFileSync(path.join(root, 'data/site.json'), 'utf8'));
 // Visit and tap counting (GoatCounter). Off until data/schools.json has "goatcounter": "<code>".
 // Counts page visits plus taps on Call, Book and WhatsApp buttons. No cookies, no personal data.
 const analytics = data.goatcounter
@@ -20,6 +23,19 @@ const analytics = data.goatcounter
 let homeSrc = readFileSync(path.join(root, 'index.html'), 'utf8');
 if (!homeSrc.includes('<!--analytics-->')) throw new Error('index.html is missing the <!--analytics--> marker');
 homeSrc = homeSrc.replace(/<!--analytics-->[\s\S]*?<!--\/analytics-->/, () => `<!--analytics-->${analytics}<!--/analytics-->`);
+// Seasonal banner, editable from the admin page (data/site.json).
+const escH = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+const b = site.banner || {};
+const bannerHtml = b.show && b.text ? `
+    <aside aria-label="This season" class="bg-brand-800 text-white">
+        <div class="max-w-5xl mx-auto px-4 py-2 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-center text-sm sm:text-base">
+            <p class="font-bold">${escH(b.text)}</p>
+            <a href="tel:${data.phone}" data-call="home:season" class="inline-flex min-h-[44px] items-center gap-2 font-extrabold underline underline-offset-4"><svg class="ic" viewBox="0 0 512 512" aria-hidden="true"><use href="#i-phone"/></svg> ${escH(b.button || 'Call us')}</a>
+        </div>
+    </aside>
+    ` : '';
+if (!homeSrc.includes('<!--banner-->')) throw new Error('index.html is missing the <!--banner--> marker');
+homeSrc = homeSrc.replace(/<!--banner-->[\s\S]*?<!--\/banner-->/, () => `<!--banner-->${bannerHtml}<!--/banner-->`);
 writeFileSync(path.join(root, 'index.html'), homeSrc);
 const home = homeSrc;
 
@@ -229,6 +245,6 @@ for (const s of data.schools) writeFileSync(path.join(root, 'schools', `${s.slug
 const sectionData = JSON.parse(readFileSync(path.join(root, 'data/sections.json'), 'utf8')).sections;
 const urls = [`${SITE_URL}/`, ...data.schools.map((s) => `${SITE_URL}/schools/${s.slug}.html`), ...sectionData.map((x) => `${SITE_URL}/sections/${x.slug}.html`)];
 writeFileSync(path.join(root, 'sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.map((u) => `  <url><loc>${u}</loc></url>`).join('\n')}\n</urlset>\n`);
-writeFileSync(path.join(root, 'robots.txt'), `User-agent: *\nAllow: /\nDisallow: /tests/\nDisallow: /scripts/\nDisallow: /data/\n\nSitemap: ${SITE_URL}/sitemap.xml\n`);
+writeFileSync(path.join(root, 'robots.txt'), `User-agent: *\nAllow: /\nDisallow: /tests/\nDisallow: /scripts/\nDisallow: /data/\nDisallow: /admin/\nDisallow: /worker/\nDisallow: /incoming/\n\nSitemap: ${SITE_URL}/sitemap.xml\n`);
 console.log(`Built ${data.schools.length} school pages.`);
 await import('./build-sections.mjs');
