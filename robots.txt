@@ -6,5 +6,6 @@ Disallow: /data/
 Disallow: /admin/
 Disallow: /worker/
 Disallow: /incoming/
+Disallow: /originals/
 
 Sitemap: https://agrawalstores.in/sitemap.xml

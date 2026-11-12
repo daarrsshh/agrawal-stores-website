@@ -197,10 +197,47 @@ test('photos sent from the admin page become website photos; a broken one is kep
   assert.equal(added.group, 'Winter wear', 'sweater goes under Winter wear');
   assert.notEqual(added.file, 'grey-sweater.webp', 'did not overwrite the existing grey-sweater photo');
   assert.ok(existsSync(path.join(dir, 'assets/uniforms/st-norbert', added.file)));
-  assert.ok(!existsSync(path.join(dir, 'incoming', 'ok1.jpg')), 'raw photo removed');
+  assert.ok(!existsSync(path.join(dir, 'incoming', 'ok1.jpg')), 'raw photo moved out of the queue');
+  const original = path.join(dir, 'originals/uniforms/st-norbert', added.file.replace(/\.webp$/, '.jpg'));
+  assert.ok(existsSync(original), 'original kept so it can be edited again');
   const left = JSON.parse(readFileSync(path.join(dir, 'data/incoming.json'), 'utf8')).photos;
   assert.deepEqual(left.map((x) => x.id), ['gone']);
   assert.match(left[0].error, /missing/);
+
+  // the owner asks for it to be edited again: same file, new picture, no new product
+  const photo = path.join(dir, 'assets/uniforms/st-norbert', added.file);
+  const before = readFileSync(photo);
+  writeFileSync(path.join(dir, 'data/incoming.json'), JSON.stringify({ photos: [
+    { id: 'r1', redo: added.file, page: 'school:st-norbert', caption: 'Grey sweater', mode: 'loose', by: 'Owner' },
+    { id: 'r2', redo: 'grey-sweater.webp', page: 'school:st-norbert', caption: 'Old photo', mode: 'loose', by: 'Owner' },
+  ] }));
+  const fake = path.join(dir, 'fake-studio.py');
+  writeFileSync(fake, `import sys\nfrom PIL import Image\nImage.new('RGB',(1000,1250),(1,2,3)).save(sys.argv[2],'WEBP')\n`);
+  code = 0;
+  try { execFileSync('python3', ['scripts/process-incoming.py', '--studio', fake], { cwd: dir, stdio: 'ignore' }); } catch (e) { code = e.status; }
+  assert.equal(code, 1, 'reports the photo without a kept original');
+  assert.ok(!readFileSync(photo).equals(before), 'photo replaced');
+  const s2 = JSON.parse(readFileSync(path.join(dir, 'data/schools.json'), 'utf8')).schools.find((x) => x.slug === 'st-norbert');
+  assert.equal(s2.uniformPhotos.length, s.uniformPhotos.length, 'no extra product added');
+  const left2 = JSON.parse(readFileSync(path.join(dir, 'data/incoming.json'), 'utf8')).photos;
+  assert.deepEqual(left2.map((x) => x.id), ['r2']);
+  assert.match(left2[0].error, /original/);
+});
+
+test('the straight-edge clean-up is skipped when it would cut into the product', (t) => {
+  try { execFileSync('python3', ['-c', 'import cv2, numpy, PIL'], { stdio: 'ignore' }); } catch { return t.skip('python libs missing'); }
+  const out = execFileSync('python3', ['-c', `import sys;sys.path.insert(0,'scripts');import studio
+from PIL import Image,ImageDraw
+im=Image.new('RGBA',(600,800),(0,0,0,0));ImageDraw.Draw(im).rectangle((100,100,500,700),fill=(200,50,50,255))
+# a clean-up that cuts the item diagonally in half (what happened to the cookie jar) is refused
+bad=Image.new('RGBA',(600,800),(0,0,0,0));ImageDraw.Draw(bad).polygon([(100,100),(500,100),(100,700)],fill=(200,50,50,255))
+studio.grabcut_clean=lambda c: bad
+print(studio.safe_clean(im) is im)
+# one that trims a thin strip is kept
+good=im.copy();ImageDraw.Draw(good).rectangle((100,100,500,110),fill=(0,0,0,0))
+studio.grabcut_clean=lambda c: good
+print(studio.safe_clean(im) is good)`], { cwd: root, stderr: 'ignore' }).toString().trim().split('\n');
+  assert.deepEqual(out, ['True', 'True']);
 });
 
 test('a new school and a new section appear everywhere; hiding them removes them everywhere', () => {
