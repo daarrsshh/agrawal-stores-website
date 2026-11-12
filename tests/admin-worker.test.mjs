@@ -22,8 +22,8 @@ after(() => fake.stop());
 class FakeKV { constructor() { this.m = new Map(); } async get(k) { return this.m.get(k) ?? null; } async put(k, v) { this.m.set(k, v); } async delete(k) { this.m.delete(k); } }
 async function makeEnv() {
   const users = [];
-  for (const [name, role, pin] of [['Darshit', 'owner', 'owner-pass-123'], ['Sandeep', 'staff', '482913'], ['Payal', 'staff', '771200']]) {
-    users.push({ name, role, salt: `s-${name}`, hash: await hashPin(`s-${name}`, pin) });
+  for (const [name, role, pin] of [['Owner', 'owner', 'owner-pass-123'], ['Staff', 'staff', '482913']]) {
+    users.push({ name, role, salt: `salt-${name}-0123`, hash: await hashPin(`salt-${name}-0123`, pin) });
   }
   return { REPO, ALLOWED_ORIGIN: 'https://agrawalstores.in', GITHUB_TOKEN: 't', SESSION_SECRET: 'test-secret-0123456789', USERS: JSON.stringify(users), GITHUB_API: api, ATTEMPTS: new FakeKV() };
 }
@@ -34,29 +34,44 @@ async function call(env, method, p, body, token) {
   }), env);
   return { status: res.status, body: await res.json().catch(() => null), headers: res.headers };
 }
-async function loginAs(env, name, pin) { return (await call(env, 'POST', '/login', { name, pin })).body.token; }
+async function loginAs(env, name, pin) {
+  const role = pin.length > 6 ? 'owner' : 'staff';
+  return (await call(env, 'POST', '/login', { role, pin, who: role === 'staff' ? name : undefined })).body.token;
+}
 const mainJson = (f) => JSON.parse(gitState.branches.get('main').get(f));
 const pendingJson = (f) => JSON.parse(gitState.branches.get('admin-pending').get(f));
 const fakeJpeg = '/9j/' + 'A'.repeat(4000);
 
-test('names list shows who can log in, without any secrets', async () => {
+test('there is no list of names or logins to read', async () => {
   resetGit();
   const env = await makeEnv();
-  const r = await call(env, 'GET', '/names');
-  assert.deepEqual(r.body.names.map((n) => n.name), ['Darshit', 'Sandeep', 'Payal']);
-  assert.ok(!JSON.stringify(r.body).includes('hash') && !JSON.stringify(r.body).includes('salt'));
+  assert.equal((await call(env, 'GET', '/names')).status, 401);
 });
 
-test('login: right PIN works, wrong PIN fails, 5 wrong PINs lock that name for a while', async () => {
+test('login: staff use the shared PIN plus their name; the owner uses the password; each is checked only for its own role', async () => {
   resetGit();
   const env = await makeEnv();
-  const ok = await call(env, 'POST', '/login', { name: 'Sandeep', pin: '482913' });
-  assert.equal(ok.status, 200);
-  assert.equal(ok.body.role, 'staff');
-  for (let i = 0; i < 5; i++) assert.equal((await call(env, 'POST', '/login', { name: 'Payal', pin: '000000' })).status, 401);
-  const locked = await call(env, 'POST', '/login', { name: 'Payal', pin: '771200' });
-  assert.equal(locked.status, 429, 'locked even with the right PIN');
-  assert.equal((await call(env, 'POST', '/login', { name: 'Nobody', pin: '1' })).status, 401);
+  let r = await call(env, 'POST', '/login', { role: 'staff', pin: '482913', who: ' Sandeep ' });
+  assert.equal(r.status, 200);
+  assert.deepEqual([r.body.role, r.body.name], ['staff', 'Sandeep']);
+  assert.equal((await call(env, 'POST', '/login', { role: 'staff', pin: '482913' })).status, 400, 'name needed');
+  assert.equal((await call(env, 'POST', '/login', { role: 'staff', pin: 'owner-pass-123', who: 'Sandeep' })).status, 401, 'owner password does not open the staff login');
+  assert.equal((await call(env, 'POST', '/login', { role: 'owner', pin: '482913' })).status, 401, 'staff PIN does not open the owner login');
+  r = await call(env, 'POST', '/login', { role: 'owner', pin: 'owner-pass-123' });
+  assert.deepEqual([r.status, r.body.role, r.body.name], [200, 'owner', 'Owner']);
+  r = await call(env, 'POST', '/login', { role: 'staff', pin: '482913', who: '<b>Ka</b>nak' });
+  assert.equal(r.body.name, 'bKabnak', 'no tags in names');
+});
+
+test('wrong tries lock that login for a while: owner after 5, shared staff PIN after 10', async () => {
+  resetGit();
+  const env = await makeEnv();
+  for (let i = 0; i < 5; i++) assert.equal((await call(env, 'POST', '/login', { role: 'owner', pin: 'wrong-password' })).status, 401);
+  assert.equal((await call(env, 'POST', '/login', { role: 'owner', pin: 'owner-pass-123' })).status, 429);
+  for (let i = 0; i < 9; i++) await call(env, 'POST', '/login', { role: 'staff', pin: '000000', who: 'X y' });
+  assert.equal((await call(env, 'POST', '/login', { role: 'staff', pin: '482913', who: 'Sandeep' })).status, 200, 'still open after 9');
+  for (let i = 0; i < 10; i++) await call(env, 'POST', '/login', { role: 'staff', pin: '000000', who: 'X y' });
+  assert.equal((await call(env, 'POST', '/login', { role: 'staff', pin: '482913', who: 'Sandeep' })).status, 429, 'locked after 10');
 });
 
 test('without a valid login nothing can be read or changed; tampered or removed-user sessions are refused', async () => {
@@ -65,11 +80,11 @@ test('without a valid login nothing can be read or changed; tampered or removed-
   assert.equal((await call(env, 'GET', '/state')).status, 401);
   const tok = await loginAs(env, 'Sandeep', '482913');
   const [b, s] = tok.split('.');
-  const forged = Buffer.from(JSON.stringify({ n: 'Sandeep', r: 'owner', exp: Date.now() + 1e9 })).toString('base64url');
+  const forged = Buffer.from(JSON.stringify({ n: 'Sandeep', u: 'Staff', r: 'owner', exp: Date.now() + 1e9 })).toString('base64url');
   assert.equal((await call(env, 'POST', '/publish', {}, `${forged}.${s}`)).status, 401, 'cannot promote yourself to owner');
   assert.equal((await call(env, 'GET', '/state', null, tok)).status, 200);
-  const env2 = { ...env, USERS: JSON.stringify(JSON.parse(env.USERS).filter((u) => u.name !== 'Sandeep')) };
-  assert.equal((await call(env2, 'GET', '/state', null, tok)).status, 401, 'removed user is logged out');
+  const env2 = { ...env, USERS: JSON.stringify(JSON.parse(env.USERS).map((u) => (u.role === 'staff' ? { ...u, salt: 'new-salt-9999', hash: 'x' } : u))) };
+  assert.equal((await call(env2, 'GET', '/state', null, tok)).status, 401, 'changing the staff PIN logs staff phones out');
   assert.ok(b);
 });
 
@@ -134,7 +149,7 @@ test('only the owner can publish, throw away changes, or change the banner', asy
 test('photo upload: queued for processing, publish waits until photos are ready, then goes live', async () => {
   resetGit();
   const env = await makeEnv();
-  const staff = await loginAs(env, 'Payal', '771200');
+  const staff = await loginAs(env, 'Payal', '482913');
   const owner = await loginAs(env, 'Darshit', 'owner-pass-123');
   assert.equal((await call(env, 'POST', '/photo', { page: 'section:gifts-toys', caption: 'Teddy', image: 'not-a-photo' }, staff)).status, 400);
   const r = await call(env, 'POST', '/photo', { page: 'section:gifts-toys', caption: 'Teddy bear, large', group: 'Toys & Soft Toys', mode: 'loose', image: fakeJpeg }, staff);
@@ -202,7 +217,7 @@ test('owner can add a new school with its logo and a new section; staff cannot',
   assert.deepEqual([sec.slug, sec.title, sec.items], ['men-s-section', "Men's Section", ['Formal shirts', 'Trousers', 'Belts and wallets']]);
   assert.match(sec.waText, /Men's Section/);
   const st = (await call(env, 'GET', '/state', null, owner)).body;
-  assert.deepEqual(st.pending.changes, ['New school: Delhi Public School (by Darshit)', "New section: Men's Section (by Darshit)"], 'logo commit not listed separately');
+  assert.deepEqual(st.pending.changes, ['New school: Delhi Public School (by Owner)', "New section: Men's Section (by Owner)"], 'logo commit not listed separately');
   // staff can now add photos to the new section
   r = await call(env, 'POST', '/photo', { page: 'section:men-s-section', caption: 'White formal shirt', mode: 'bag', image: fakeJpeg }, staff);
   assert.equal(r.status, 200, JSON.stringify(r.body));

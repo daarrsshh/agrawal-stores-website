@@ -1,7 +1,7 @@
 // Agrawal Stores admin service (Cloudflare Worker).
 //
 // The admin page (agrawalstores.in/admin) talks only to this service. It:
-//   - logs people in with their name + PIN (owner gets a longer password),
+//   - logs staff in with one shared PIN (plus their first name, shown on their changes) and the owner with a password,
 //   - saves every change to a "pending" copy of the site (git branch admin-pending) and keeps one pull request open,
 //   - lets only the owner publish (merge) or throw away the pending changes.
 // Nothing reaches the live site until the owner presses Publish.
@@ -11,8 +11,8 @@
 //   ALLOWED_ORIGIN  "https://agrawalstores.in"  (comma-separated list allowed)
 //   GITHUB_TOKEN    secret: fine-grained token, this repo only, Contents + Pull requests: read and write, Actions: read
 //   SESSION_SECRET  secret: long random string
-//   USERS           secret: JSON list [{ "name": "Darshit", "role": "owner", "salt": "...", "hash": "..." }]
-//                   (make entries with: node worker/make-user.mjs "Name" staff 123456)
+//   USERS           secret: JSON list with two logins, [{ "name": "Staff", "role": "staff", ... }, { "name": "Owner", "role": "owner", ... }]
+//                   (make them with: node worker/make-user.mjs staff 123456   and   node worker/make-user.mjs owner "a-long-password")
 //   ATTEMPTS        optional KV namespace binding, used to lock out repeated wrong PINs
 //   GITHUB_API      optional, defaults to https://api.github.com (tests point it at a fake)
 
@@ -304,11 +304,6 @@ export function applyEdit(all, op, user) {
 }
 
 // ---------- sessions ----------
-async function makeSession(env, user) {
-  const body = b64url(JSON.stringify({ n: user.name, r: user.role, exp: Date.now() + SESSION_DAYS * 864e5 }));
-  return `${body}.${await hmac(env.SESSION_SECRET, body)}`;
-}
-
 async function readSession(env, req) {
   const h = req.headers.get('authorization') || '';
   const tok = h.startsWith('Bearer ') ? h.slice(7) : '';
@@ -316,8 +311,8 @@ async function readSession(env, req) {
   if (!body || !sig || !safeEqual(sig, await hmac(env.SESSION_SECRET, body))) throw new HttpError(401, 'Please log in again.');
   const s = JSON.parse(unb64url(body));
   if (s.exp < Date.now()) throw new HttpError(401, 'Please log in again.');
-  // a removed user loses access at once
-  if (!users(env).some((u) => u.name === s.n && u.role === s.r)) throw new HttpError(401, 'Please log in again.');
+  // a removed login (or a changed PIN, which gives the login a new salt) ends its sessions at once
+  if (!users(env).some((u) => u.name === s.u && u.role === s.r && (!s.k || s.k === u.salt.slice(0, 8)))) throw new HttpError(401, 'Please log in again.');
   return s;
 }
 
@@ -325,24 +320,42 @@ function users(env) {
   try { return JSON.parse(env.USERS || '[]'); } catch { return []; }
 }
 
+// Two kinds of login: one shared staff PIN (the admin page) and the owner password (the hidden owner page).
+// Staff also type their first name, which is shown on their changes; it is not a secret.
+const LIMITS = { staff: 10, owner: MAX_FAILS };
 async function login(env, body) {
-  const name = String(body.name || '');
-  const user = users(env).find((u) => u.name === name);
-  const key = `fail:${name}`;
+  const role = body.role === 'owner' ? 'owner' : 'staff';
+  const key = `fail:${role}`;
   if (env.ATTEMPTS) {
     const n = Number(await env.ATTEMPTS.get(key)) || 0;
-    if (n >= MAX_FAILS) throw new HttpError(429, 'Too many wrong PINs. Please wait 15 minutes.');
+    if (n >= LIMITS[role]) throw new HttpError(429, 'Too many wrong tries. Please wait 15 minutes.');
   }
-  const good = user && safeEqual(await hashPin(user.salt, String(body.pin || '')), user.hash);
-  if (!good) {
+  let who = '';
+  if (role === 'staff') {
+    who = String(body.who || '').replace(/[^\p{L} .'-]/gu, '').replace(/\s+/g, ' ').trim().slice(0, 20);
+    if (who.length < 2) throw new HttpError(400, 'Please type your name.');
+  }
+  const pin = String(body.pin || '');
+  let user = null;
+  for (const u of users(env).filter((x) => x.role === role)) {
+    if (safeEqual(await hashPin(u.salt, pin), u.hash)) { user = u; break; }
+  }
+  if (!user) {
     if (env.ATTEMPTS) {
       const n = (Number(await env.ATTEMPTS.get(key)) || 0) + 1;
       await env.ATTEMPTS.put(key, String(n), { expirationTtl: LOCK_SECONDS });
     }
-    throw new HttpError(401, 'Wrong PIN. Please try again.');
+    throw new HttpError(401, role === 'owner' ? 'Wrong password.' : 'Wrong PIN. Please try again.');
   }
   if (env.ATTEMPTS) await env.ATTEMPTS.delete(key);
-  return { token: await makeSession(env, user), name: user.name, role: user.role };
+  const token = await makeSession(env, user, who);
+  return { token, name: role === 'owner' ? 'Owner' : who, role };
+}
+
+async function makeSession(env, user, who) {
+  const n = user.role === 'owner' ? 'Owner' : who;
+  const body = b64url(JSON.stringify({ n, u: user.name, r: user.role, k: user.salt.slice(0, 8), exp: Date.now() + SESSION_DAYS * 864e5 }));
+  return `${body}.${await hmac(env.SESSION_SECRET, body)}`;
 }
 
 // ---------- main ----------
@@ -351,7 +364,6 @@ async function route(req, env) {
   const path = url.pathname.replace(/\/$/, '');
   const body = req.method === 'POST' ? await req.json().catch(() => ({})) : {};
 
-  if (path === '/names' && req.method === 'GET') return { names: users(env).map((u) => ({ name: u.name, role: u.role })) };
   if (path === '/login' && req.method === 'POST') return login(env, body);
 
   const me = await readSession(env, req);
