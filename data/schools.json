@@ -31,7 +31,8 @@
         {
           "file": "blue-house.webp",
           "caption": "Blue house T-shirt",
-          "group": "House & sports wear"
+          "group": "House & sports wear",
+          "stock": "in"
         },
         {
           "file": "green-house.webp",
