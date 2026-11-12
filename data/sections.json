@@ -91,7 +91,13 @@
       "cardTitle": "Seasonal & Festival",
       "intro": "Umbrellas and raincoats for the monsoon, caps, gloves and warm socks for winter, and Holi, Christmas and Diwali decorations.",
       "waText": "Hello Agrawal Stores, I want to ask about Seasonal and Festival items",
-      "photos": [],
+      "photos": [
+        {
+          "file": "snackible-beatroot-cookies.webp",
+          "caption": "Snackible beatroot cookies",
+          "stock": "in"
+        }
+      ],
       "items": [
         "Monsoon: umbrellas and raincoats",
         "Winter: caps, gloves and warm socks",
