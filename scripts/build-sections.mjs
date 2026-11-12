@@ -5,11 +5,14 @@ import { readFileSync, writeFileSync, mkdirSync, rmSync, existsSync } from 'node
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { zoomDialog } from './zoom.mjs';
+import { stockLine } from './stock.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SITE_URL = 'https://agrawalstores.in';
 const schools = JSON.parse(readFileSync(path.join(root, 'data/schools.json'), 'utf8'));
 const { sections } = JSON.parse(readFileSync(path.join(root, 'data/sections.json'), 'utf8'));
+for (const s of sections) s.photos = s.photos.filter((p) => !p.hidden);
+const shown = sections.filter((s) => !s.hidden);
 let home = readFileSync(path.join(root, 'index.html'), 'utf8');
 
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -25,12 +28,12 @@ const icon = home.match(/<link rel="icon"[^>]*>/)[0];
 const call = (track, extra = '') => `<a href="tel:${schools.phone}" data-call="${esc(track)}" class="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-full bg-brand-600 hover:bg-brand-700 text-white font-bold px-6 transition-colors ${extra}"><svg class="ic" viewBox="0 0 512 512" aria-hidden="true"><use href="#i-phone"/></svg> Call ${esc(schools.phoneDisplay)}</a>`;
 const wab = (text) => `<a href="${esc(wa(text))}" target="_blank" rel="noopener" class="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-full border-2 border-green-500 bg-white hover:bg-green-50 text-green-700 font-bold px-6 transition-colors"><svg class="ic" viewBox="0 0 448 512" aria-hidden="true"><use href="#i-whatsapp"/></svg> WhatsApp</a>`;
 
-const live = sections;
+const live = shown;
 
 function page(s) {
   const title = `${s.title} | Agrawal Stores, Rajendra Nagar, Indore`;
   const desc = `${s.intro} Visit Agrawal Stores, 57-B Rajendra Nagar, Indore, or call ${schools.phoneDisplay}.`.slice(0, 160);
-  const fig = (p) => `<figure class="overflow-hidden rounded-2xl border-2 border-brand-100 bg-white"><button type="button" data-zoom aria-label="See larger photo: ${esc(p.caption)}" class="block w-full cursor-zoom-in"><img src="../assets/gallery/${esc(s.slug)}/thumb/${esc(p.file)}" srcset="../assets/gallery/${esc(s.slug)}/thumb/${esc(p.file)} 640w, ../assets/gallery/${esc(s.slug)}/${esc(p.file)} 1000w" sizes="(min-width: 768px) 300px, 46vw" data-full="../assets/gallery/${esc(s.slug)}/${esc(p.file)}" alt="${esc(s.title + ' ' + p.caption)}" width="1000" height="1250" loading="lazy" decoding="async" class="w-full aspect-[4/5] object-cover"></button><figcaption class="p-3 text-sm font-bold text-slate-700">${esc(p.caption)}</figcaption><div class="grid grid-cols-2 gap-2 px-3 pb-3"><a href="tel:${schools.phone}" data-call="${esc(s.slug)}:${esc(p.caption)}" aria-label="Call about ${esc(p.caption)}" class="flex min-h-[44px] items-center justify-center gap-1.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-sm font-bold text-white"><svg class="ic" viewBox="0 0 512 512" aria-hidden="true"><use href="#i-phone"/></svg> Call</a><a href="${esc(wa(`Hello Agrawal Stores, I want to book: ${s.title} - ${p.caption}. Size/Class: `))}" target="_blank" rel="noopener" data-book="${esc(s.slug)}:${esc(p.caption)}" aria-label="Book ${esc(p.caption)} on WhatsApp" class="flex min-h-[44px] items-center justify-center gap-1.5 rounded-xl border-2 border-green-500 bg-white hover:bg-green-50 text-sm font-bold text-green-700"><svg class="ic" viewBox="0 0 448 512" aria-hidden="true"><use href="#i-whatsapp"/></svg> Book</a></div></figure>`;
+  const fig = (p) => `<figure class="overflow-hidden rounded-2xl border-2 border-brand-100 bg-white"><button type="button" data-zoom aria-label="See larger photo: ${esc(p.caption)}" class="block w-full cursor-zoom-in"><img src="../assets/gallery/${esc(s.slug)}/thumb/${esc(p.file)}" srcset="../assets/gallery/${esc(s.slug)}/thumb/${esc(p.file)} 640w, ../assets/gallery/${esc(s.slug)}/${esc(p.file)} 1000w" sizes="(min-width: 768px) 300px, 46vw" data-full="../assets/gallery/${esc(s.slug)}/${esc(p.file)}" alt="${esc(s.title + ' ' + p.caption)}" width="1000" height="1250" loading="lazy" decoding="async" class="w-full aspect-[4/5] object-cover"></button><figcaption class="p-3 text-sm font-bold text-slate-700">${esc(p.caption)}</figcaption>${stockLine(p)}<div class="grid grid-cols-2 gap-2 px-3 pb-3"><a href="tel:${schools.phone}" data-call="${esc(s.slug)}:${esc(p.caption)}" aria-label="Call about ${esc(p.caption)}" class="flex min-h-[44px] items-center justify-center gap-1.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-sm font-bold text-white"><svg class="ic" viewBox="0 0 512 512" aria-hidden="true"><use href="#i-phone"/></svg> Call</a><a href="${esc(wa(`Hello Agrawal Stores, I want to book: ${s.title} - ${p.caption}. Size/Class: `))}" target="_blank" rel="noopener" data-book="${esc(s.slug)}:${esc(p.caption)}" aria-label="Book ${esc(p.caption)} on WhatsApp" class="flex min-h-[44px] items-center justify-center gap-1.5 rounded-xl border-2 border-green-500 bg-white hover:bg-green-50 text-sm font-bold text-green-700"><svg class="ic" viewBox="0 0 448 512" aria-hidden="true"><use href="#i-whatsapp"/></svg> Book</a></div></figure>`;
   // Photos can carry a "group" (the Drive subfolder they came from); each group gets its own heading.
   const groups = [];
   for (const p of s.photos) { const g = p.group || ''; let e = groups.find((x) => x.name === g); if (!e) groups.push(e = { name: g, items: [] }); e.items.push(p); }
@@ -119,20 +122,30 @@ const dir = path.join(root, 'sections');
 rmSync(dir, { recursive: true, force: true });
 if (live.length) { mkdirSync(dir, { recursive: true }); for (const s of live) writeFileSync(path.join(dir, `${s.slug}.html`), page(s)); }
 
-// Home page: show a "See photos" link in a section's card once that section has a page.
-for (const s of sections) {
-  // The link stretches over the whole card (after:inset-0), so tapping anywhere on the card opens the page.
-  const link = `<br><a href="sections/${s.slug}.html" aria-label="${s.photos.length ? 'See photos' : 'See what we stock'}: ${esc(s.title)}" class="mt-2 inline-flex min-h-[44px] items-center gap-1 font-bold text-brand-700 underline underline-offset-4 after:absolute after:inset-0 after:rounded-2xl after:content-['']">${s.photos.length ? 'See photos' : 'See what we stock'} <svg class="ic" viewBox="0 0 448 512" aria-hidden="true"><use href="#i-arrow-right"/></svg></a>`;
-  const re = new RegExp(`<!--sec:${s.slug}-->[\\s\\S]*?<!--/sec:${s.slug}-->`);
-  if (!re.test(home)) throw new Error(`index.html is missing the marker for ${s.slug}`);
-  home = home.replace(re, `<!--sec:${s.slug}-->${link}<!--/sec:${s.slug}-->`);
-  // The card picture also opens the section page once it exists.
-  const ri = new RegExp(`<!--secimg:${s.slug}-->([\\s\\S]*?)<!--/secimg:${s.slug}-->`);
-  const m = home.match(ri);
-  if (!m) throw new Error(`index.html is missing the picture marker for ${s.slug}`);
-  const inner = m[1].replace(/^<a [^>]*data-sec[^>]*>/, '').replace(/<\/a>$/, '');
-  const wrapped = true ? `<a href="sections/${s.slug}.html" data-sec aria-label="${s.photos.length ? 'See photos' : 'See what we stock'}: ${esc(s.title)}" class="block">${inner}</a>` : inner;
-  home = home.replace(ri, () => `<!--secimg:${s.slug}-->${wrapped}<!--/secimg:${s.slug}-->`);
-}
+// Home page section cards, generated from data/sections.json so new sections appear automatically.
+// The "See ..." link stretches over the whole card (after:inset-0): tapping anywhere opens the section page.
+const lines = (txt) => esc(txt).split('\n').join('<br>\n                    ');
+const cardImage = (s) => s.image ? `assets/${s.image}` : (s.photos[0] ? `assets/gallery/${s.slug}/thumb/${s.photos[0].file}` : 'assets/categories/generic.svg');
+const cardHtml = shown.map((s) => {
+  const label = s.photos.length ? 'See photos' : 'See what we stock';
+  const waText = s.waText || `Hello Agrawal Stores, I want to ask about ${s.title}`;
+  return `
+            <div class="relative bg-white p-6 rounded-2xl shadow-sm border-2 border-brand-100 hover:border-brand-300 hover:shadow-xl transition-all flex flex-col group">
+                <a href="sections/${s.slug}.html" data-sec aria-label="${label}: ${esc(s.title)}" class="block"><div class="overflow-hidden rounded-xl mb-5">
+                    <img src="${esc(cardImage(s))}" width="600" height="400" loading="lazy" alt="${esc(s.imageAlt || s.title)}" class="w-full aspect-[3/2] object-cover group-hover:scale-105 transition-transform duration-300">
+                </div></a>
+                <h3 class="font-extrabold text-2xl text-slate-800 mb-2 break-words">${esc(s.title)}</h3>
+                <p class="text-slate-600 mb-4 flex-grow text-sm leading-relaxed">
+                    ${lines(s.cardText || s.intro)}
+                    <br><a href="sections/${s.slug}.html" aria-label="${label}: ${esc(s.title)}" class="mt-2 inline-flex min-h-[44px] items-center gap-1 font-bold text-brand-700 underline underline-offset-4 after:absolute after:inset-0 after:rounded-2xl after:content-['']">${label} <svg class="ic" viewBox="0 0 448 512" aria-hidden="true"><use href="#i-arrow-right"/></svg></a>
+                </p>
+                <div class="relative z-10 grid grid-cols-2 gap-3">
+                    <a href="tel:${schools.phone}" class="flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-bold transition-colors"><svg class="ic" viewBox="0 0 512 512" aria-hidden="true"><use href="#i-phone"/></svg> Call</a>
+                    <a aria-label="${esc(s.waLabel || `WhatsApp us about ${s.title}`)}" href="${esc(wa(waText))}" target="_blank" rel="noopener" class="flex min-h-[48px] items-center justify-center gap-2 rounded-xl border-2 border-green-500 bg-white hover:bg-green-50 text-green-700 font-bold transition-colors"><svg class="ic text-lg" viewBox="0 0 448 512" aria-hidden="true"><use href="#i-whatsapp"/></svg> WhatsApp</a>
+                </div>
+            </div>`;
+}).join('\n');
+if (!home.includes('<!--section-cards-->')) throw new Error('index.html is missing the <!--section-cards--> marker');
+home = home.replace(/<!--section-cards-->[\s\S]*?<!--\/section-cards-->/, () => `<!--section-cards-->${cardHtml}\n            <!--/section-cards-->`);
 writeFileSync(path.join(root, 'index.html'), home);
 console.log(`Built ${live.length} section pages.`);

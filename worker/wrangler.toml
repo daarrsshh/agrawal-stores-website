@@ -1,0 +1,14 @@
+# Cloudflare Worker for agrawalstores.in/admin (see worker/README.md for setup)
+name = "agrawal-stores-admin"
+main = "src/index.js"
+compatibility_date = "2024-09-23"
+
+[vars]
+REPO = "daarrsshh/agrawal-stores-website"
+ALLOWED_ORIGIN = "https://agrawalstores.in,https://www.agrawalstores.in"
+
+# Locks a name after 5 wrong PINs for 15 minutes. Create with: npx wrangler kv namespace create ATTEMPTS
+# then paste the id below and remove the # signs.
+# [[kv_namespaces]]
+# binding = "ATTEMPTS"
+# id = "paste-id-here"

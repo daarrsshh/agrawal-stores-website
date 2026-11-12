@@ -10,6 +10,8 @@ import path from 'node:path';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const axeSource = readFileSync(createRequire(import.meta.url).resolve('axe-core/axe.min.js'), 'utf8');
 const data = JSON.parse(readFileSync(path.join(root, 'data/schools.json'), 'utf8'));
+for (const s of data.schools) s.uniformPhotos = s.uniformPhotos.filter((p) => !p.hidden);
+data.schools = data.schools.filter((s) => !s.hidden);
 const pages = ['index.html', ...data.schools.map((s) => `schools/${s.slug}.html`)];
 
 let browser;

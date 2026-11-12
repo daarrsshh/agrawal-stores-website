@@ -1,7 +1,7 @@
 // The page builder: runs cleanly twice, escapes odd text, and keeps the sitemap honest.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync, writeFileSync, mkdtempSync, cpSync, existsSync, readdirSync, symlinkSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdtempSync, cpSync, existsSync, readdirSync, symlinkSync, mkdirSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import os from 'node:os';
 import path from 'node:path';
@@ -81,14 +81,12 @@ test('a school with no photos still gets a sensible uniform section', () => {
 });
 
 test('a missing home-page marker stops the build instead of silently skipping', () => {
-  const dir = sandbox();
-  const p = path.join(dir, 'index.html');
-  writeFileSync(p, readFileSync(p, 'utf8').replace(/<!--sec:gifts-toys-->.*?<!--\/sec:gifts-toys-->/s, ''));
-  assert.throws(() => build(dir), /gifts-toys/);
-  const dir2 = sandbox();
-  const p2 = path.join(dir2, 'index.html');
-  writeFileSync(p2, readFileSync(p2, 'utf8').replace('<!--secimg:sports-goods-->', ''));
-  assert.throws(() => build(dir2), /sports-goods/);
+  for (const marker of ['section-cards', 'schools-strip', 'banner', 'analytics']) {
+    const dir = sandbox();
+    const p = path.join(dir, 'index.html');
+    writeFileSync(p, readFileSync(p, 'utf8').replace(`<!--${marker}-->`, ''));
+    assert.throws(() => build(dir), new RegExp(marker), marker);
+  }
 });
 
 test('sitemap lists exactly the pages that exist', () => {
@@ -147,4 +145,92 @@ test('setting a GoatCounter code switches the counter on for every page in one b
   }
   build(dir);
   assert.equal(readFileSync(path.join(dir, 'index.html'), 'utf8').split('gc.zgo.at/count.js').length - 1, 1, 'still once after a rebuild');
+});
+
+test('a hidden product disappears from its page but keeps its photo file; showing it again brings it back', () => {
+  const dir = sandbox();
+  const d = JSON.parse(readFileSync(path.join(dir, 'data/schools.json'), 'utf8'));
+  const s = d.schools.find((x) => x.uniformPhotos.length > 1);
+  const p = s.uniformPhotos[0];
+  p.hidden = true;
+  writeFileSync(path.join(dir, 'data/schools.json'), JSON.stringify(d));
+  build(dir);
+  let html = readFileSync(path.join(dir, 'schools', `${s.slug}.html`), 'utf8');
+  assert.ok(!html.includes(`/${p.file}"`), 'hidden photo not on the page');
+  assert.ok(existsSync(path.join(dir, 'assets/uniforms', s.slug, p.file)), 'file kept');
+  delete p.hidden;
+  writeFileSync(path.join(dir, 'data/schools.json'), JSON.stringify(d));
+  build(dir);
+  html = readFileSync(path.join(dir, 'schools', `${s.slug}.html`), 'utf8');
+  assert.ok(html.includes(`/${p.file}"`), 'shown again');
+});
+
+test('the home page banner comes from data/site.json: text is escaped, and it can be switched off', () => {
+  const dir = sandbox();
+  const f = path.join(dir, 'data/site.json');
+  writeFileSync(f, JSON.stringify({ banner: { show: true, text: 'Diwali gifts & <lights> are here', button: 'Call now' } }));
+  build(dir);
+  let home = readFileSync(path.join(dir, 'index.html'), 'utf8');
+  assert.ok(home.includes('Diwali gifts &amp; &lt;lights&gt; are here') && home.includes('Call now'));
+  assert.equal(home.split('aria-label="This season"').length - 1, 1);
+  writeFileSync(f, JSON.stringify({ banner: { show: false, text: 'x' } }));
+  build(dir);
+  home = readFileSync(path.join(dir, 'index.html'), 'utf8');
+  assert.ok(!home.includes('aria-label="This season"'), 'banner off');
+});
+
+test('photos sent from the admin page become website photos; a broken one is kept aside with its error', (t) => {
+  try { execFileSync('python3', ['-c', 'import cv2, numpy, PIL'], { stdio: 'ignore' }); } catch { return t.skip('python libs missing'); }
+  const dir = sandbox();
+  mkdirSync(path.join(dir, 'incoming'));
+  execFileSync('python3', ['-c', `from PIL import Image; Image.new('RGB',(1200,1600),(120,60,40)).save('${path.join(dir, 'incoming', 'ok1.jpg')}')`]);
+  writeFileSync(path.join(dir, 'data/incoming.json'), JSON.stringify({ photos: [
+    { id: 'ok1', page: 'school:st-norbert', caption: 'Grey sweater', mode: 'whole', by: 'Test' },
+    { id: 'gone', page: 'section:gifts-toys', caption: 'Teddy bear', mode: 'loose', by: 'Test' },
+  ] }));
+  let code = 0;
+  try { execFileSync('python3', ['scripts/process-incoming.py'], { cwd: dir, stdio: 'ignore' }); } catch (e) { code = e.status; }
+  assert.equal(code, 1, 'reports the broken one');
+  const s = JSON.parse(readFileSync(path.join(dir, 'data/schools.json'), 'utf8')).schools.find((x) => x.slug === 'st-norbert');
+  const added = s.uniformPhotos.at(-1);
+  assert.equal(added.caption, 'Grey sweater');
+  assert.equal(added.group, 'Winter wear', 'sweater goes under Winter wear');
+  assert.notEqual(added.file, 'grey-sweater.webp', 'did not overwrite the existing grey-sweater photo');
+  assert.ok(existsSync(path.join(dir, 'assets/uniforms/st-norbert', added.file)));
+  assert.ok(!existsSync(path.join(dir, 'incoming', 'ok1.jpg')), 'raw photo removed');
+  const left = JSON.parse(readFileSync(path.join(dir, 'data/incoming.json'), 'utf8')).photos;
+  assert.deepEqual(left.map((x) => x.id), ['gone']);
+  assert.match(left[0].error, /missing/);
+});
+
+test('a new school and a new section appear everywhere; hiding them removes them everywhere', () => {
+  const dir = sandbox();
+  const d = JSON.parse(readFileSync(path.join(dir, 'data/schools.json'), 'utf8'));
+  const sec = JSON.parse(readFileSync(path.join(dir, 'data/sections.json'), 'utf8'));
+  mkdirSync(path.join(dir, 'assets/logos'), { recursive: true });
+  cpSync(path.join(root, 'assets/medicaps.webp'), path.join(dir, 'assets/logos/delhi-public-school.jpg'));
+  d.schools.push({ slug: 'delhi-public-school', name: 'DPS', fullName: 'Delhi Public School', logo: 'logos/delhi-public-school.jpg', logoW: 300, logoH: 300, uniformPhotos: [], books: {} });
+  sec.sections.push({ slug: 'mens', title: "Men's Section", intro: 'Shirts and belts for men.', cardText: 'Shirts and belts for men.', items: ['Formal shirts', 'Belts'], photos: [] });
+  writeFileSync(path.join(dir, 'data/schools.json'), JSON.stringify(d));
+  writeFileSync(path.join(dir, 'data/sections.json'), JSON.stringify(sec));
+  build(dir);
+  const read = (f) => readFileSync(path.join(dir, f), 'utf8');
+  let home = read('index.html'), map = read('sitemap.xml');
+  assert.ok(home.includes('href="schools/delhi-public-school.html"') && home.includes('assets/logos/delhi-public-school.jpg'), 'school logo on home');
+  assert.ok(home.includes('Men&#39;s Section') || home.includes("Men's Section"), 'section card on home');
+  assert.ok(home.includes('assets/categories/generic.svg'), 'new section card has a picture');
+  assert.ok(existsSync(path.join(dir, 'schools/delhi-public-school.html')) && existsSync(path.join(dir, 'sections/mens.html')));
+  assert.ok(map.includes('/schools/delhi-public-school.html') && map.includes('/sections/mens.html'));
+  assert.ok(read(`schools/${d.schools[0].slug}.html`).includes('href="delhi-public-school.html"'), 'listed under other schools');
+  assert.ok(read('sections/gifts-toys.html').includes('href="mens.html"'), 'listed under more from the store');
+  // hide both
+  d.schools.at(-1).hidden = true; sec.sections.at(-1).hidden = true;
+  writeFileSync(path.join(dir, 'data/schools.json'), JSON.stringify(d));
+  writeFileSync(path.join(dir, 'data/sections.json'), JSON.stringify(sec));
+  build(dir);
+  home = read('index.html'); map = read('sitemap.xml');
+  assert.ok(!home.includes('delhi-public-school') && !home.includes('sections/mens.html'), 'gone from home');
+  assert.ok(!existsSync(path.join(dir, 'schools/delhi-public-school.html')) && !existsSync(path.join(dir, 'sections/mens.html')), 'pages removed');
+  assert.ok(!map.includes('delhi-public-school') && !map.includes('/sections/mens.html'), 'gone from sitemap');
+  assert.ok(!read(`schools/${d.schools[0].slug}.html`).includes('delhi-public-school.html'), 'gone from other schools');
 });

@@ -3,5 +3,8 @@ Allow: /
 Disallow: /tests/
 Disallow: /scripts/
 Disallow: /data/
+Disallow: /admin/
+Disallow: /worker/
+Disallow: /incoming/
 
 Sitemap: https://agrawalstores.in/sitemap.xml

@@ -1,0 +1,6 @@
+# Same versions the photo scripts were tested with
+rembg==2.0.87
+onnxruntime==1.29.0
+opencv-python-headless==5.0.0.93
+pillow==12.3.0
+numpy==2.5.3

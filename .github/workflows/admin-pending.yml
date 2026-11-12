@@ -1,0 +1,67 @@
+# Runs on every change saved from the admin page (branch admin-pending):
+# turns uploaded photos into website photos, rebuilds the pages and runs all the tests.
+# The owner can publish only after this has finished successfully.
+name: Prepare admin changes
+
+on:
+  push:
+    branches: [admin-pending]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: admin-pending
+  cancel-in-progress: false
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: admin-pending
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+          cache: pip
+          cache-dependency-path: scripts/requirements.txt
+
+      - name: Install
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+          pip install -r scripts/requirements.txt
+
+      - name: Prepare new photos
+        id: photos
+        run: python3 scripts/process-incoming.py
+        continue-on-error: true
+
+      - name: Build pages
+        run: npm run build
+
+      - name: Test
+        run: npm test
+
+      - name: Save
+        run: |
+          git config user.name "agrawal-stores-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then echo "nothing to save"; exit 0; fi
+          git commit -m "Prepare website changes from the admin page"
+          git push origin HEAD:admin-pending
+
+      - name: Report photo problems
+        if: steps.photos.outcome == 'failure'
+        run: |
+          echo "::error::Some photos could not be prepared. See data/incoming.json for the error."
+          exit 1
