@@ -2,8 +2,10 @@
 """Turn a raw shop photo into a website photo: remove the background, tidy the edges,
 put the item on a cream background with a soft shadow and the Agrawal Stores badge.
 
-usage: python3 scripts/studio.py <input.jpg> <output.webp> [--loose]
-  --loose  skip the straight-edge clean-up (use for blazers, jackets and other items that are not in a plastic bag)
+usage: python3 scripts/studio.py <input.jpg> <output.webp> [--loose | --whole]
+  (default) cut out the item, then try the straight-edge clean-up for items in plastic bags; the clean-up is only
+           kept when it removes a little stray background, never when it would cut into the item (safe_clean)
+  --loose  plain cut-out, no straight-edge clean-up
   --whole  keep the whole photo, no background removal (use when the item fills the photo, e.g. photo frames,
            wall pieces, boxed items; background removal would cut the frame away)
 
@@ -81,6 +83,29 @@ def grabcut_clean(rgba):
     return Image.fromarray(a)
 
 
+def safe_clean(rgba, keep=0.93, extra=0.05):
+    """Straight-edge clean-up only when it is clearly an improvement.
+
+    The clean-up is meant to trim stray background stuck to a packet. If it would drop more than 7% of what the
+    plain cut-out found (it is cutting into the item), or add more than 5% (it is filling in background),
+    the plain cut-out is used instead.
+    """
+    try:
+        cleaned = grabcut_clean(rgba)
+    except Exception:
+        return rgba
+    a = np.array(rgba.getchannel('A')) > 128
+    b = np.array(cleaned.getchannel('A')) > 128
+    if a.sum() == 0:
+        return rgba
+    kept = (a & b).sum() / a.sum()
+    added = (b & ~a).sum() / a.sum()
+    if kept < keep or added > extra:
+        print(f'straight-edge clean-up skipped (kept {kept:.0%}, added {added:.0%})', file=sys.stderr)
+        return rgba
+    return cleaned
+
+
 def compose(cut, out):
     W, H, pad = 1000, 1250, 70
     a = cut.getchannel('A').point(lambda v: 0 if v < 70 else (255 if v > 200 else v))
@@ -115,6 +140,6 @@ if __name__ == '__main__':
     else:
         cut = cut_out(src)
         if '--loose' not in sys.argv:
-            cut = grabcut_clean(cut)
+            cut = safe_clean(cut)
     compose(cut, out)
     print(out, os.path.getsize(out))

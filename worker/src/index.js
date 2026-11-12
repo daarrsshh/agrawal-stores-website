@@ -341,6 +341,17 @@ export function applyEdit(all, op, user) {
     const sz = (p.sizes || []).length ? ` (sizes: ${p.sizes.map((s) => `${s.size} ${s.stock === 'in' ? '✓' : s.stock === 'few' ? 'few' : '✗'}`).join(', ')})` : '';
     return { file: pg.file, message: `${pg.title}: "${p.caption}" ${words[op.stock]}${sz}` };
   }
+  if (op.op === 'redo') {
+    // Owner: edit a new photo again from its kept original. auto = normal cut-out, loose = plain cut-out, whole = no cut-out
+    if (user.r !== 'owner') throw new HttpError(403, 'Only the owner can edit photos again.');
+    const mode = { auto: 'bag', loose: 'loose', whole: 'whole' }[op.mode];
+    if (!mode) throw new HttpError(400, 'Choose how to edit the photo.');
+    const q = (all.incoming.json.photos || []).filter((x) => !(x.redo === p.file && x.page === `${pg.kind}:${pg.slug}`));
+    q.push({ id: `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`, redo: p.file, page: `${pg.kind}:${pg.slug}`, caption: p.caption, mode, by: user.n, at: new Date().toISOString() });
+    all.incoming.json = { photos: q };
+    const how = { bag: 'normal cut-out', loose: 'plain cut-out', whole: 'whole photo, no cut-out' }[mode];
+    return { file: 'incoming', message: `${pg.title}: edit photo of "${p.caption}" again (${how})` };
+  }
   if (op.op === 'group') {
     const allowed = pg.kind === 'school' ? ['Daily wear', 'House & sports wear', 'Winter wear'] : null;
     const group = cleanText(op.group, 40);
@@ -433,7 +444,7 @@ async function route(req, env) {
         exists: all.ref === BRANCH && Boolean(cmp && cmp.ahead_by),
         pr: pr ? pr.number : null,
         changes: cmp ? (cmp.commits || []).map((c) => c.commit.message.split('\n')[0]).filter((m) => !/^(Merge|Queue photo|Prepare website changes)/.test(m) && !/: logo$/.test(m)) : [],
-        incoming: incoming.map((p) => ({ page: p.page, caption: p.caption, by: p.by, error: p.error ? 'This photo could not be prepared.' : undefined })),
+        incoming: incoming.map((p) => ({ page: p.page, caption: p.caption, by: p.by, redo: p.redo ? true : undefined, error: p.error ? 'This photo could not be prepared.' : undefined })),
         items,
         processing: incoming.length > 0 || Boolean(run && run.status !== 'completed'),
         failed: Boolean(run && run.status === 'completed' && run.conclusion && run.conclusion !== 'success'),

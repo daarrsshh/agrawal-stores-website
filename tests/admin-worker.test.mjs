@@ -290,6 +290,17 @@ test('stock: staff can mark a product and its sizes; bad values are refused; new
   assert.equal(pendingJson('data/schools.json').schools.find((x) => x.slug === s.slug).uniformPhotos[0].sizes[0].size, 'bXL/b', 'no tags in sizes');
   await call(env, 'POST', '/photo', { page, caption: 'Navy tie', mode: 'bag', image: fakeJpeg }, staff);
   assert.equal(pendingJson('data/incoming.json').photos[0].stock, 'in');
+  // editing a photo again: owner only, one request per photo, unknown modes refused
+  assert.equal((await call(env, 'POST', '/edit', { op: 'redo', page, file, mode: 'whole' }, staff)).status, 403);
+  const owner = await loginAs(env, 'Owner', 'owner-pass-123');
+  assert.equal((await call(env, 'POST', '/edit', { op: 'redo', page, file, mode: 'sharpen' }, owner)).status, 400);
+  assert.equal((await call(env, 'POST', '/edit', { op: 'redo', page, file, mode: 'whole' }, owner)).status, 200);
+  assert.equal((await call(env, 'POST', '/edit', { op: 'redo', page, file, mode: 'loose' }, owner)).status, 200);
+  const q = pendingJson('data/incoming.json').photos;
+  assert.equal(q.length, 2, 'the new photo and one redo');
+  assert.deepEqual([q[1].redo, q[1].page, q[1].mode, q[1].by], [file, page, 'loose', 'Owner']);
+  const st = (await call(env, 'GET', '/state', null, owner)).body;
+  assert.equal(st.pending.incoming[1].redo, true);
 });
 
 test('what changed: one entry per visible change, with the right picture', () => {

@@ -103,7 +103,7 @@ test('staff: add a product with a photo; it is queued for the owner and the live
   await page.getByText('Photo sent').waitFor();
   const q = pending('data/incoming.json').photos;
   assert.equal(q.length, 1);
-  assert.deepEqual([q[0].page, q[0].caption, q[0].group, q[0].mode, q[0].by], ['section:gifts-toys', 'Teddy bear, large', 'Toys & Soft Toys', 'loose', 'Sandeep']);
+  assert.deepEqual([q[0].page, q[0].caption, q[0].group, q[0].mode, q[0].by], ['section:gifts-toys', 'Teddy bear, large', 'Toys & Soft Toys', 'bag', 'Sandeep']);
   assert.ok(fake.branches.get('admin-pending').get(`incoming/${q[0].id}.jpg`).startsWith('BINARY:'));
   assert.ok(!fake.branches.get('main').has('data/incoming.json'), 'live site untouched');
   await ctx.close();
@@ -302,7 +302,7 @@ test('owner: Check & publish shows each new photo big with a Hide button, and st
   await page.getByText('Changes waiting (2)').waitFor();
   const added = page.locator('#publish-body li', { hasText: 'Teddy bear' });
   assert.ok(await added.getByText('New product (by Payal) · Toys & Soft Toys').isVisible());
-  assert.match(await added.locator('img').getAttribute('src'), /admin-pending\/assets\/gallery\/gifts-toys\/teddy-bear\.webp$/, 'full photo from the pending copy');
+  assert.match(await added.locator('img').getAttribute('src'), /admin-pending\/assets\/gallery\/gifts-toys\/teddy-bear\.webp\?v=\d+$/, 'full photo from the pending copy, fresh each time');
   const stock = page.locator('#publish-body li', { hasText: 'Stock:' });
   assert.match(await stock.textContent(), /Stock: Few left/);
   assert.match(await stock.locator('img').getAttribute('src'), /\/thumb\//);
@@ -310,6 +310,16 @@ test('owner: Check & publish shows each new photo big with a Hide button, and st
   await added.locator('[data-big]').click();
   assert.ok(await page.locator('#big-dialog').isVisible());
   await page.locator('#big-dialog button').click();
+  // ask for the photo to be edited again without the cut-out
+  await added.getByRole('button', { name: /Whole photo/ }).click();
+  await page.getByText('the photo is being edited again').waitFor();
+  const redo = JSON.parse(fake.branches.get('admin-pending').get('data/incoming.json')).photos;
+  assert.deepEqual(redo.map((x) => [x.redo, x.page, x.mode, x.by]), [['teddy-bear.webp', 'section:gifts-toys', 'whole', 'Owner']]);
+  await page.locator('#publish-body li', { hasText: 'Photo is being edited again' }).waitFor();
+  assert.ok(await page.locator('#do-publish').isDisabled(), 'cannot publish while it is being edited');
+  fake.branches.get('admin-pending').set('data/incoming.json', JSON.stringify({ photos: [] }));
+  await page.locator('#do-refresh').click();
+  await page.getByText('Changes waiting (2)').waitFor();
   // hide the photo before publishing
   await added.getByRole('button', { name: /Hide this/ }).click();
   await page.getByText('Hidden: Teddy bear').waitFor();
