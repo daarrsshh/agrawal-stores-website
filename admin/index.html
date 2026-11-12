@@ -106,8 +106,7 @@
                 <fieldset>
                     <legend class="text-lg font-extrabold mb-2"><span id="mode-num">4</span>. How does the photo look? · <span lang="hi">फोटो कैसी है?</span></legend>
                     <div class="grid gap-2">
-                        <label class="flex min-h-[56px] items-center gap-3 rounded-xl border-2 border-brand-200 bg-white px-4"><input type="radio" name="mode" value="bag" class="h-6 w-6"> <span><b>Packed in a plastic bag</b> <span class="block text-sm text-slate-600">shirts, pants, sweaters in packets</span></span></label>
-                        <label class="flex min-h-[56px] items-center gap-3 rounded-xl border-2 border-brand-200 bg-white px-4"><input type="radio" name="mode" value="loose" class="h-6 w-6" checked> <span><b>Loose item</b> <span class="block text-sm text-slate-600">blazers, bags, toys, bottles</span></span></label>
+                        <label class="flex min-h-[56px] items-center gap-3 rounded-xl border-2 border-brand-200 bg-white px-4"><input type="radio" name="mode" value="bag" class="h-6 w-6" checked> <span><b>Normal</b> <span class="block text-sm text-slate-600">most things: clothes, packets, toys, bottles · <span lang="hi">ज़्यादातर सामान</span></span></span></label>
                         <label class="flex min-h-[56px] items-center gap-3 rounded-xl border-2 border-brand-200 bg-white px-4"><input type="radio" name="mode" value="whole" class="h-6 w-6"> <span><b>Frame or box fills the photo</b> <span class="block text-sm text-slate-600">photo frames, wall paintings, boxed gifts</span></span></label>
                     </div>
                 </fieldset>
@@ -238,6 +237,9 @@
         </div>
     </dialog>
 
+    <dialog id="big-dialog" class="m-auto w-[min(96vw,700px)] rounded-3xl p-0 backdrop:bg-slate-950/80">
+        <form method="dialog" class="p-3"><img id="big-img" alt="" class="mx-auto max-h-[80vh] rounded-2xl"><button class="mt-2 w-full min-h-[48px] font-bold">Close</button></form>
+    </dialog>
     <script src="config.js"></script>
     <script>
     (function () {
@@ -327,7 +329,7 @@
 
         // ---------- home ----------
         function refresh() {
-            return api('GET', '/state').then(function (j) { S.state = j; S.me = j.me; return j; });
+            return api('GET', '/state').then(function (j) { S.state = j; S.me = j.me; S.loaded = Date.now(); return j; });
         }
         function goHome(message) {
             busy();
@@ -352,7 +354,8 @@
             };
         }
         function findPage(id) { var l = pageList(); return l.schools.concat(l.sections).filter(function (p) { return p.id === id; })[0]; }
-        function img(path) { return S.state.imageBase + path; }
+        // pending photos can be edited again under the same name, so ask for a fresh copy each time the state loads
+        function img(path) { return S.state.imageBase + path + (S.state.pending && S.state.pending.exists ? '?v=' + (S.loaded || 0) : ''); }
         function thumbOf(p, item) { return img('assets/' + (p.kind === 'school' ? 'uniforms' : 'gallery') + '/' + p.slug + '/thumb/' + item.file); }
         function goPick(mode) {
             S.mode = mode;
@@ -385,7 +388,6 @@
             $('add-groups').innerHTML = groups.map(function (g, i) {
                 return '<label class="flex min-h-[56px] items-center gap-3 rounded-xl border-2 border-brand-200 bg-white px-4"><input type="radio" name="group" value="' + esc(g) + '" class="h-6 w-6"' + (i === 0 ? ' checked' : '') + '> <span><b>' + esc(g) + '</b>' + (GROUP_HI[g] ? ' <span lang="hi" class="block text-sm text-slate-600">' + esc(GROUP_HI[g]) + '</span>' : '') + '</span></label>';
             }).join('');
-            if (p.kind === 'school') document.querySelector('input[name=mode][value=bag]').checked = true;
             show('add');
         }
         // Shrink the photo on the phone before sending (about 0.3 MB instead of 5 MB).
@@ -420,7 +422,7 @@
             var m = document.querySelector('input[name=mode]:checked');
             var page = S.page;
             busy('Sending photo…');
-            api('POST', '/photo', { page: page.id, caption: name, group: g ? g.value : undefined, mode: m ? m.value : 'loose', image: S.photo })
+            api('POST', '/photo', { page: page.id, caption: name, group: g ? g.value : undefined, mode: m ? m.value : 'bag', image: S.photo })
                 .then(function (j) { S.photo = null; goHome('✅ ' + j.message); })
                 .catch(function (err) { say(err.message, 'bad'); show('add'); });
         });
@@ -470,8 +472,30 @@
                     if (p.incoming.length) html += '<div class="mb-4 rounded-2xl bg-amber-100 p-4"><p class="font-extrabold">⏳ Preparing ' + p.incoming.length + ' new photo(s)…</p><p>This takes a few minutes. Come back and tap Refresh.</p></div>';
                     else if (p.processing) html += '<div class="mb-4 rounded-2xl bg-amber-100 p-4"><p class="font-extrabold">⏳ Checking the changes…</p><p>A few minutes. Tap Refresh.</p></div>';
                     if (p.failed) html += '<div class="mb-4 rounded-2xl bg-red-100 p-4 font-bold text-red-800">Something went wrong while preparing the changes. Ask Claude to look at it before publishing.</div>';
-                    html += '<h2 class="text-lg font-extrabold mb-2">Changes waiting</h2><ul class="list-disc pl-6 space-y-1 mb-6">' +
-                        p.changes.filter(function (c) { return !/^Queue photo|^Prepare website/.test(c); }).map(function (c) { return '<li>' + esc(c) + '</li>'; }).join('') + '</ul>';
+                    // One card per change, with its picture, so the owner sees exactly what goes live.
+                    var LABEL = { added: ['New product', 'bg-green-600'], stock: ['Stock', 'bg-amber-500'], renamed: ['Renamed', 'bg-brand-600'], hidden: ['Hidden', 'bg-slate-600'], shown: ['Shown again', 'bg-green-600'], reordered: ['Order', 'bg-brand-600'], banner: ['Banner', 'bg-brand-800'], 'new-page': ['New page', 'bg-green-600'], 'page-edited': ['Page changed', 'bg-brand-600'] };
+                    var items = p.items || [];
+                    html += '<h2 class="text-lg font-extrabold mb-1">Changes waiting (' + items.length + ')</h2>' +
+                        '<p class="text-slate-600 mb-3">Check every photo. Tap a photo to see it big. If the cut-out is not right, tap <b>Plain cut-out</b> or <b>Whole photo</b> to edit it again. If the product itself is wrong, tap <b>Hide</b>.</p>' +
+                        '<ul class="space-y-3 mb-4">' + items.map(function (it, i) {
+                            var l = LABEL[it.type] || [it.type, 'bg-slate-600'];
+                            var pic = it.type === 'added' ? it.image : (it.thumb || it.image);
+                            var canHide = it.type === 'added' && !it.hidden;
+                            return '<li class="rounded-2xl border-2 ' + (it.type === 'added' ? 'border-green-300' : 'border-brand-100') + ' bg-white p-3 shadow-sm">' +
+                                '<div class="flex items-center gap-2 mb-2"><span class="rounded-full px-2 py-0.5 text-xs font-extrabold text-white ' + l[1] + '">' + esc(l[0]) + '</span><span class="text-sm font-bold text-slate-600">' + esc(it.title) + '</span></div>' +
+                                (pic ? '<button type="button" data-big="' + esc(img(it.image || pic)) + '" class="block w-full"><img src="' + esc(img(pic)) + '" alt="' + esc(it.caption || it.title) + '" loading="lazy" class="mx-auto ' + (it.type === 'added' ? 'max-h-80' : 'max-h-28') + ' rounded-xl bg-brand-50 object-contain' + (it.hidden ? ' opacity-40' : '') + '"></button>' : '') +
+                                (it.caption ? '<p class="mt-2 text-lg font-extrabold">' + esc(it.caption) + '</p>' : '') +
+                                '<p class="text-slate-700">' + esc(it.text) + (it.hidden && it.type !== 'hidden' ? ' · <b class="text-red-700">hidden</b>' : '') + '</p>' +
+                                (canHide ? '<div class="mt-2 flex flex-wrap gap-2">' +
+                                    '<button type="button" data-redo="' + i + '" data-how="loose" class="min-h-[44px] rounded-xl border-2 border-brand-300 px-3 font-bold">✂️ Plain cut-out</button>' +
+                                    '<button type="button" data-redo="' + i + '" data-how="whole" class="min-h-[44px] rounded-xl border-2 border-brand-300 px-3 font-bold">🖼 Whole photo</button>' +
+                                    '<button type="button" data-hide="' + i + '" class="min-h-[44px] rounded-xl border-2 border-red-300 px-3 font-bold text-red-700">🙈 Hide this</button></div>' : '') +
+                                '</li>';
+                        }).join('') + '</ul>';
+                    if (p.incoming.length) html += '<ul class="space-y-2 mb-4">' + p.incoming.map(function (x) { return '<li class="rounded-2xl border-2 border-dashed border-amber-300 bg-amber-50 p-3"><b>' + esc(x.caption) + '</b> · ' + esc(x.by || '') + '<br><span class="text-sm">' + (x.error ? '❌ ' + esc(x.error) + (x.redo ? ' The old photo stays.' : ' It will not be published.') : x.redo ? '⏳ Photo is being edited again…' : '⏳ Photo is being prepared…') + '</span></li>'; }).join('') + '</ul>';
+                    var hist = p.changes.filter(function (c) { return !/^Queue photo|^Prepare website/.test(c); });
+                    if (hist.length) html += '<details' + (p.items ? '' : ' open') + ' class="mb-6 rounded-2xl bg-white p-3"><summary class="cursor-pointer font-bold">Who did what (' + hist.length + ')</summary><ul class="mt-2 list-disc pl-6 space-y-1 text-sm">' + hist.map(function (c) { return '<li>' + esc(c) + '</li>'; }).join('') + '</ul></details>';
+                    S.pubItems = items;
                     var ready = !p.processing && !p.failed && p.exists;
                     html += '<button type="button" id="do-publish" class="w-full min-h-[60px] rounded-2xl bg-green-600 text-white text-xl font-extrabold shadow disabled:opacity-40"' + (ready ? '' : ' disabled') + '>✅ Publish to website</button>' +
                         '<button type="button" id="do-refresh" class="mt-3 w-full min-h-[52px] rounded-2xl border-2 border-brand-200 bg-white text-lg font-bold">↻ Refresh</button>' +
@@ -483,6 +507,24 @@
             }).catch(function (e) { say(e.message, 'bad'); show('home'); });
         }
         $('publish-body').addEventListener('click', function (e) {
+            var big = e.target.closest('[data-big]');
+            if (big) { $('big-img').src = big.getAttribute('data-big'); $('big-dialog').showModal(); return; }
+            var r = e.target.closest('[data-redo]');
+            if (r) {
+                var ri = S.pubItems[+r.getAttribute('data-redo')];
+                busy('Sending…');
+                api('POST', '/edit', { op: 'redo', page: ri.page, file: ri.file, mode: r.getAttribute('data-how') })
+                    .then(function () { say('✅ ' + ri.caption + ': the photo is being edited again. Tap Refresh in a few minutes.'); openPublish(); })
+                    .catch(function (err) { say(err.message, 'bad'); openPublish(); });
+                return;
+            }
+            var h = e.target.closest('[data-hide]');
+            if (h) {
+                var it = S.pubItems[+h.getAttribute('data-hide')];
+                busy('Hiding…');
+                api('POST', '/edit', { op: 'hide', page: it.page, file: it.file }).then(function () { say('Hidden: ' + it.caption + '. It will not show on the website.'); openPublish(); }).catch(function (err) { say(err.message, 'bad'); openPublish(); });
+                return;
+            }
             if (e.target.id === 'do-refresh') { say(''); openPublish(); }
             if (e.target.id === 'do-publish') {
                 busy('Publishing…');

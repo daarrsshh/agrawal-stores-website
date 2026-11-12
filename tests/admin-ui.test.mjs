@@ -103,7 +103,7 @@ test('staff: add a product with a photo; it is queued for the owner and the live
   await page.getByText('Photo sent').waitFor();
   const q = pending('data/incoming.json').photos;
   assert.equal(q.length, 1);
-  assert.deepEqual([q[0].page, q[0].caption, q[0].group, q[0].mode, q[0].by], ['section:gifts-toys', 'Teddy bear, large', 'Toys & Soft Toys', 'loose', 'Sandeep']);
+  assert.deepEqual([q[0].page, q[0].caption, q[0].group, q[0].mode, q[0].by], ['section:gifts-toys', 'Teddy bear, large', 'Toys & Soft Toys', 'bag', 'Sandeep']);
   assert.ok(fake.branches.get('admin-pending').get(`incoming/${q[0].id}.jpg`).startsWith('BINARY:'));
   assert.ok(!fake.branches.get('main').has('data/incoming.json'), 'live site untouched');
   await ctx.close();
@@ -172,7 +172,7 @@ test('owner: sees changes, cannot publish while photos are being prepared, then 
   fake.run = { status: 'completed', conclusion: 'success' };
   await page.locator('#do-refresh').click();
   await page.getByText('Changes waiting').waitFor();
-  assert.ok(await page.getByText('Banner: Diwali gifts are here (by Owner)').isVisible());
+  assert.ok(await page.locator('#publish-body li', { hasText: 'Home page banner' }).getByText('"Diwali gifts are here" · button "Call now"').isVisible(), 'banner change shown as a card');
   await page.locator('#do-publish').click();
   await page.getByText('Published.').waitFor();
   assert.ok(!fake.branches.has('admin-pending'));
@@ -275,6 +275,58 @@ test('owner page: only a password box, staff PIN does not work there, and it is 
   // the staff page on the same phone is still a separate login
   await page.goto(`${siteUrl}/admin/`);
   await page.locator('#who').waitFor();
+  await ctx.close();
+});
+
+test('owner: Check & publish shows each new photo big with a Hide button, and stock changes with the product picture', async () => {
+  fake.reset();
+  const { ctx, page } = await phone();
+  await loginStaff(page);
+  await page.locator('#s-home [data-go="stock-page"]').click();
+  await page.getByRole('button', { name: 'St. Norbert School' }).click();
+  await page.locator('[data-stock-i="0"][data-stock="few"]').click();
+  await page.getByText('Saved:').waitFor();
+  await page.locator('#logout-btn').click();
+  // the GitHub Action has prepared a new photo on the pending copy
+  const br = fake.branches.get('admin-pending');
+  const sec = JSON.parse(br.get('data/sections.json'));
+  sec.sections.find((s) => s.slug === 'gifts-toys').photos.push({ file: 'teddy-bear.webp', caption: 'Teddy bear', group: 'Toys & Soft Toys', by: 'Payal', stock: 'in' });
+  br.set('data/sections.json', JSON.stringify(sec));
+  fake.commits.get('admin-pending').push('New photo for Gifts & Toys: Teddy bear (by Payal)');
+  fake.run = { status: 'completed', conclusion: 'success' };
+  await page.goto(`${siteUrl}/admin/owner/`);
+  await page.locator('#owner-pass').fill('owner-pass-123');
+  await page.getByRole('button', { name: 'Log in' }).click();
+  await page.getByText('Namaste,').waitFor();
+  await page.locator('[data-go="publish"]').click();
+  await page.getByText('Changes waiting (2)').waitFor();
+  const added = page.locator('#publish-body li', { hasText: 'Teddy bear' });
+  assert.ok(await added.getByText('New product (by Payal) · Toys & Soft Toys').isVisible());
+  assert.match(await added.locator('img').getAttribute('src'), /admin-pending\/assets\/gallery\/gifts-toys\/teddy-bear\.webp\?v=\d+$/, 'full photo from the pending copy, fresh each time');
+  const stock = page.locator('#publish-body li', { hasText: 'Stock:' });
+  assert.match(await stock.textContent(), /Stock: Few left/);
+  assert.match(await stock.locator('img').getAttribute('src'), /\/thumb\//);
+  // tap the photo to see it big
+  await added.locator('[data-big]').click();
+  assert.ok(await page.locator('#big-dialog').isVisible());
+  await page.locator('#big-dialog button').click();
+  // ask for the photo to be edited again without the cut-out
+  await added.getByRole('button', { name: /Whole photo/ }).click();
+  await page.getByText('the photo is being edited again').waitFor();
+  const redo = JSON.parse(fake.branches.get('admin-pending').get('data/incoming.json')).photos;
+  assert.deepEqual(redo.map((x) => [x.redo, x.page, x.mode, x.by]), [['teddy-bear.webp', 'section:gifts-toys', 'whole', 'Owner']]);
+  await page.locator('#publish-body li', { hasText: 'Photo is being edited again' }).waitFor();
+  assert.ok(await page.locator('#do-publish').isDisabled(), 'cannot publish while it is being edited');
+  fake.branches.get('admin-pending').set('data/incoming.json', JSON.stringify({ photos: [] }));
+  await page.locator('#do-refresh').click();
+  await page.getByText('Changes waiting (2)').waitFor();
+  // hide the photo before publishing
+  await added.getByRole('button', { name: /Hide this/ }).click();
+  await page.getByText('Hidden: Teddy bear').waitFor();
+  const after = JSON.parse(fake.branches.get('admin-pending').get('data/sections.json')).sections.find((s) => s.slug === 'gifts-toys').photos.find((p) => p.file === 'teddy-bear.webp');
+  assert.equal(after.hidden, true);
+  await page.locator('#publish-body li', { hasText: 'Teddy bear' }).getByText('hidden', { exact: true }).waitFor();
+  assert.equal(await page.locator('#publish-body li', { hasText: 'Teddy bear' }).getByRole('button', { name: /Hide this/ }).count(), 0, 'no Hide button once hidden');
   await ctx.close();
 });
 

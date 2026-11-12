@@ -134,13 +134,61 @@ const utf8b64 = (text) => {
 // ---------- data helpers ----------
 const DATA = { schools: 'data/schools.json', sections: 'data/sections.json', site: 'data/site.json', incoming: 'data/incoming.json' };
 
-async function loadAll(g) {
-  const ref = (await g.branchSha(BRANCH)) ? BRANCH : 'main';
+async function loadAll(g, forceRef) {
+  const ref = forceRef || ((await g.branchSha(BRANCH)) ? BRANCH : 'main');
   const out = { ref };
   for (const [k, p] of Object.entries(DATA)) {
     const f = await g.readFile(p, ref);
     out[k] = f ? { sha: f.sha, json: JSON.parse(f.text) } : { sha: null, json: k === 'incoming' ? { photos: [] } : {} };
   }
+  return out;
+}
+
+
+// ---------- what changed (for the owner's Check & publish screen) ----------
+// Compares the live data (main) with the pending copy and returns one entry per visible change,
+// each with the picture to show, so the owner can see exactly what will go live.
+const STOCK_WORDS = { in: 'In stock', few: 'Few left', out: 'Out of stock' };
+const stockText = (p) => {
+  const base = STOCK_WORDS[p.stock] || 'not set';
+  const sz = (p.sizes || []).map((s) => `${s.size}${s.stock === 'in' ? ' ✓' : s.stock === 'few' ? ' few' : ' ✗'}`).join(', ');
+  return sz ? `${base} · sizes ${sz}` : base;
+};
+export function diffData(live, pending) {
+  const out = [];
+  const pages = (data, kind) => (kind === 'school' ? data.schools.json.schools : data.sections.json.sections);
+  for (const kind of ['school', 'section']) {
+    const before = new Map(pages(live, kind).map((x) => [x.slug, x]));
+    for (const pg of pages(pending, kind)) {
+      const title = kind === 'school' ? pg.fullName : pg.title;
+      const dir = kind === 'school' ? `assets/uniforms/${pg.slug}/` : `assets/gallery/${pg.slug}/`;
+      const old = before.get(pg.slug);
+      const page = `${kind}:${pg.slug}`;
+      if (!old) {
+        out.push({ type: 'new-page', page, title, text: kind === 'school' ? `New school: ${title}` : `New section: ${title}`, image: kind === 'school' && pg.logo ? `assets/${pg.logo}` : null });
+      } else {
+        const oldTitle = kind === 'school' ? old.fullName : old.title;
+        if (oldTitle !== title) out.push({ type: 'page-edited', page, title, text: `Renamed from "${oldTitle}"` });
+        else if (kind === 'section' && (old.intro !== pg.intro || JSON.stringify(old.items) !== JSON.stringify(pg.items))) out.push({ type: 'page-edited', page, title, text: 'Description or item list changed' });
+        if (Boolean(old.hidden) !== Boolean(pg.hidden)) out.push({ type: pg.hidden ? 'hidden' : 'shown', page, title, text: pg.hidden ? 'Whole page hidden from the website' : 'Whole page shown again' });
+      }
+      const list = kind === 'school' ? pg.uniformPhotos : pg.photos;
+      const oldList = old ? (kind === 'school' ? old.uniformPhotos : old.photos) : [];
+      const oldBy = new Map(oldList.map((p) => [p.file, p]));
+      for (const p of list) {
+        const o = oldBy.get(p.file);
+        const base = { page, title, file: p.file, caption: p.caption, image: `${dir}${p.file}`, thumb: `${dir}thumb/${p.file}`, hidden: Boolean(p.hidden) };
+        if (!o) { out.push({ ...base, type: 'added', text: `New product${p.by ? ` (by ${p.by})` : ''}${p.group ? ` · ${p.group}` : ''}` }); continue; }
+        if (o.caption !== p.caption) out.push({ ...base, type: 'renamed', text: `Renamed from "${o.caption}"` });
+        if (Boolean(o.hidden) !== Boolean(p.hidden)) out.push({ ...base, type: p.hidden ? 'hidden' : 'shown', text: p.hidden ? 'Hidden from the website' : 'Shown on the website again' });
+        if (o.stock !== p.stock || JSON.stringify(o.sizes || []) !== JSON.stringify(p.sizes || [])) out.push({ ...base, type: 'stock', text: `Stock: ${stockText(p)}${o.stock ? ` (was ${stockText(o)})` : ''}` });
+      }
+      const order = (l) => l.filter((p) => oldBy.has(p.file)).map((p) => p.file).join('|');
+      if (old && order(list) !== order(oldList.filter((p) => list.some((x) => x.file === p.file)))) out.push({ type: 'reordered', page, title, text: 'Order of products changed' });
+    }
+  }
+  const b1 = (live.site.json && live.site.json.banner) || {}, b2 = (pending.site.json && pending.site.json.banner) || {};
+  if (JSON.stringify(b1) !== JSON.stringify(b2)) out.push({ type: 'banner', title: 'Home page banner', text: b2.show ? `"${b2.text}" · button "${b2.button}"` : 'Banner switched off' });
   return out;
 }
 
@@ -293,6 +341,17 @@ export function applyEdit(all, op, user) {
     const sz = (p.sizes || []).length ? ` (sizes: ${p.sizes.map((s) => `${s.size} ${s.stock === 'in' ? '✓' : s.stock === 'few' ? 'few' : '✗'}`).join(', ')})` : '';
     return { file: pg.file, message: `${pg.title}: "${p.caption}" ${words[op.stock]}${sz}` };
   }
+  if (op.op === 'redo') {
+    // Owner: edit a new photo again from its kept original. auto = normal cut-out, loose = plain cut-out, whole = no cut-out
+    if (user.r !== 'owner') throw new HttpError(403, 'Only the owner can edit photos again.');
+    const mode = { auto: 'bag', loose: 'loose', whole: 'whole' }[op.mode];
+    if (!mode) throw new HttpError(400, 'Choose how to edit the photo.');
+    const q = (all.incoming.json.photos || []).filter((x) => !(x.redo === p.file && x.page === `${pg.kind}:${pg.slug}`));
+    q.push({ id: `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`, redo: p.file, page: `${pg.kind}:${pg.slug}`, caption: p.caption, mode, by: user.n, at: new Date().toISOString() });
+    all.incoming.json = { photos: q };
+    const how = { bag: 'normal cut-out', loose: 'plain cut-out', whole: 'whole photo, no cut-out' }[mode];
+    return { file: 'incoming', message: `${pg.title}: edit photo of "${p.caption}" again (${how})` };
+  }
   if (op.op === 'group') {
     const allowed = pg.kind === 'school' ? ['Daily wear', 'House & sports wear', 'Winter wear'] : null;
     const group = cleanText(op.group, 40);
@@ -375,6 +434,7 @@ async function route(req, env) {
     const cmp = all.ref === BRANCH ? await g.compare() : null;
     const run = all.ref === BRANCH ? await g.latestRun() : null;
     const incoming = all.incoming.json.photos || [];
+    const items = all.ref === BRANCH ? diffData(await loadAll(g, 'main'), all) : [];
     return {
       me: { name: me.n, role: me.r },
       schools: all.schools.json.schools,
@@ -384,7 +444,8 @@ async function route(req, env) {
         exists: all.ref === BRANCH && Boolean(cmp && cmp.ahead_by),
         pr: pr ? pr.number : null,
         changes: cmp ? (cmp.commits || []).map((c) => c.commit.message.split('\n')[0]).filter((m) => !/^(Merge|Queue photo|Prepare website changes)/.test(m) && !/: logo$/.test(m)) : [],
-        incoming: incoming.map((p) => ({ page: p.page, caption: p.caption, by: p.by })),
+        incoming: incoming.map((p) => ({ page: p.page, caption: p.caption, by: p.by, redo: p.redo ? true : undefined, error: p.error ? 'This photo could not be prepared.' : undefined })),
+        items,
         processing: incoming.length > 0 || Boolean(run && run.status !== 'completed'),
         failed: Boolean(run && run.status === 'completed' && run.conclusion && run.conclusion !== 'success'),
       },
