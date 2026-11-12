@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<!-- Generated from admin/index.html by scripts/build-schools.mjs. Edit that file, not this one. -->
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Owner | Agrawal Stores</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8F%AA%3C/text%3E%3C/svg%3E">
+    <link rel="stylesheet" href="../../assets/site.css">
+    <style>
+        /* Big, simple controls for people who do not use computers much */
+        body { -webkit-tap-highlight-color: transparent; }
+        [hidden] { display: none !important; }
+        .pin-dot { width: 18px; height: 18px; border-radius: 9999px; border: 2px solid #9c4a2e; }
+        .pin-dot.on { background: #9c4a2e; }
+        .tile { min-height: 96px; }
+        .spinner { width: 40px; height: 40px; border: 5px solid #f3dcc2; border-top-color: #9c4a2e; border-radius: 9999px; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body data-mode="owner" class="bg-brand-50 text-slate-800 antialiased min-h-screen">
+    <header class="bg-brand-600 text-white shadow-md sticky top-0 z-40">
+        <div class="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
+            <button type="button" id="home-btn" class="flex items-center gap-2 min-h-[44px] text-xl font-extrabold">🏪 Agrawal Stores <span class="font-semibold text-sm opacity-90">Admin</span></button>
+            <button type="button" id="logout-btn" hidden class="min-h-[44px] rounded-full bg-brand-700 px-4 text-sm font-semibold">Log out</button>
+        </div>
+    </header>
+
+    <main class="max-w-2xl mx-auto px-4 py-6">
+        <div id="msg" role="status" aria-live="polite" class="hidden mb-4 rounded-2xl p-4 text-lg font-bold"></div>
+
+        <!-- Not set up yet -->
+        <section id="s-setup" class="screen" hidden>
+            <h1 class="text-2xl font-extrabold mb-3">Admin is not set up yet</h1>
+            <p class="text-lg">Ask Darshit to finish the setup (Cloudflare service address in admin/config.js).</p>
+        </section>
+
+        <!-- Log in -->
+        <section id="s-pin" class="screen" hidden>
+            <div id="pin-staff">
+                <h1 class="text-2xl font-extrabold mb-1">Staff login</h1>
+                <p class="text-lg mb-4">Type your name and the shop PIN · <span lang="hi">अपना नाम और पिन डालें</span></p>
+                <label for="who" class="block text-lg font-bold mb-1">Your name · <span lang="hi">आपका नाम</span></label>
+                <input id="who" maxlength="20" autocomplete="given-name" placeholder="e.g. Sandeep" class="mb-5 w-full min-h-[52px] rounded-xl border-2 border-brand-200 px-4 text-lg">
+                <p class="text-lg font-bold mb-2 text-center">PIN</p>
+                <div id="pin-dots" class="flex justify-center gap-4 mb-6" aria-hidden="true"></div>
+                <div class="grid grid-cols-3 gap-3 max-w-xs mx-auto" id="pinpad"></div>
+            </div>
+            <form id="pin-owner" class="space-y-3" hidden>
+                <h1 class="text-2xl font-extrabold mb-3">Owner login</h1>
+                <label class="block text-lg font-bold" for="owner-pass">Password</label>
+                <input id="owner-pass" type="password" autocomplete="current-password" class="w-full min-h-[52px] rounded-xl border-2 border-brand-200 px-4 text-lg">
+                <button class="w-full min-h-[52px] rounded-xl bg-brand-600 text-white text-lg font-extrabold">Log in</button>
+            </form>
+        </section>
+
+        <!-- 3. Home -->
+        <section id="s-home" class="screen" hidden>
+            <h1 class="text-2xl font-extrabold mb-1">Namaste, <span id="me-name"></span></h1>
+            <p class="text-slate-600 mb-5">What do you want to do? · <span lang="hi">क्या करना है?</span></p>
+            <div class="grid gap-3">
+                <button type="button" data-go="add-page" class="tile flex items-center gap-4 rounded-2xl bg-brand-600 px-5 text-left text-white shadow"><span class="text-4xl" aria-hidden="true">📷</span><span><span class="block text-xl font-extrabold">Add a product</span><span lang="hi" class="block text-base opacity-90">नया प्रोडक्ट डालें (फोटो के साथ)</span></span></button>
+                <button type="button" data-go="edit-page" class="tile flex items-center gap-4 rounded-2xl border-2 border-brand-200 bg-white px-5 text-left shadow-sm"><span class="text-4xl" aria-hidden="true">✏️</span><span><span class="block text-xl font-extrabold">Change or hide a product</span><span lang="hi" class="block text-base text-slate-600">नाम बदलें, छुपाएँ, ऊपर-नीचे करें</span></span></button>
+                <button type="button" data-go="stock-page" class="tile flex items-center gap-4 rounded-2xl border-2 border-brand-200 bg-white px-5 text-left shadow-sm"><span class="text-4xl" aria-hidden="true">📦</span><span><span class="block text-xl font-extrabold">Update stock</span><span lang="hi" class="block text-base text-slate-600">स्टॉक: है / थोड़ा बचा / खत्म</span></span></button>
+                <button type="button" data-go="publish" data-owner class="tile flex items-center gap-4 rounded-2xl border-2 border-green-500 bg-white px-5 text-left shadow-sm" hidden><span class="text-4xl" aria-hidden="true">✅</span><span><span class="block text-xl font-extrabold">Check &amp; publish <span id="pending-count" class="ml-1 rounded-full bg-green-600 px-2 text-base text-white empty:hidden"></span></span><span class="block text-base text-slate-600">See what staff changed, then put it on the website</span></span></button>
+                <button type="button" data-go="banner" data-owner class="tile flex items-center gap-4 rounded-2xl border-2 border-brand-200 bg-white px-5 text-left shadow-sm" hidden><span class="text-4xl" aria-hidden="true">📢</span><span><span class="block text-xl font-extrabold">Home page banner</span><span class="block text-base text-slate-600">The message at the top of the website</span></span></button>
+                <button type="button" data-go="structure" data-owner class="tile flex items-center gap-4 rounded-2xl border-2 border-brand-200 bg-white px-5 text-left shadow-sm" hidden><span class="text-4xl" aria-hidden="true">🏫</span><span><span class="block text-xl font-extrabold">Schools &amp; sections</span><span class="block text-base text-slate-600">Add a new school or section (like Men's), rename or hide one</span></span></button>
+            </div>
+            <p id="pending-note" class="mt-5 text-slate-600"></p>
+        </section>
+
+        <!-- Choose a page (used by Add and Edit) -->
+        <section id="s-pick" class="screen" hidden>
+            <button type="button" data-go="home" class="mb-4 min-h-[44px] font-bold text-brand-700">← Back</button>
+            <h1 class="text-2xl font-extrabold mb-1" id="pick-title">Which page?</h1>
+            <p lang="hi" class="text-lg text-brand-700 mb-4">कौनसा स्कूल या सेक्शन?</p>
+            <h2 class="font-extrabold text-slate-700 mb-2">Schools · <span lang="hi">स्कूल</span></h2>
+            <div id="pick-schools" class="grid grid-cols-2 gap-3 mb-6"></div>
+            <h2 class="font-extrabold text-slate-700 mb-2">Shop sections · <span lang="hi">दुकान के सेक्शन</span></h2>
+            <div id="pick-sections" class="grid grid-cols-2 gap-3"></div>
+        </section>
+
+        <!-- Add product -->
+        <section id="s-add" class="screen" hidden>
+            <button type="button" data-go="add-page" class="mb-4 min-h-[44px] font-bold text-brand-700">← Back</button>
+            <h1 class="text-2xl font-extrabold mb-4">New product for <span id="add-page-name"></span></h1>
+            <form id="add-form" class="space-y-6">
+                <div>
+                    <p class="text-lg font-extrabold mb-2">1. Photo · <span lang="hi">फोटो</span></p>
+                    <label class="flex min-h-[120px] cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-4 border-dashed border-brand-300 bg-white p-4 text-center">
+                        <img id="add-preview" alt="" class="hidden max-h-72 rounded-xl">
+                        <span id="add-photo-label" class="text-xl font-extrabold text-brand-700">📷 Take photo / choose photo</span>
+                        <span class="text-sm text-slate-600">One item, on a plain white sheet, good light</span>
+                        <input id="add-photo" type="file" accept="image/*" capture="environment" class="sr-only">
+                    </label>
+                </div>
+                <div>
+                    <label for="add-name" class="block text-lg font-extrabold mb-2">2. Name on the website · <span lang="hi">नाम</span></label>
+                    <input id="add-name" maxlength="60" autocomplete="off" placeholder="e.g. Grey blazer" class="w-full min-h-[52px] rounded-xl border-2 border-brand-200 px-4 text-lg">
+                    <p class="mt-1 text-sm text-slate-600">No prices, please.</p>
+                </div>
+                <fieldset id="add-group-wrap">
+                    <legend class="text-lg font-extrabold mb-2">3. Type · <span lang="hi">किस तरह का</span></legend>
+                    <div id="add-groups" class="grid gap-2"></div>
+                </fieldset>
+                <fieldset>
+                    <legend class="text-lg font-extrabold mb-2"><span id="mode-num">4</span>. How does the photo look? · <span lang="hi">फोटो कैसी है?</span></legend>
+                    <div class="grid gap-2">
+                        <label class="flex min-h-[56px] items-center gap-3 rounded-xl border-2 border-brand-200 bg-white px-4"><input type="radio" name="mode" value="bag" class="h-6 w-6"> <span><b>Packed in a plastic bag</b> <span class="block text-sm text-slate-600">shirts, pants, sweaters in packets</span></span></label>
+                        <label class="flex min-h-[56px] items-center gap-3 rounded-xl border-2 border-brand-200 bg-white px-4"><input type="radio" name="mode" value="loose" class="h-6 w-6" checked> <span><b>Loose item</b> <span class="block text-sm text-slate-600">blazers, bags, toys, bottles</span></span></label>
+                        <label class="flex min-h-[56px] items-center gap-3 rounded-xl border-2 border-brand-200 bg-white px-4"><input type="radio" name="mode" value="whole" class="h-6 w-6"> <span><b>Frame or box fills the photo</b> <span class="block text-sm text-slate-600">photo frames, wall paintings, boxed gifts</span></span></label>
+                    </div>
+                </fieldset>
+                <button id="add-send" class="w-full min-h-[60px] rounded-2xl bg-brand-600 text-white text-xl font-extrabold shadow">Send · <span lang="hi">भेजें</span></button>
+            </form>
+        </section>
+
+        <!-- Edit products of one page -->
+        <section id="s-edit" class="screen" hidden>
+            <button type="button" data-go="edit-page" class="mb-4 min-h-[44px] font-bold text-brand-700">← Back</button>
+            <h1 class="text-2xl font-extrabold mb-1"><span id="edit-page-name"></span></h1>
+            <p class="text-slate-600 mb-4">Tap a product to change it · <span lang="hi">बदलने के लिए टैप करें</span></p>
+            <ul id="edit-list" class="space-y-3"></ul>
+        </section>
+
+        <!-- Publish (owner) -->
+        <section id="s-publish" class="screen" hidden>
+            <button type="button" data-go="home" class="mb-4 min-h-[44px] font-bold text-brand-700">← Back</button>
+            <h1 class="text-2xl font-extrabold mb-4">Check &amp; publish</h1>
+            <div id="publish-body"></div>
+        </section>
+
+        <!-- Banner (owner) -->
+        <section id="s-banner" class="screen" hidden>
+            <button type="button" data-go="home" class="mb-4 min-h-[44px] font-bold text-brand-700">← Back</button>
+            <h1 class="text-2xl font-extrabold mb-4">Home page banner</h1>
+            <form id="banner-form" class="space-y-4">
+                <label class="flex min-h-[52px] items-center gap-3 text-lg font-bold"><input id="banner-show" type="checkbox" class="h-6 w-6"> Show the banner</label>
+                <div><label for="banner-text" class="block font-bold mb-1">Message</label><input id="banner-text" maxlength="90" class="w-full min-h-[52px] rounded-xl border-2 border-brand-200 px-4 text-lg"></div>
+                <div><label for="banner-button" class="block font-bold mb-1">Call button text</label><input id="banner-button" maxlength="30" class="w-full min-h-[52px] rounded-xl border-2 border-brand-200 px-4 text-lg"></div>
+                <div class="rounded-2xl bg-brand-800 px-4 py-3 text-center text-white"><p id="banner-preview" class="font-bold"></p><p id="banner-preview-btn" class="font-extrabold underline"></p></div>
+                <button class="w-full min-h-[56px] rounded-2xl bg-brand-600 text-white text-lg font-extrabold">Save banner</button>
+                <p class="text-sm text-slate-600">It goes live when you publish.</p>
+            </form>
+        </section>
+
+        <!-- Schools & sections (owner) -->
+        <section id="s-structure" class="screen" hidden>
+            <button type="button" data-go="home" class="mb-4 min-h-[44px] font-bold text-brand-700">← Back</button>
+            <h1 class="text-2xl font-extrabold mb-4">Schools &amp; sections</h1>
+            <div class="grid grid-cols-2 gap-3 mb-6">
+                <button type="button" id="new-school" class="min-h-[64px] rounded-2xl bg-brand-600 px-3 text-lg font-extrabold text-white">➕ Add a school</button>
+                <button type="button" id="new-section" class="min-h-[64px] rounded-2xl bg-brand-600 px-3 text-lg font-extrabold text-white">➕ Add a section</button>
+            </div>
+            <h2 class="font-extrabold text-slate-700 mb-2">Schools</h2>
+            <ul id="st-schools" class="space-y-2 mb-6"></ul>
+            <h2 class="font-extrabold text-slate-700 mb-2">Shop sections</h2>
+            <ul id="st-sections" class="space-y-2"></ul>
+            <p class="mt-5 text-sm text-slate-600">Changes here go live when you publish. A hidden school or section disappears from the website but nothing is deleted; you can show it again.</p>
+        </section>
+
+        <!-- Add / edit a school (owner) -->
+        <section id="s-school-form" class="screen" hidden>
+            <button type="button" data-go="structure" class="mb-4 min-h-[44px] font-bold text-brand-700">← Back</button>
+            <h1 id="sf-title" class="text-2xl font-extrabold mb-4">Add a school</h1>
+            <form id="school-form" class="space-y-5">
+                <div><label for="sf-full" class="block text-lg font-bold mb-1">Full school name</label><input id="sf-full" maxlength="70" placeholder="e.g. Delhi Public School" class="w-full min-h-[52px] rounded-xl border-2 border-brand-200 px-4 text-lg"></div>
+                <div><label for="sf-short" class="block text-lg font-bold mb-1">Short name under the logo</label><input id="sf-short" maxlength="30" placeholder="e.g. DPS" class="w-full min-h-[52px] rounded-xl border-2 border-brand-200 px-4 text-lg"></div>
+                <div id="sf-logo-wrap">
+                    <p class="text-lg font-bold mb-1">School logo</p>
+                    <label class="flex min-h-[110px] cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-4 border-dashed border-brand-300 bg-white p-4 text-center">
+                        <img id="sf-preview" alt="" class="hidden max-h-32">
+                        <span id="sf-logo-label" class="text-lg font-extrabold text-brand-700">🖼 Choose the logo picture</span>
+                        <input id="sf-logo" type="file" accept="image/*" class="sr-only">
+                    </label>
+                </div>
+                <button class="w-full min-h-[56px] rounded-2xl bg-brand-600 text-white text-lg font-extrabold">Save school</button>
+            </form>
+        </section>
+
+        <!-- Add / edit a section (owner) -->
+        <section id="s-section-form" class="screen" hidden>
+            <button type="button" data-go="structure" class="mb-4 min-h-[44px] font-bold text-brand-700">← Back</button>
+            <h1 id="xf-title" class="text-2xl font-extrabold mb-4">Add a section</h1>
+            <form id="section-form" class="space-y-5">
+                <div><label for="xf-name" class="block text-lg font-bold mb-1">Section name</label><input id="xf-name" maxlength="50" placeholder="e.g. Men's Section" class="w-full min-h-[52px] rounded-xl border-2 border-brand-200 px-4 text-lg"></div>
+                <div><label for="xf-intro" class="block text-lg font-bold mb-1">Short description</label><textarea id="xf-intro" rows="3" maxlength="300" placeholder="e.g. Shirts, trousers, belts and wallets for men." class="w-full rounded-xl border-2 border-brand-200 px-4 py-3 text-lg"></textarea></div>
+                <div><label for="xf-items" class="block text-lg font-bold mb-1">What you sell here (one per line)</label><textarea id="xf-items" rows="6" placeholder="Formal shirts&#10;Trousers&#10;Belts and wallets" class="w-full rounded-xl border-2 border-brand-200 px-4 py-3 text-lg"></textarea></div>
+                <button class="w-full min-h-[56px] rounded-2xl bg-brand-600 text-white text-lg font-extrabold">Save section</button>
+            </form>
+        </section>
+
+        <!-- Stock -->
+        <section id="s-stock" class="screen" hidden>
+            <button type="button" data-go="stock-page" class="mb-4 min-h-[44px] font-bold text-brand-700">← Back</button>
+            <h1 class="text-2xl font-extrabold mb-1"><span id="stock-page-name"></span>: stock</h1>
+            <p class="text-slate-600 mb-4">Tap one button per product. Sizes are optional. · <span lang="hi">हर प्रोडक्ट के लिए एक बटन दबाएँ</span></p>
+            <ul id="stock-list" class="space-y-3"></ul>
+        </section>
+
+        <!-- Working... -->
+        <section id="s-busy" class="screen flex flex-col items-center gap-4 py-16" hidden>
+            <div class="spinner" aria-hidden="true"></div>
+            <p id="busy-text" class="text-xl font-bold">Please wait…</p>
+        </section>
+    </main>
+
+    <!-- Edit one product -->
+    <dialog id="edit-dialog" aria-labelledby="ed-title" class="m-auto w-[min(94vw,520px)] rounded-3xl p-0 backdrop:bg-slate-950/70">
+        <form method="dialog" class="p-5 space-y-4">
+            <img id="ed-img" alt="" class="mx-auto max-h-56 rounded-xl">
+            <h2 id="ed-title" class="text-xl font-extrabold">Change product</h2>
+            <div><label for="ed-name" class="block font-bold mb-1">Name · <span lang="hi">नाम</span></label><input id="ed-name" maxlength="60" class="w-full min-h-[52px] rounded-xl border-2 border-brand-200 px-4 text-lg"></div>
+            <button type="button" id="ed-save-name" class="w-full min-h-[52px] rounded-xl bg-brand-600 text-white text-lg font-extrabold">Save name</button>
+            <div class="grid grid-cols-2 gap-3">
+                <button type="button" id="ed-up" class="min-h-[52px] rounded-xl border-2 border-brand-200 bg-white text-lg font-bold">⬆ Move up</button>
+                <button type="button" id="ed-down" class="min-h-[52px] rounded-xl border-2 border-brand-200 bg-white text-lg font-bold">⬇ Move down</button>
+            </div>
+            <button type="button" id="ed-hide" class="w-full min-h-[52px] rounded-xl border-2 border-red-300 bg-white text-lg font-bold text-red-700"></button>
+            <button value="close" class="w-full min-h-[48px] font-bold text-slate-600">Close</button>
+        </form>
+    </dialog>
+
+    <!-- Sizes of one product -->
+    <dialog id="sizes-dialog" aria-labelledby="sz-title" class="m-auto w-[min(94vw,520px)] max-h-[92vh] overflow-y-auto rounded-3xl p-0 backdrop:bg-slate-950/70">
+        <div class="p-5 space-y-4">
+            <h2 id="sz-title" class="text-xl font-extrabold">Sizes</h2>
+            <p class="text-slate-600">Tap a size to change it: ✓ in stock → few → ✗ out. · <span lang="hi">साइज़ पर टैप करें</span></p>
+            <div id="sz-list" class="grid grid-cols-3 gap-2"></div>
+            <div class="flex gap-2"><input id="sz-new" maxlength="10" placeholder="New size, e.g. 32" class="min-w-0 flex-1 min-h-[48px] rounded-xl border-2 border-brand-200 px-3 text-lg"><button type="button" id="sz-add" class="min-h-[48px] rounded-xl bg-brand-600 px-4 font-bold text-white">Add</button></div>
+            <div class="flex flex-wrap gap-2">
+                <button type="button" data-preset="20,22,24,26,28,30,32,34,36,38,40" class="min-h-[44px] rounded-full border-2 border-brand-200 px-3 font-bold">Uniform 20–40</button>
+                <button type="button" data-preset="S,M,L,XL,XXL" class="min-h-[44px] rounded-full border-2 border-brand-200 px-3 font-bold">S M L XL XXL</button>
+                <button type="button" data-preset="" class="min-h-[44px] rounded-full border-2 border-red-200 px-3 font-bold text-red-700">No sizes</button>
+            </div>
+            <button type="button" id="sz-save" class="w-full min-h-[56px] rounded-2xl bg-brand-600 text-white text-lg font-extrabold">Save sizes</button>
+            <button type="button" id="sz-close" class="w-full min-h-[48px] font-bold text-slate-600">Cancel</button>
+        </div>
+    </dialog>
+
+    <script src="../config.js"></script>
+    <script>
+    (function () {
+        'use strict';
+        var API = (window.ADMIN_API || '').replace(/\/$/, '');
+        // This same page runs as the staff page and, with data-mode="owner", as the owner page (made by the build).
+        var OWNER = document.body.getAttribute('data-mode') === 'owner';
+        var TOKEN_KEY = OWNER ? 'as-owner-token' : 'as-admin-token';
+        var S = { token: null, me: null, state: null, mode: 'add', page: null, photo: null };
+        try { S.token = localStorage.getItem(TOKEN_KEY); } catch (e) {}
+        var $ = function (id) { return document.getElementById(id); };
+        var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
+        var SCHOOL_GROUPS = ['Daily wear', 'House & sports wear', 'Winter wear'];
+        var GROUP_HI = { 'Daily wear': 'रोज़ की यूनिफॉर्म', 'House & sports wear': 'हाउस / स्पोर्ट्स', 'Winter wear': 'सर्दी (स्वेटर, ब्लेज़र)' };
+        var SECTION_GROUPS = {
+            'essentials-stationery': ['School Bags', 'Shoes & Socks', 'Tiffin Boxes & Water Bottles', 'Notebooks & Stationery', 'Art & Project Materials'],
+            'gifts-toys': ['Photo Frames & Wall Decor', 'Statues & Showpieces', 'Artificial Flowers', 'Keychains & Small Gifts', 'Toys & Soft Toys']
+        };
+
+        function show(name) {
+            document.querySelectorAll('.screen').forEach(function (s) { s.hidden = s.id !== 's-' + name; });
+            window.scrollTo(0, 0);
+        }
+        function say(text, kind) {
+            var m = $('msg');
+            if (!text) { m.className = 'hidden'; return; }
+            m.textContent = text;
+            m.className = 'mb-4 rounded-2xl p-4 text-lg font-bold ' + (kind === 'bad' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800');
+        }
+        function busy(text) { $('busy-text').textContent = text || 'Please wait…'; show('busy'); }
+
+        function api(method, path, body) {
+            return fetch(API + path, {
+                method: method,
+                headers: Object.assign({ 'content-type': 'application/json' }, S.token ? { authorization: 'Bearer ' + S.token } : {}),
+                body: body ? JSON.stringify(body) : undefined
+            }).then(function (r) {
+                return r.json().catch(function () { return {}; }).then(function (j) {
+                    if (r.status === 401 && path !== '/login') { logout(); }
+                    if (!r.ok) throw new Error(j.error || 'Something went wrong. Please try again.');
+                    return j;
+                });
+            }, function () { throw new Error('No internet connection. Please try again.'); });
+        }
+
+        function logout() {
+            S.token = null; S.me = null;
+            try { localStorage.removeItem(TOKEN_KEY); } catch (e) {}
+            $('logout-btn').hidden = true;
+            showLogin();
+        }
+
+        // ---------- login ----------
+        var pin = '';
+        function showLogin() {
+            pin = ''; drawDots();
+            $('pin-staff').hidden = OWNER; $('pin-owner').hidden = !OWNER;
+            try { $('who').value = localStorage.getItem('as-admin-who') || ''; } catch (e) {}
+            show('pin');
+            if (OWNER) setTimeout(function () { $('owner-pass').focus(); }, 50);
+        }
+        function drawDots() { $('pin-dots').innerHTML = [0, 1, 2, 3, 4, 5].map(function (i) { return '<span class="pin-dot' + (i < pin.length ? ' on' : '') + '"></span>'; }).join(''); }
+        $('pinpad').innerHTML = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '', '0', '⌫'].map(function (k) {
+            return k ? '<button type="button" data-k="' + k + '" aria-label="' + (k === '⌫' ? 'Delete' : k) + '" class="min-h-[64px] rounded-2xl bg-white border-2 border-brand-200 text-2xl font-extrabold shadow-sm">' + k + '</button>' : '<span></span>';
+        }).join('');
+        $('pinpad').addEventListener('click', function (e) {
+            var b = e.target.closest('[data-k]'); if (!b) return;
+            var k = b.getAttribute('data-k');
+            if (k === '⌫') pin = pin.slice(0, -1); else if (pin.length < 6) pin += k;
+            drawDots();
+            if (pin.length === 6) {
+                var who = $('who').value.trim();
+                if (who.length < 2) { pin = ''; drawDots(); say('Please type your name first. · पहले अपना नाम लिखें', 'bad'); $('who').focus(); return; }
+                doLogin(pin, who);
+            }
+        });
+        $('pin-owner').addEventListener('submit', function (e) { e.preventDefault(); doLogin($('owner-pass').value); });
+        function doLogin(p, who) {
+            busy('Logging in…');
+            api('POST', '/login', { role: OWNER ? 'owner' : 'staff', pin: p, who: who }).then(function (j) {
+                S.token = j.token;
+                try { localStorage.setItem(TOKEN_KEY, j.token); if (who) localStorage.setItem('as-admin-who', who); } catch (e) {}
+                $('owner-pass').value = ''; pin = '';
+                say(''); goHome();
+            }).catch(function (e) { pin = ''; drawDots(); say(e.message, 'bad'); show('pin'); });
+        }
+
+        // ---------- home ----------
+        function refresh() {
+            return api('GET', '/state').then(function (j) { S.state = j; S.me = j.me; return j; });
+        }
+        function goHome(message) {
+            busy();
+            refresh().then(function (st) {
+                $('logout-btn').hidden = false;
+                $('me-name').textContent = st.me.name;
+                document.querySelectorAll('[data-owner]').forEach(function (el) { el.hidden = st.me.role !== 'owner'; });
+                var n = st.pending.changes.length + st.pending.incoming.length;
+                $('pending-count').textContent = n ? String(n) : '';
+                $('pending-note').textContent = n ? (n + ' change(s) waiting for the owner to publish.') : 'The website is up to date.';
+                if (message) say(message);
+                show('home');
+            }).catch(function (e) { say(e.message, 'bad'); if (S.token) show('home'); });
+        }
+
+        // ---------- pick page ----------
+        function pageList() {
+            var st = S.state;
+            return {
+                schools: st.schools.map(function (s) { return { id: 'school:' + s.slug, slug: s.slug, kind: 'school', name: s.fullName + (s.hidden ? ' (hidden)' : ''), logo: s.logo, items: s.uniformPhotos }; }),
+                sections: st.sections.map(function (s) { return { id: 'section:' + s.slug, slug: s.slug, kind: 'section', name: s.title + (s.hidden ? ' (hidden)' : ''), items: s.photos }; })
+            };
+        }
+        function findPage(id) { var l = pageList(); return l.schools.concat(l.sections).filter(function (p) { return p.id === id; })[0]; }
+        function img(path) { return S.state.imageBase + path; }
+        function thumbOf(p, item) { return img('assets/' + (p.kind === 'school' ? 'uniforms' : 'gallery') + '/' + p.slug + '/thumb/' + item.file); }
+        function goPick(mode) {
+            S.mode = mode;
+            $('pick-title').textContent = mode === 'add' ? 'Add a product: which page?' : mode === 'stock' ? 'Update stock: which page?' : 'Change a product: which page?';
+            var l = pageList();
+            $('pick-schools').innerHTML = l.schools.map(function (p) {
+                return '<button type="button" data-page="' + esc(p.id) + '" class="flex min-h-[72px] items-center gap-3 rounded-2xl border-2 border-brand-200 bg-white px-3 text-left font-extrabold shadow-sm"><img src="' + esc(img('assets/' + p.logo)) + '" alt="" class="h-10 w-10 object-contain">' + esc(p.name) + '</button>';
+            }).join('');
+            $('pick-sections').innerHTML = l.sections.map(function (p) {
+                return '<button type="button" data-page="' + esc(p.id) + '" class="min-h-[72px] rounded-2xl border-2 border-brand-200 bg-white px-3 text-left font-extrabold shadow-sm">' + esc(p.name) + '</button>';
+            }).join('');
+            show('pick');
+        }
+        $('s-pick').addEventListener('click', function (e) {
+            var b = e.target.closest('[data-page]'); if (!b) return;
+            S.page = findPage(b.getAttribute('data-page'));
+            say('');
+            if (S.mode === 'add') openAdd(); else if (S.mode === 'stock') openStock(); else openEdit();
+        });
+
+        // ---------- add ----------
+        function openAdd() {
+            var p = S.page;
+            $('add-page-name').textContent = p.name;
+            $('add-form').reset(); S.photo = null;
+            $('add-preview').className = 'hidden max-h-72 rounded-xl'; $('add-photo-label').textContent = '📷 Take photo / choose photo';
+            var groups = p.kind === 'school' ? SCHOOL_GROUPS : (SECTION_GROUPS[p.slug] || []);
+            $('add-group-wrap').hidden = !groups.length;
+            $('mode-num').textContent = groups.length ? '4' : '3';
+            $('add-groups').innerHTML = groups.map(function (g, i) {
+                return '<label class="flex min-h-[56px] items-center gap-3 rounded-xl border-2 border-brand-200 bg-white px-4"><input type="radio" name="group" value="' + esc(g) + '" class="h-6 w-6"' + (i === 0 ? ' checked' : '') + '> <span><b>' + esc(g) + '</b>' + (GROUP_HI[g] ? ' <span lang="hi" class="block text-sm text-slate-600">' + esc(GROUP_HI[g]) + '</span>' : '') + '</span></label>';
+            }).join('');
+            if (p.kind === 'school') document.querySelector('input[name=mode][value=bag]').checked = true;
+            show('add');
+        }
+        // Shrink the photo on the phone before sending (about 0.3 MB instead of 5 MB).
+        function shrink(file) {
+            return new Promise(function (resolve, reject) {
+                var url = URL.createObjectURL(file), im = new Image();
+                im.onload = function () {
+                    var max = 1600, w = im.naturalWidth, h = im.naturalHeight, k = Math.min(1, max / Math.max(w, h));
+                    var c = document.createElement('canvas'); c.width = Math.round(w * k); c.height = Math.round(h * k);
+                    c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
+                    URL.revokeObjectURL(url);
+                    resolve(c.toDataURL('image/jpeg', 0.85));
+                };
+                im.onerror = function () { reject(new Error('This photo could not be opened. Please take it again.')); };
+                im.src = url;
+            });
+        }
+        $('add-photo').addEventListener('change', function () {
+            var f = this.files && this.files[0]; if (!f) return;
+            shrink(f).then(function (data) {
+                S.photo = data;
+                $('add-preview').src = data; $('add-preview').className = 'max-h-72 rounded-xl';
+                $('add-photo-label').textContent = 'Change photo';
+            }).catch(function (e) { say(e.message, 'bad'); });
+        });
+        $('add-form').addEventListener('submit', function (e) {
+            e.preventDefault();
+            var name = $('add-name').value.trim();
+            if (!S.photo) { say('Please take a photo first. · पहले फोटो लें', 'bad'); window.scrollTo(0, 0); return; }
+            if (name.length < 2) { say('Please type the product name. · नाम लिखें', 'bad'); window.scrollTo(0, 0); return; }
+            var g = document.querySelector('input[name=group]:checked');
+            var m = document.querySelector('input[name=mode]:checked');
+            var page = S.page;
+            busy('Sending photo…');
+            api('POST', '/photo', { page: page.id, caption: name, group: g ? g.value : undefined, mode: m ? m.value : 'loose', image: S.photo })
+                .then(function (j) { S.photo = null; goHome('✅ ' + j.message); })
+                .catch(function (err) { say(err.message, 'bad'); show('add'); });
+        });
+
+        // ---------- edit ----------
+        function openEdit() {
+            var p = S.page;
+            $('edit-page-name').textContent = p.name;
+            $('edit-list').innerHTML = p.items.length ? p.items.map(function (it, i) {
+                return '<li><button type="button" data-i="' + i + '" class="flex w-full items-center gap-3 rounded-2xl border-2 border-brand-100 bg-white p-2 text-left shadow-sm' + (it.hidden ? ' opacity-50' : '') + '">' +
+                    '<img src="' + esc(thumbOf(p, it)) + '" alt="" loading="lazy" class="h-20 w-16 rounded-lg object-cover bg-brand-50">' +
+                    '<span class="flex-1"><b class="block text-lg">' + esc(it.caption) + '</b>' + (it.group ? '<span class="text-sm text-slate-600">' + esc(it.group) + '</span>' : '') + (it.hidden ? '<span class="block text-sm font-bold text-red-700">Hidden · छुपा हुआ</span>' : '') + '</span>' +
+                    '<span class="pr-2 text-2xl" aria-hidden="true">›</span></button></li>';
+            }).join('') : '<li class="text-lg text-slate-600">No products on this page yet.</li>';
+            show('edit');
+        }
+        var current = null;
+        $('edit-list').addEventListener('click', function (e) {
+            var b = e.target.closest('[data-i]'); if (!b) return;
+            current = S.page.items[+b.getAttribute('data-i')];
+            $('ed-img').src = thumbOf(S.page, current);
+            $('ed-name').value = current.caption;
+            $('ed-hide').textContent = current.hidden ? '👁 Show on website · दिखाएँ' : '🙈 Hide from website · छुपाएँ';
+            $('edit-dialog').showModal();
+        });
+        function doEdit(op) {
+            $('edit-dialog').close();
+            busy('Saving…');
+            var pageId = S.page.id;
+            api('POST', '/edit', Object.assign({ page: pageId, file: current.file }, op))
+                .then(function (j) { return refresh().then(function () { S.page = findPage(pageId); say('✅ Saved. ' + j.message); openEdit(); }); })
+                .catch(function (err) { say(err.message, 'bad'); openEdit(); });
+        }
+        $('ed-save-name').addEventListener('click', function () { doEdit({ op: 'rename', caption: $('ed-name').value }); });
+        $('ed-up').addEventListener('click', function () { doEdit({ op: 'move', dir: -1 }); });
+        $('ed-down').addEventListener('click', function () { doEdit({ op: 'move', dir: 1 }); });
+        $('ed-hide').addEventListener('click', function () { doEdit({ op: current.hidden ? 'show' : 'hide' }); });
+
+        // ---------- publish ----------
+        function openPublish() {
+            busy();
+            refresh().then(function (st) {
+                var p = st.pending, html = '';
+                if (!p.exists && !p.incoming.length) {
+                    html = '<p class="text-lg">Nothing new. The website is up to date. ✅</p>';
+                } else {
+                    if (p.incoming.length) html += '<div class="mb-4 rounded-2xl bg-amber-100 p-4"><p class="font-extrabold">⏳ Preparing ' + p.incoming.length + ' new photo(s)…</p><p>This takes a few minutes. Come back and tap Refresh.</p></div>';
+                    else if (p.processing) html += '<div class="mb-4 rounded-2xl bg-amber-100 p-4"><p class="font-extrabold">⏳ Checking the changes…</p><p>A few minutes. Tap Refresh.</p></div>';
+                    if (p.failed) html += '<div class="mb-4 rounded-2xl bg-red-100 p-4 font-bold text-red-800">Something went wrong while preparing the changes. Ask Claude to look at it before publishing.</div>';
+                    html += '<h2 class="text-lg font-extrabold mb-2">Changes waiting</h2><ul class="list-disc pl-6 space-y-1 mb-6">' +
+                        p.changes.filter(function (c) { return !/^Queue photo|^Prepare website/.test(c); }).map(function (c) { return '<li>' + esc(c) + '</li>'; }).join('') + '</ul>';
+                    var ready = !p.processing && !p.failed && p.exists;
+                    html += '<button type="button" id="do-publish" class="w-full min-h-[60px] rounded-2xl bg-green-600 text-white text-xl font-extrabold shadow disabled:opacity-40"' + (ready ? '' : ' disabled') + '>✅ Publish to website</button>' +
+                        '<button type="button" id="do-refresh" class="mt-3 w-full min-h-[52px] rounded-2xl border-2 border-brand-200 bg-white text-lg font-bold">↻ Refresh</button>' +
+                        '<button type="button" id="do-discard" class="mt-6 w-full min-h-[48px] font-bold text-red-700">Throw away all changes</button>' +
+                        (p.pr ? '<p class="mt-4 text-sm text-slate-600">Change list #' + esc(p.pr) + '</p>' : '');
+                }
+                $('publish-body').innerHTML = html;
+                show('publish');
+            }).catch(function (e) { say(e.message, 'bad'); show('home'); });
+        }
+        $('publish-body').addEventListener('click', function (e) {
+            if (e.target.id === 'do-refresh') { say(''); openPublish(); }
+            if (e.target.id === 'do-publish') {
+                busy('Publishing…');
+                api('POST', '/publish', {}).then(function (j) { goHome('✅ ' + j.message); }).catch(function (err) { say(err.message, 'bad'); openPublish(); });
+            }
+            if (e.target.id === 'do-discard') {
+                if (!window.confirm('Throw away ALL waiting changes? This cannot be undone.')) return;
+                busy();
+                api('POST', '/discard', {}).then(function (j) { goHome(j.message); }).catch(function (err) { say(err.message, 'bad'); openPublish(); });
+            }
+        });
+
+        // ---------- banner ----------
+        function openBanner() {
+            var b = (S.state.site && S.state.site.banner) || {};
+            $('banner-show').checked = !!b.show; $('banner-text').value = b.text || ''; $('banner-button').value = b.button || 'Call us';
+            drawBanner(); show('banner');
+        }
+        function drawBanner() { $('banner-preview').textContent = $('banner-show').checked ? $('banner-text').value : '(banner hidden)'; $('banner-preview-btn').textContent = $('banner-show').checked ? '📞 ' + $('banner-button').value : ''; }
+        ['banner-show', 'banner-text', 'banner-button'].forEach(function (id) { $(id).addEventListener('input', drawBanner); });
+        $('banner-form').addEventListener('submit', function (e) {
+            e.preventDefault(); busy('Saving…');
+            api('POST', '/edit', { op: 'banner', show: $('banner-show').checked, text: $('banner-text').value, button: $('banner-button').value })
+                .then(function () { goHome('✅ Banner saved. Publish to put it on the website.'); })
+                .catch(function (err) { say(err.message, 'bad'); show('banner'); });
+        });
+
+        // ---------- schools & sections (owner) ----------
+        var editing = null, logoData = null, logoW = 0, logoH = 0;
+        function openStructure() {
+            var st = S.state;
+            var row = function (kind, slug, name, hidden, logo) {
+                return '<li class="flex items-center gap-3 rounded-2xl border-2 border-brand-100 bg-white p-3' + (hidden ? ' opacity-60' : '') + '">' +
+                    (logo ? '<img src="' + esc(img('assets/' + logo)) + '" alt="" class="h-10 w-10 object-contain">' : '') +
+                    '<span class="flex-1 font-extrabold">' + esc(name) + (hidden ? ' <span class="block text-sm font-bold text-red-700">Hidden</span>' : '') + '</span>' +
+                    '<button type="button" data-st-edit="' + kind + ':' + esc(slug) + '" class="min-h-[44px] rounded-xl border-2 border-brand-200 px-3 font-bold">Edit</button>' +
+                    '<button type="button" data-st-toggle="' + kind + ':' + esc(slug) + '" data-hidden="' + (hidden ? '1' : '') + '" class="min-h-[44px] rounded-xl border-2 border-brand-200 px-3 font-bold">' + (hidden ? 'Show' : 'Hide') + '</button></li>';
+            };
+            $('st-schools').innerHTML = st.schools.map(function (s) { return row('school', s.slug, s.fullName, s.hidden, s.logo); }).join('');
+            $('st-sections').innerHTML = st.sections.map(function (s) { return row('section', s.slug, s.title, s.hidden); }).join('');
+            show('structure');
+        }
+        function saveStructure(op, message) {
+            busy('Saving…');
+            return api('POST', '/edit', op).then(function () { return refresh(); }).then(function () { say('✅ ' + message + ' Publish to put it on the website.'); openStructure(); });
+        }
+        $('s-structure').addEventListener('click', function (e) {
+            var t = e.target.closest('[data-st-toggle]');
+            if (t) {
+                var hide = !t.getAttribute('data-hidden');
+                if (hide && !window.confirm('Hide this from the website? You can show it again later.')) return;
+                saveStructure({ op: hide ? 'hidePage' : 'showPage', page: t.getAttribute('data-st-toggle') }, hide ? 'Hidden.' : 'Shown again.').catch(function (err) { say(err.message, 'bad'); openStructure(); });
+                return;
+            }
+            var ed = e.target.closest('[data-st-edit]');
+            if (ed) {
+                var parts = ed.getAttribute('data-st-edit').split(':');
+                if (parts[0] === 'school') openSchoolForm(S.state.schools.filter(function (s) { return s.slug === parts[1]; })[0]);
+                else openSectionForm(S.state.sections.filter(function (s) { return s.slug === parts[1]; })[0]);
+            }
+        });
+        $('new-school').addEventListener('click', function () { openSchoolForm(null); });
+        $('new-section').addEventListener('click', function () { openSectionForm(null); });
+
+        function openSchoolForm(s) {
+            editing = s; logoData = null; say('');
+            $('school-form').reset();
+            $('sf-title').textContent = s ? 'Edit ' + s.fullName : 'Add a school';
+            $('sf-full').value = s ? s.fullName : ''; $('sf-short').value = s ? s.name : '';
+            $('sf-logo-wrap').hidden = !!s;
+            $('sf-preview').className = 'hidden max-h-32'; $('sf-logo-label').textContent = '🖼 Choose the logo picture';
+            show('school-form');
+        }
+        // Logos: shrink to 300px on a white background (no see-through corners).
+        $('sf-logo').addEventListener('change', function () {
+            var f = this.files && this.files[0]; if (!f) return;
+            var url = URL.createObjectURL(f), im = new Image();
+            im.onload = function () {
+                var k = Math.min(1, 300 / Math.max(im.naturalWidth, im.naturalHeight));
+                var c = document.createElement('canvas'); c.width = Math.round(im.naturalWidth * k); c.height = Math.round(im.naturalHeight * k);
+                var x = c.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, c.width, c.height); x.drawImage(im, 0, 0, c.width, c.height);
+                URL.revokeObjectURL(url);
+                logoData = c.toDataURL('image/jpeg', 0.9); logoW = c.width; logoH = c.height;
+                $('sf-preview').src = logoData; $('sf-preview').className = 'max-h-32'; $('sf-logo-label').textContent = 'Change logo';
+            };
+            im.onerror = function () { say('This picture could not be opened.', 'bad'); };
+            im.src = url;
+        });
+        $('school-form').addEventListener('submit', function (e) {
+            e.preventDefault();
+            var full = $('sf-full').value.trim(), short = $('sf-short').value.trim() || full;
+            if (full.length < 2) { say('Please type the school name.', 'bad'); window.scrollTo(0, 0); return; }
+            var op = editing ? { op: 'editSchool', slug: editing.slug, fullName: full, name: short }
+                : { op: 'addSchool', fullName: full, name: short, logo: logoData, logoW: logoW, logoH: logoH };
+            if (!editing && !logoData) { say('Please choose the school logo.', 'bad'); window.scrollTo(0, 0); return; }
+            saveStructure(op, editing ? 'School updated.' : 'School added. Staff can now add its uniform photos.').catch(function (err) { say(err.message, 'bad'); show('school-form'); });
+        });
+
+        function openSectionForm(s) {
+            editing = s; say('');
+            $('section-form').reset();
+            $('xf-title').textContent = s ? 'Edit ' + s.title : 'Add a section';
+            $('xf-name').value = s ? s.title : '';
+            $('xf-intro').value = s ? (s.cardText || s.intro || '') : '';
+            $('xf-items').value = s ? (s.items || []).join('\n') : '';
+            show('section-form');
+        }
+        $('section-form').addEventListener('submit', function (e) {
+            e.preventDefault();
+            var op = { op: editing ? 'editSection' : 'addSection', title: $('xf-name').value.trim(), intro: $('xf-intro').value, items: $('xf-items').value };
+            if (editing) op.slug = editing.slug;
+            saveStructure(op, editing ? 'Section updated.' : 'Section added. Staff can now add its photos.').catch(function (err) { say(err.message, 'bad'); show('section-form'); });
+        });
+
+        // ---------- stock ----------
+        var ST = { in: { t: 'In stock', hi: 'है', on: 'bg-green-600 text-white border-green-600' }, few: { t: 'Few left', hi: 'थोड़ा', on: 'bg-amber-500 text-white border-amber-500' }, out: { t: 'Out', hi: 'खत्म', on: 'bg-slate-600 text-white border-slate-600' } };
+        function overallStock(it) {
+            var sz = (it.sizes || []);
+            if (!sz.length) return it.stock || null;
+            if (sz.every(function (s) { return s.stock === 'out'; })) return 'out';
+            if (sz.some(function (s) { return s.stock === 'in'; })) return it.stock === 'few' ? 'few' : 'in';
+            return 'few';
+        }
+        function openStock() {
+            var p = S.page;
+            $('stock-page-name').textContent = p.name;
+            $('stock-list').innerHTML = p.items.length ? p.items.map(function (it, i) {
+                var cur = it.stock;
+                var btns = ['in', 'few', 'out'].map(function (k) {
+                    var on = cur === k;
+                    return '<button type="button" data-stock-i="' + i + '" data-stock="' + k + '" aria-pressed="' + on + '" class="min-h-[52px] rounded-xl border-2 px-1 text-sm font-extrabold leading-tight ' + (on ? ST[k].on : 'border-brand-200 bg-white text-slate-700') + '">' + ST[k].t + '<span lang="hi" class="block text-xs font-bold opacity-80">' + ST[k].hi + '</span></button>';
+                }).join('');
+                var sz = (it.sizes || []);
+                var szText = sz.length ? sz.map(function (s) { return esc(s.size) + (s.stock === 'in' ? ' ✓' : s.stock === 'few' ? ' few' : ' ✗'); }).join(' · ') : 'No sizes';
+                return '<li class="rounded-2xl border-2 border-brand-100 bg-white p-3 shadow-sm' + (it.hidden ? ' opacity-50' : '') + '">' +
+                    '<div class="flex items-center gap-3 mb-2"><img src="' + esc(thumbOf(p, it)) + '" alt="" loading="lazy" class="h-16 w-12 rounded-lg object-cover bg-brand-50"><b class="flex-1 text-lg leading-tight">' + esc(it.caption) + '</b></div>' +
+                    '<div class="grid grid-cols-3 gap-2">' + btns + '</div>' +
+                    '<button type="button" data-sizes-i="' + i + '" class="mt-2 flex min-h-[44px] w-full items-center justify-between rounded-xl bg-brand-50 px-3 text-left text-sm font-bold text-brand-800"><span>Sizes: ' + szText + '</span><span aria-hidden="true">›</span></button></li>';
+            }).join('') : '<li class="text-lg text-slate-600">No products on this page yet.</li>';
+            show('stock');
+        }
+        function saveStock(it, op, note) {
+            var pageId = S.page.id, y = window.scrollY;
+            busy('Saving…');
+            return api('POST', '/edit', Object.assign({ op: 'stock', page: pageId, file: it.file }, op))
+                .then(function () { return refresh(); })
+                .then(function () { S.page = findPage(pageId); say('✅ Saved: ' + it.caption + ' ' + note); openStock(); window.scrollTo(0, y); })
+                .catch(function (err) { say(err.message, 'bad'); openStock(); });
+        }
+        $('stock-list').addEventListener('click', function (e) {
+            var b = e.target.closest('[data-stock-i]');
+            if (b) { var it = S.page.items[+b.getAttribute('data-stock-i')], k = b.getAttribute('data-stock'); saveStock(it, { stock: k }, '→ ' + ST[k].t); return; }
+            var z = e.target.closest('[data-sizes-i]');
+            if (z) openSizes(S.page.items[+z.getAttribute('data-sizes-i')]);
+        });
+        var szItem = null, szList = [];
+        function drawSizes() {
+            $('sz-list').innerHTML = szList.length ? szList.map(function (s, i) {
+                var cls = s.stock === 'in' ? 'border-green-600 bg-green-50 text-green-800' : s.stock === 'few' ? 'border-amber-500 bg-amber-50 text-amber-800' : 'border-slate-300 bg-slate-100 text-slate-500 line-through';
+                return '<button type="button" data-sz="' + i + '" class="min-h-[56px] rounded-xl border-2 text-lg font-extrabold ' + cls + '">' + esc(s.size) + '<span class="block text-xs no-underline">' + (s.stock === 'in' ? '✓ in stock' : s.stock === 'few' ? 'few left' : '✗ out') + '</span></button>';
+            }).join('') : '<p class="col-span-3 text-slate-600">No sizes yet. Add sizes below or use a quick list.</p>';
+        }
+        function openSizes(it) {
+            szItem = it; szList = (it.sizes || []).map(function (s) { return { size: s.size, stock: s.stock }; });
+            $('sz-title').textContent = 'Sizes: ' + it.caption; $('sz-new').value = '';
+            drawSizes(); $('sizes-dialog').showModal();
+        }
+        $('sz-list').addEventListener('click', function (e) {
+            var b = e.target.closest('[data-sz]'); if (!b) return;
+            var s = szList[+b.getAttribute('data-sz')];
+            s.stock = s.stock === 'in' ? 'few' : s.stock === 'few' ? 'out' : 'in';
+            drawSizes();
+        });
+        function addSize(v) {
+            v = String(v).trim(); if (!v) return;
+            if (szList.some(function (s) { return s.size.toLowerCase() === v.toLowerCase(); })) return;
+            szList.push({ size: v, stock: 'in' });
+        }
+        $('sz-add').addEventListener('click', function () { addSize($('sz-new').value); $('sz-new').value = ''; drawSizes(); });
+        $('sz-new').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); $('sz-add').click(); } });
+        document.querySelectorAll('[data-preset]').forEach(function (b) {
+            b.addEventListener('click', function () {
+                var v = b.getAttribute('data-preset');
+                if (!v) szList = []; else v.split(',').forEach(addSize);
+                drawSizes();
+            });
+        });
+        $('sz-close').addEventListener('click', function () { $('sizes-dialog').close(); });
+        $('sz-save').addEventListener('click', function () {
+            $('sizes-dialog').close();
+            var it = szItem, st = it.stock || 'in';
+            saveStock(it, { stock: st, sizes: szList }, szList.length ? '(sizes updated)' : '(sizes removed)');
+        });
+
+        // ---------- navigation ----------
+        document.addEventListener('click', function (e) {
+            var b = e.target.closest('[data-go]'); if (!b) return;
+            var to = b.getAttribute('data-go'); say('');
+            if (to === 'home') goHome();
+            else if (to === 'add-page') goPick('add');
+            else if (to === 'edit-page') goPick('edit');
+            else if (to === 'stock-page') goPick('stock');
+            else if (to === 'publish') openPublish();
+            else if (to === 'banner') openBanner();
+            else if (to === 'structure') { busy(); refresh().then(openStructure).catch(function (err) { say(err.message, 'bad'); show('home'); }); }
+        });
+        $('home-btn').addEventListener('click', function () { if (S.token) goHome(); });
+        $('logout-btn').addEventListener('click', logout);
+
+        if (!API) show('setup');
+        else if (S.token) goHome();
+        else showLogin();
+    })();
+    </script>
+</body>
+</html>

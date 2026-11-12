@@ -1,10 +1,15 @@
 # Admin page setup (one time, about 15 minutes)
 
-The admin page is at **agrawalstores.in/admin**. It needs a small free service on Cloudflare that checks PINs and
-saves changes. Nothing reaches the live website until the owner presses **Publish**.
+There are two admin pages:
+- **agrawalstores.in/admin**: for staff. One shared 6-digit shop PIN; each person also types their first name, which is
+  shown next to their changes.
+- **agrawalstores.in/admin/owner/**: for the owner only, with a password. Not linked from anywhere. Only this page can
+  publish, change the banner, and add or hide schools and sections.
+
+Both need a small free service on Cloudflare that checks the PIN and password and saves changes.
+Nothing reaches the live website until the owner presses **Publish**.
 
 How it works:
-- Staff log in with their name and a 6-digit PIN. The owner logs in with a password.
 - Every change is saved to a pending copy of the site (git branch `admin-pending`) with one pull request.
 - New photos are cleaned up by GitHub (`.github/workflows/admin-pending.yml`): background, watermark, small copies, tests.
 - The owner sees the list of changes and presses **Publish** (merges the pull request) or **Throw away**.
@@ -35,16 +40,17 @@ How it works:
    Then Worker → **Settings** → **Bindings** → **Add** → **KV namespace** → variable name `ATTEMPTS` → choose it.
 6. Copy the Worker address (looks like `https://agrawal-stores-admin.<you>.workers.dev`) and put it in `admin/config.js`.
 
-## People (USERS)
-Each person is one entry. Make one with:
+## Logins (USERS)
+Two entries: the shared staff PIN and the owner password. Make them with:
 ```
-node worker/make-user.mjs "Sandeep" staff 482913
-node worker/make-user.mjs "Darshit" owner "a-long-password"
+node worker/make-user.mjs staff 482913
+node worker/make-user.mjs owner "a-long-password"
 ```
-Put all the printed lines inside `[ ... ]`, separated by commas, as the `USERS` secret.
-- Staff PINs are exactly 6 digits. The owner password is at least 10 characters.
-- To remove someone, delete their entry and save: they are logged out at once.
-- To change a PIN, make a new entry for that name and replace the old one.
+Put both printed lines inside `[ ... ]`, separated by a comma, as the `USERS` secret.
+- The staff PIN is exactly 6 digits. The owner password is at least 10 characters.
+- **When someone leaves**, make a new staff PIN and replace the staff entry: every staff phone is logged out and
+  needs the new PIN. Tell the remaining staff.
+- 10 wrong staff PINs, or 5 wrong owner passwords, lock that login for 15 minutes (needs the ATTEMPTS store, step 2.5).
 
 ## Updating the service later
 Paste the new `worker/src/index.js` into **Edit code** → **Deploy**. Settings and people stay as they are.

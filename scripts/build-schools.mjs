@@ -264,3 +264,17 @@ writeFileSync(path.join(root, 'sitemap.xml'), `<?xml version="1.0" encoding="UTF
 writeFileSync(path.join(root, 'robots.txt'), `User-agent: *\nAllow: /\nDisallow: /tests/\nDisallow: /scripts/\nDisallow: /data/\nDisallow: /admin/\nDisallow: /worker/\nDisallow: /incoming/\n\nSitemap: ${SITE_URL}/sitemap.xml\n`);
 console.log(`Built ${data.schools.length} school pages.`);
 await import('./build-sections.mjs');
+
+// Owner page: same admin app, owner login, at admin/owner/ (not linked anywhere; the password is what protects it).
+if (existsSync(path.join(root, 'admin/index.html'))) {
+  const staffPage = readFileSync(path.join(root, 'admin/index.html'), 'utf8');
+  const ownerPage = staffPage
+    .replace('<body data-mode="staff"', '<body data-mode="owner"')
+    .replace('<title>Admin | Agrawal Stores</title>', '<title>Owner | Agrawal Stores</title>')
+    .replace('href="../assets/site.css"', 'href="../../assets/site.css"')
+    .replace('<script src="config.js"></script>', '<script src="../config.js"></script>')
+    .replace('<!DOCTYPE html>', '<!DOCTYPE html>\n<!-- Generated from admin/index.html by scripts/build-schools.mjs. Edit that file, not this one. -->');
+  if (!ownerPage.includes('data-mode="owner"') || !ownerPage.includes('../../assets/site.css') || !ownerPage.includes('../config.js')) throw new Error('admin/index.html changed: cannot make the owner page');
+  mkdirSync(path.join(root, 'admin/owner'), { recursive: true });
+  writeFileSync(path.join(root, 'admin/owner/index.html'), ownerPage);
+}

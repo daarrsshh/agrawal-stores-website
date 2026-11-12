@@ -30,7 +30,7 @@ before(async () => {
   siteUrl = `http://127.0.0.1:${site.address().port}`;
   // the admin service, run through a tiny Node adapter
   const users = [];
-  for (const [name, role, pin] of [['Darshit', 'owner', 'owner-pass-123'], ['Sandeep', 'staff', '482913']]) users.push({ name, role, salt: `s${name}`, hash: await hashPin(`s${name}`, pin) });
+  for (const [name, role, pin] of [['Owner', 'owner', 'owner-pass-123'], ['Staff', 'staff', '482913']]) users.push({ name, role, salt: `s${name}`, hash: await hashPin(`s${name}`, pin) });
   env = { REPO, ALLOWED_ORIGIN: siteUrl, GITHUB_TOKEN: 't', SESSION_SECRET: 'ui-test-secret-123456', USERS: JSON.stringify(users), GITHUB_API: fake.url };
   svc = http.createServer(async (req, res) => {
     let body = '';
@@ -56,16 +56,19 @@ async function phone() {
   return { ctx, page };
 }
 async function loginStaff(page) {
-  await page.getByRole('button', { name: 'Sandeep' }).click();
+  await page.locator('#who').fill('Sandeep');
   for (const d of '482913') await page.locator(`#pinpad [data-k="${d}"]`).click();
   await page.getByText('Namaste,').waitFor();
 }
 const pending = (f) => JSON.parse(fake.branches.get('admin-pending').get(f));
 
-test('staff: log in with name + PIN pad, wrong PIN shows a clear message, owner tools are hidden', async () => {
+test('staff: name + shared PIN; name is asked for, wrong PIN shows a clear message, owner tools are hidden', async () => {
   fake.reset();
   const { ctx, page } = await phone();
-  await page.getByRole('button', { name: 'Sandeep' }).click();
+  assert.ok(!(await page.locator('#owner-pass').isVisible()), 'no password box on the staff page');
+  for (const d of '482913') await page.locator(`#pinpad [data-k="${d}"]`).click();
+  await page.getByText('Please type your name first').waitFor();
+  await page.locator('#who').fill('Sandeep');
   for (const d of '111111') await page.locator(`#pinpad [data-k="${d}"]`).click();
   await page.getByText('Wrong PIN').waitFor();
   for (const d of '482913') await page.locator(`#pinpad [data-k="${d}"]`).click();
@@ -73,9 +76,12 @@ test('staff: log in with name + PIN pad, wrong PIN shows a clear message, owner 
   assert.ok(await page.locator('#s-home [data-go="add-page"]').isVisible());
   assert.ok(!(await page.locator('[data-go="publish"]').isVisible()), 'staff cannot see publish');
   assert.ok(!(await page.locator('[data-go="banner"]').isVisible()));
-  // stays logged in after reload
+  assert.equal((await page.locator('#me-name').textContent()).trim(), 'Sandeep');
+  // stays logged in after reload; after logging out the name is remembered
   await page.reload();
   await page.getByText('Namaste,').waitFor();
+  await page.locator('#logout-btn').click();
+  assert.equal(await page.locator('#who').inputValue(), 'Sandeep');
   await ctx.close();
 });
 
@@ -146,7 +152,7 @@ test('owner: sees changes, cannot publish while photos are being prepared, then 
   await page.getByText('Photo sent').waitFor();
   await page.locator('#logout-btn').click();
 
-  await page.getByRole('button', { name: 'Darshit' }).click();
+  await page.goto(`${siteUrl}/admin/owner/`);
   await page.locator('#owner-pass').fill('owner-pass-123');
   await page.getByRole('button', { name: 'Log in' }).click();
   await page.getByText('Namaste,').waitFor();
@@ -166,7 +172,7 @@ test('owner: sees changes, cannot publish while photos are being prepared, then 
   fake.run = { status: 'completed', conclusion: 'success' };
   await page.locator('#do-refresh').click();
   await page.getByText('Changes waiting').waitFor();
-  assert.ok(await page.getByText('Banner: Diwali gifts are here (by Darshit)').isVisible());
+  assert.ok(await page.getByText('Banner: Diwali gifts are here (by Owner)').isVisible());
   await page.locator('#do-publish').click();
   await page.getByText('Published.').waitFor();
   assert.ok(!fake.branches.has('admin-pending'));
@@ -177,7 +183,7 @@ test('owner: sees changes, cannot publish while photos are being prepared, then 
 test('owner: adds a new school (with logo) and a Men\'s section; staff can then add products to them', async () => {
   fake.reset();
   const { ctx, page } = await phone();
-  await page.getByRole('button', { name: 'Darshit' }).click();
+  await page.goto(`${siteUrl}/admin/owner/`);
   await page.locator('#owner-pass').fill('owner-pass-123');
   await page.getByRole('button', { name: 'Log in' }).click();
   await page.getByText('Namaste,').waitFor();
@@ -209,6 +215,7 @@ test('owner: adds a new school (with logo) and a Men\'s section; staff can then 
   assert.ok(school.logoW <= 300 && school.logoH <= 300);
   await page.locator('#logout-btn').click();
   // staff sees the new section when adding a product
+  await page.goto(`${siteUrl}/admin/`);
   await loginStaff(page);
   await page.locator('#s-home [data-go="add-page"]').click();
   await page.getByRole('button', { name: "Men's Section" }).click();
@@ -251,7 +258,28 @@ test('staff: update stock with one tap, then set sizes from a quick list', async
   await ctx.close();
 });
 
+test('owner page: only a password box, staff PIN does not work there, and it is not linked from the staff page', async () => {
+  fake.reset();
+  const { ctx, page } = await phone();
+  assert.ok(!(await page.content()).includes('owner/'), 'staff page does not link to the owner page');
+  await page.goto(`${siteUrl}/admin/owner/`);
+  assert.ok(await page.locator('#owner-pass').isVisible());
+  assert.ok(!(await page.locator('#pinpad').isVisible()));
+  await page.locator('#owner-pass').fill('482913');
+  await page.getByRole('button', { name: 'Log in' }).click();
+  await page.getByText('Wrong password').waitFor();
+  await page.locator('#owner-pass').fill('owner-pass-123');
+  await page.getByRole('button', { name: 'Log in' }).click();
+  await page.getByText('Namaste,').waitFor();
+  assert.ok(await page.locator('[data-go="publish"]').isVisible());
+  // the staff page on the same phone is still a separate login
+  await page.goto(`${siteUrl}/admin/`);
+  await page.locator('#who').waitFor();
+  await ctx.close();
+});
+
 test('admin page is hidden from Google and not part of the public site', () => {
+  assert.match(readFileSync(path.join(root, 'admin/owner/index.html'), 'utf8'), /<meta name="robots" content="noindex, nofollow">/);
   const html = readFileSync(path.join(root, 'admin/index.html'), 'utf8');
   assert.match(html, /<meta name="robots" content="noindex, nofollow">/);
   assert.match(readFileSync(path.join(root, 'robots.txt'), 'utf8'), /Disallow: \/admin\//);
