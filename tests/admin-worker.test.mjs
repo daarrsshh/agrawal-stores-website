@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import worker, { hashPin } from '../worker/src/index.js';
+import worker, { hashPin, diffData } from '../worker/src/index.js';
 import { startFakeGitHub } from './helpers/fake-github.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -290,4 +290,28 @@ test('stock: staff can mark a product and its sizes; bad values are refused; new
   assert.equal(pendingJson('data/schools.json').schools.find((x) => x.slug === s.slug).uniformPhotos[0].sizes[0].size, 'bXL/b', 'no tags in sizes');
   await call(env, 'POST', '/photo', { page, caption: 'Navy tie', mode: 'bag', image: fakeJpeg }, staff);
   assert.equal(pendingJson('data/incoming.json').photos[0].stock, 'in');
+});
+
+test('what changed: one entry per visible change, with the right picture', () => {
+  const read = (f) => JSON.parse(readFileSync(path.join(root, f), 'utf8'));
+  const wrap = (schools, sections, site) => ({ schools: { json: schools }, sections: { json: sections }, site: { json: site } });
+  const live = wrap(read('data/schools.json'), read('data/sections.json'), read('data/site.json'));
+  const pend = JSON.parse(JSON.stringify(live));
+  const s = pend.schools.json.schools.find((x) => x.uniformPhotos.length > 2);
+  s.uniformPhotos[0].caption = 'New name';
+  s.uniformPhotos[1].stock = 'few';
+  s.uniformPhotos[2].hidden = true;
+  [s.uniformPhotos[3], s.uniformPhotos[4]] = [s.uniformPhotos[4], s.uniformPhotos[3]];
+  pend.sections.json.sections[0].photos.push({ file: 'bag.webp', caption: 'School bag', by: 'Kanak' });
+  pend.sections.json.sections.push({ slug: 'mens', title: "Men's", intro: 'x', items: ['a'], photos: [] });
+  pend.site.json.banner = { show: false, text: '' };
+  const d = diffData(live, pend);
+  const types = d.map((x) => x.type).sort();
+  assert.deepEqual(types, ['added', 'banner', 'hidden', 'new-page', 'renamed', 'reordered', 'stock'].sort());
+  const added = d.find((x) => x.type === 'added');
+  assert.equal(added.image, `assets/gallery/${pend.sections.json.sections[0].slug}/bag.webp`);
+  assert.match(added.text, /by Kanak/);
+  assert.match(d.find((x) => x.type === 'stock').text, /^Stock: Few left/);
+  assert.match(d.find((x) => x.type === 'renamed').text, /^Renamed from "/);
+  assert.deepEqual(diffData(live, JSON.parse(JSON.stringify(live))), [], 'no changes, nothing listed');
 });
